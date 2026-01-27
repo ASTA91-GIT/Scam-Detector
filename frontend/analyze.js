@@ -160,22 +160,21 @@ form.addEventListener('submit', async (e) => {
         if (aiList.children.length === 0) {
             aiList.innerHTML = '<li>No strong scam patterns detected.</li>';
         }
-        // =========================
-        // GEMINI AI DETAILED OUTPUT
-        // =========================
+
         // =========================
         // AI DETAILED EXPLANATION
         // =========================
-
         const aiExplanationCard = document.getElementById('aiExplanationCard');
         const aiExplanationText = document.getElementById('aiExplanationText');
 
-        if (result.ai_explanation) {
+        if (result.ai_explanation && result.ai_explanation.trim() !== "") {
             aiExplanationCard.classList.remove('hidden');
             aiExplanationText.textContent = result.ai_explanation;
         } else {
             aiExplanationCard.classList.add('hidden');
         }
+
+
 
 
         // RED FLAGS
