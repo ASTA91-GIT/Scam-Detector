@@ -16,3 +16,4 @@ opencv-python==4.9.0.80
 pdfplumber==0.10.3
 pdf2image==1.17.0
 pdfplumber==0.11.0
+google-generativeai==0.5.4

@@ -9,6 +9,7 @@ from backend.file_utils import save_uploaded_file, extract_text_from_file, allow
 from backend.scam_detector import analyze_job_offer
 from datetime import datetime
 from bson import ObjectId
+from backend.ai_analyzer import ai_scam_analysis
 import os
 
 analysis_bp = Blueprint('analysis', __name__)
@@ -61,7 +62,9 @@ def analyze():
         
         # Validate text input
         if not text or len(text.strip()) < 10:
-            return jsonify({'error': 'Please provide job description text (minimum 10 characters) or upload a file'}), 400
+            return jsonify({
+                'error': 'Please provide job description text (minimum 10 characters) or upload a file'
+            }), 400
         
         # Perform analysis
         analysis_result = analyze_job_offer(
@@ -69,6 +72,22 @@ def analyze():
             company_email=company_email if company_email else None,
             company_website=company_website if company_website else None
         )
+
+        # -----------------------------
+        # AI ANALYSIS (GOOGLE GEMINI)
+        # -----------------------------
+        try:
+            ai_analysis = ai_scam_analysis(
+                text=text,
+                rule_result=analysis_result
+            )
+        except Exception as ai_error:
+            ai_analysis = (
+                "AI analysis failed. Please rely on rule-based detection."
+            )
+
+        analysis_result["ai_analysis"] = str(ai_analysis)
+        analysis_result["ai_enabled"] = True
         
         # Store analysis in database
         analyses_collection = get_analyses_collection()
@@ -89,6 +108,7 @@ def analyze():
             'website_exists': analysis_result['website_exists'],
             'company_match': analysis_result['company_match'],
             'explanations': analysis_result['explanations'],
+            'ai_explanation': analysis_result.get('ai_explanation'),
             'file_info': file_info,
             'created_at': datetime.utcnow()
         }
@@ -107,6 +127,7 @@ def analyze():
         
     except Exception as e:
         return jsonify({'error': f'Analysis failed: {str(e)}'}), 500
+
 
 @analysis_bp.route('/result/<analysis_id>', methods=['GET'])
 @require_auth
