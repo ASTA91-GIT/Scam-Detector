@@ -1244,3 +1244,38 @@ body[data-theme="dark"] .risk-item small {
     top: 0;
   }
 }
+/* ================================
+   TRUST SCORE LOADING BAR
+================================ */
+.score-wrapper {
+  margin-top: 10px;
+}
+
+.score-bar-bg {
+  width: 100%;
+  height: 10px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.score-bar {
+  height: 100%;
+  width: 0%;
+  border-radius: 20px;
+  transition: width 1.2s ease;
+}
+
+/* Colors */
+.score-safe {
+  background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.score-warning {
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.score-danger {
+  background: linear-gradient(90deg, #ef4444, #f87171);
+}

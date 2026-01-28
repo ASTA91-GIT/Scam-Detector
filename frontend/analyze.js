@@ -72,6 +72,18 @@ function handleFileSelected(file) {
     fileUploadArea.style.borderColor = '#10b981';
     fileUploadArea.style.background = 'rgba(16, 185, 129, 0.08)';
 }
+/* =========================
+   AI TYPING EFFECT
+========================= */
+function typeText(element, text, speed = 18) {
+    element.textContent = '';
+    let i = 0;
+    const interval = setInterval(() => {
+        element.textContent += text.charAt(i);
+        i++;
+        if (i >= text.length) clearInterval(interval);
+    }, speed);
+}
 
 
 /* =========================
@@ -142,11 +154,33 @@ form.addEventListener('submit', async (e) => {
         resultContainer.classList.remove('hidden');
 
         // SCORE SUMMARY
-        document.getElementById('riskLevelTitle').innerText =
-            `Risk Level: ${result.risk_level || 'Unknown'}`;
+        const scoreBar = document.getElementById('scoreBar');
+        const trustScoreText = document.getElementById('trustScoreText');
 
-        document.getElementById('trustScoreText').innerText =
-            `Trust Score: ${result.trust_score ?? '--'}`;
+        const score = result.trust_score ?? 0;
+
+        // reset
+        scoreBar.style.width = '0%';
+        scoreBar.className = 'score-bar';
+
+        // color logic
+        if (score >= 80) scoreBar.classList.add('score-safe');
+        else if (score >= 50) scoreBar.classList.add('score-warning');
+        else scoreBar.classList.add('score-danger');
+
+        // animate bar
+        setTimeout(() => {
+            scoreBar.style.width = `${score}%`;
+        }, 100);
+
+        // count up number
+        let current = 0;
+        const counter = setInterval(() => {
+            current++;
+            trustScoreText.innerText = `Trust Score: ${current}`;
+            if (current >= score) clearInterval(counter);
+        }, 15);
+
 
         // AI REASONING
         const aiList = document.getElementById('aiReasoningList');
@@ -160,6 +194,12 @@ form.addEventListener('submit', async (e) => {
         if (aiList.children.length === 0) {
             aiList.innerHTML = '<li>No strong scam patterns detected.</li>';
         }
+        const riskTitle = document.getElementById('riskLevelTitle');
+        riskTitle.classList.remove('risk-safe', 'risk-warning', 'risk-danger');
+
+        if (result.risk_level === 'Safe') riskTitle.classList.add('risk-safe');
+        if (result.risk_level === 'Suspicious') riskTitle.classList.add('risk-warning');
+        if (result.risk_level === 'High Risk') riskTitle.classList.add('risk-danger');
 
         // =========================
         // AI DETAILED EXPLANATION
@@ -169,7 +209,8 @@ form.addEventListener('submit', async (e) => {
 
         if (result.ai_explanation && result.ai_explanation.trim() !== "") {
             aiExplanationCard.classList.remove('hidden');
-            aiExplanationText.textContent = result.ai_explanation;
+            typeText(aiExplanationText, result.ai_explanation);
+
         } else {
             aiExplanationCard.classList.add('hidden');
         }
