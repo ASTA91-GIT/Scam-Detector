@@ -13,7 +13,7 @@ import re
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
 # =========================
-# SIGNUP (FIXED)
+# SIGNUP
 # =========================
 @auth_bp.route('/signup', methods=['POST'])
 def signup():
@@ -45,7 +45,7 @@ def signup():
         hashed_password = generate_password_hash(password)
 
         user_data = {
-            'username': username,          # ✅ FIX
+            'username': username,
             'email': email,
             'password': hashed_password,
             'created_at': datetime.utcnow(),
@@ -72,7 +72,7 @@ def signup():
 
 
 # =========================
-# LOGIN (UNCHANGED)
+# LOGIN
 # =========================
 @auth_bp.route('/login', methods=['POST'])
 def login():
@@ -108,7 +108,38 @@ def login():
 
 
 # =========================
-# ME (FIXED)
+# PROFILE (✅ NEW)
+# =========================
+@auth_bp.route('/profile', methods=['GET'])
+@require_auth
+def profile():
+    try:
+        user_id = request.user_id
+        users_collection = get_users_collection()
+
+        user = users_collection.find_one(
+            {'_id': ObjectId(user_id)},
+            {'password': 0}
+        )
+
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+
+        user['_id'] = str(user['_id'])
+
+        return jsonify({
+            'id': user['_id'],
+            'username': user.get('username'),
+            'email': user.get('email'),
+            'created_at': user.get('created_at')
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': f'Failed to load profile: {str(e)}'}), 500
+
+
+# =========================
+# ME
 # =========================
 @auth_bp.route('/me', methods=['GET'])
 @require_auth
@@ -123,7 +154,7 @@ def me():
             return jsonify({'error': 'User not found'}), 404
 
         return jsonify({
-            'name': user.get('username'),   # ✅ FIX
+            'name': user.get('username'),
             'email': user.get('email')
         }), 200
 
@@ -132,7 +163,7 @@ def me():
 
 
 # =========================
-# VERIFY (UNCHANGED)
+# VERIFY
 # =========================
 @auth_bp.route('/verify', methods=['GET'])
 @require_auth
@@ -158,6 +189,9 @@ def verify():
         return jsonify({'error': f'Verification failed: {str(e)}'}), 500
 
 
+# =========================
+# LOGOUT
+# =========================
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
     return jsonify({'message': 'Logged out successfully'}), 200

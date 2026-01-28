@@ -228,3 +228,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+
+const profileBtn = document.getElementById("profileBtn");
+
+if (profileBtn) {
+    profileBtn.addEventListener("click", () => {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            window.location.href = "login.html";
+        } else {
+            window.location.href = "profile.html";
+        }
+    });
+}

@@ -12,40 +12,38 @@ from backend.auth import auth_bp
 from backend.analysis import analysis_bp
 from backend.dashboard import dashboard_bp
 
-# Load environment variables
 load_dotenv()
 
 app = Flask(__name__, static_folder='frontend', static_url_path='')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
-app.config['MAX_CONTENT_LENGTH'] = int(os.getenv('MAX_FILE_SIZE', 10485760))  # 10MB
+app.config['MAX_CONTENT_LENGTH'] = int(os.getenv('MAX_FILE_SIZE', 10485760))
 app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', 'uploads')
 
-# Enable CORS for frontend
 CORS(app, supports_credentials=True)
 
-# Initialize database
-# Initialize database
-try:
-    init_db()
-except Exception as e:
-    print("❌ Failed to connect to database. Shutting down.")
-    raise
+# Init DB
+init_db()
 
-
-# Register blueprints
+# Blueprints
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(analysis_bp, url_prefix='/api/analysis')
 app.register_blueprint(dashboard_bp, url_prefix='/api/dashboard')
 
-# Serve frontend files
+# ---------- FRONTEND ROUTES ----------
 @app.route('/')
 def index():
     return send_from_directory('frontend', 'index.html')
 
+@app.route('/profile')
+def profile_page():
+    return send_from_directory('frontend', 'profile.html')
+
+# ---------- CATCH-ALL (KEEP LAST) ----------
 @app.route('/<path:path>')
 def serve_frontend(path):
     return send_from_directory('frontend', path)
 
+# ---------- ERRORS ----------
 @app.errorhandler(413)
 def too_large(e):
     return jsonify({'error': 'File too large. Maximum size is 10MB.'}), 413
@@ -58,8 +56,7 @@ def not_found(e):
 def internal_error(e):
     return jsonify({'error': 'Internal server error'}), 500
 
+# ---------- RUN ----------
 if __name__ == '__main__':
-    # Create uploads directory if it doesn't exist
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-    
     app.run(debug=True, host='0.0.0.0', port=5000)
