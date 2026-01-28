@@ -239,3 +239,47 @@ document.addEventListener('DOMContentLoaded', () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 });
+/* =========================
+   CLEAR ANALYSIS BUTTON
+   ========================= */
+
+document.addEventListener('DOMContentLoaded', () => {
+    const clearBtn = document.getElementById('clearAnalysisBtn');
+
+    if (!clearBtn) return;
+
+    clearBtn.addEventListener('click', () => {
+        // Clear inputs
+        document.getElementById('jobText').value = '';
+        document.getElementById('companyEmail').value = '';
+        document.getElementById('companyWebsite').value = '';
+        fileInput.value = '';
+
+        // Reset file UI
+        fileName.classList.add('hidden');
+        fileName.innerHTML = '';
+        fileUploadArea.style.borderColor = '';
+        fileUploadArea.style.background = '';
+
+        // Clear results
+        document.getElementById('riskLevelTitle').innerText = 'Risk Level';
+        document.getElementById('trustScoreText').innerText = 'Trust Score: --';
+
+        document.getElementById('aiReasoningList').innerHTML = '';
+        document.getElementById('redFlagsList').innerHTML = '';
+        document.getElementById('recommendationList').innerHTML = '';
+
+        // Hide AI cards
+        const aiExplanationCard = document.getElementById('aiExplanationCard');
+        if (aiExplanationCard) aiExplanationCard.classList.add('hidden');
+
+        const aiAnalysisCard = document.getElementById('aiAnalysisCard');
+        if (aiAnalysisCard) aiAnalysisCard.classList.add('hidden');
+
+        // Hide results container
+        resultContainer.classList.add('hidden');
+
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+});
