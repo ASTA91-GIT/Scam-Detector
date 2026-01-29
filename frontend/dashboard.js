@@ -17,6 +17,8 @@ async function loadDashboard() {
 }
 
 // Load logged-in user info
+// dashboard.js
+
 async function loadUserInfo() {
     try {
         const response = await fetch(`${API_BASE_URL}/auth/me`, {
@@ -28,13 +30,13 @@ async function loadUserInfo() {
         if (!response.ok) throw new Error('User fetch failed');
 
         const user = await response.json();
-        document.getElementById('userName').innerText = `Name: ${user.name}`;
-        document.getElementById('userEmail').innerText = `Email: ${user.email}`;
+        
+        // FIX: Change user.name to user.username to match backend
+        document.getElementById('userName').innerText = `Name: ${user.username || 'User'}`;
+        document.getElementById('userEmail').innerText = `Email: ${user.email || 'No Email'}`;
 
     } catch (err) {
         console.error(err);
-        document.getElementById('userName').innerText = 'Name: Unknown';
-        document.getElementById('userEmail').innerText = 'Email: Unknown';
     }
 }
 
