@@ -60,3 +60,37 @@ def internal_error(e):
 if __name__ == '__main__':
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     app.run(debug=True, host='0.0.0.0', port=5000)
+
+# backend/auth.py
+from flask import Blueprint, request, jsonify
+from backend.auth_utils import token_required
+from backend.database import users_collection
+
+auth_bp = Blueprint("auth", __name__)
+
+@auth_bp.route("/profile", methods=["GET"])
+@token_required
+def get_profile(current_user):
+    return jsonify({
+        "username": current_user["username"],
+        "email": current_user["email"]
+    }), 200
+
+
+@auth_bp.route("/profile", methods=["PUT"])
+@token_required
+def update_profile(current_user):
+    data = request.get_json()
+
+    updated_fields = {}
+    if "username" in data:
+        updated_fields["username"] = data["username"]
+    if "email" in data:
+        updated_fields["email"] = data["email"]
+
+    users_collection.update_one(
+        {"_id": current_user["_id"]},
+        {"$set": updated_fields}
+    )
+
+    return jsonify({"message": "Profile updated"}), 200

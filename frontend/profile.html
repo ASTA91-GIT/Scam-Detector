@@ -1,120 +1,201 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>User Profile</title>
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Segoe UI", sans-serif;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", sans-serif;
+      }
 
-        body {
-            min-height: 100vh;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #333;
-        }
+      body {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #333;
+      }
 
-        .profile-card {
-            background: #fff;
-            width: 360px;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            text-align: center;
-            animation: fadeIn 0.6s ease-in-out;
-        }
+      .profile-card {
+        background: #fff;
+        width: 360px;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        animation: fadeIn 0.6s ease-in-out;
+      }
 
-        .avatar {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: #fff;
-            font-size: 36px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-        }
+      .avatar {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: #fff;
+        font-size: 36px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+      }
 
-        h2 {
-            margin-bottom: 6px;
-        }
+      h2 {
+        margin-bottom: 6px;
+      }
 
-        .email {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 20px;
-        }
+      .email {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 20px;
+      }
 
-        .info {
-            text-align: left;
-            margin-bottom: 20px;
-        }
+      .info {
+        text-align: left;
+        margin-bottom: 20px;
+      }
 
-        .info div {
-            margin-bottom: 10px;
-            font-size: 15px;
-        }
+      .info div {
+        margin-bottom: 10px;
+        font-size: 15px;
+      }
 
-        .info span {
-            font-weight: 600;
-        }
+      .info span {
+        font-weight: 600;
+      }
 
-        button {
-            width: 100%;
-            padding: 10px;
-            border: none;
-            border-radius: 10px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: #fff;
-            font-size: 15px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
+      button {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: #fff;
+        font-size: 15px;
+        cursor: pointer;
+      }
 
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        }
+      #editProfile {
+        display: none;
+        margin-top: 15px;
+      }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+      input {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
         }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
     </style>
-</head>
-<body>
-
+  </head>
+  <body>
     <div class="profile-card">
-        <div class="avatar">S</div>
+      <div class="avatar" id="avatar">U</div>
 
-        <h2>Sakshi</h2>
-        <div class="email">sakshikosbe@gmail.com</div>
+      <h2 id="profileName">Loading...</h2>
+      <div class="email" id="profileEmail">Loading...</div>
 
-        <div class="info">
-            <div><span>Username:</span> Sakshi</div>
-            <div><span>Email:</span> sakshikosbe@gmail.com</div>
-            <div><span>Account:</span> Active</div>
-        </div>
+      <div class="info">
+        <div><span>Username:</span> <span id="infoUsername"></span></div>
+        <div><span>Email:</span> <span id="infoEmail"></span></div>
+        <div><span>Account:</span> Active</div>
+      </div>
 
-        <button>Edit Profile</button>
+      <button onclick="openEditProfile()">Edit Profile</button>
+
+      <!-- Edit Profile Section -->
+      <div id="editProfile">
+        <input type="text" id="editUsername" placeholder="Username" />
+        <input type="email" id="editEmail" placeholder="Email" />
+        <button onclick="saveProfile()">Save</button>
+        <p id="editStatus" style="margin-top: 8px; font-size: 13px"></p>
+      </div>
     </div>
 
-</body>
+    <script>
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        window.location.href = "/login.html";
+      }
+
+      /* ======================
+   FETCH PROFILE
+====================== */
+      fetch("/api/auth/me", {
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          // IMPORTANT: backend sends "name", not "username"
+          document.getElementById("profileName").innerText = data.name;
+          document.getElementById("profileEmail").innerText = data.email;
+
+          document.getElementById("infoUsername").innerText = data.name;
+          document.getElementById("infoEmail").innerText = data.email;
+
+          document.getElementById("editUsername").value = data.name;
+          document.getElementById("editEmail").value = data.email;
+
+          document.getElementById("avatar").innerText = data.name
+            .charAt(0)
+            .toUpperCase();
+        })
+        .catch((err) => console.error(err));
+
+      /* ======================
+   SHOW EDIT FORM
+====================== */
+      function openEditProfile() {
+        document.getElementById("editProfile").style.display = "block";
+      }
+
+      /* ======================
+   SAVE PROFILE
+====================== */
+      function saveProfile() {
+        const username = document.getElementById("editUsername").value.trim();
+        const email = document.getElementById("editEmail").value.trim();
+
+        fetch("/api/auth/profile", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token,
+          },
+          body: JSON.stringify({ username, email }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            document.getElementById("editStatus").innerText =
+              "Profile Updated ✔";
+            setTimeout(() => location.reload(), 800);
+          })
+          .catch(() => {
+            document.getElementById("editStatus").innerText =
+              "Update failed ❌";
+          });
+      }
+    </script>
+  </body>
 </html>

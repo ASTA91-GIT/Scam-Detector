@@ -110,32 +110,29 @@ def login():
 # =========================
 # PROFILE (✅ NEW)
 # =========================
+
+# =========================
+# UPDATE PROFILE (DYNAMIC)
+# =========================
 @auth_bp.route('/profile', methods=['GET'])
 @require_auth
-def profile():
+def get_profile():
     try:
         user_id = request.user_id
         users_collection = get_users_collection()
 
-        user = users_collection.find_one(
-            {'_id': ObjectId(user_id)},
-            {'password': 0}
-        )
+        user = users_collection.find_one({'_id': ObjectId(user_id)})
 
         if not user:
             return jsonify({'error': 'User not found'}), 404
 
-        user['_id'] = str(user['_id'])
-
         return jsonify({
-            'id': user['_id'],
             'username': user.get('username'),
-            'email': user.get('email'),
-            'created_at': user.get('created_at')
+            'email': user.get('email')
         }), 200
 
     except Exception as e:
-        return jsonify({'error': f'Failed to load profile: {str(e)}'}), 500
+        return jsonify({'error': str(e)}), 500
 
 
 # =========================
