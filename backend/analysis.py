@@ -53,21 +53,21 @@ def analyze():
             company_email=company_email or None,
             company_website=company_website or None
         )
-     # -----------------------------
-# AI ANALYSIS (GEMINI)
-# -----------------------------
+
+        # -----------------------------
+        # AI ANALYSIS (HUGGING FACE)
+        # -----------------------------
         try:
-          ai_explanation = ai_scam_analysis(
-        text=text,
-        rule_result=analysis_result
-         )
+            ai_explanation = ai_scam_analysis(
+                text=text,
+                rule_result=analysis_result
+            )
         except Exception as ai_error:
-           print("❌ Gemini error:", ai_error)
-        ai_explanation = "AI explanation unavailable. Please rely on rule-based analysis."
+            print("❌ AI error:", ai_error)
+            ai_explanation = "AI explanation unavailable. Please rely on rule-based analysis."
 
         analysis_result["ai_explanation"] = ai_explanation
         analysis_result["ai_enabled"] = True
-
 
         # ---------- SAVE ----------
         analyses = get_analyses_collection()
@@ -89,4 +89,3 @@ def analyze():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
