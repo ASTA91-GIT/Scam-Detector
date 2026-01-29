@@ -1,6 +1,6 @@
 """
 Authentication Blueprint
-Handles user signup, login, and session management
+Handles user signup, login, session management, and profile updates.
 """
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -10,7 +10,8 @@ from datetime import datetime
 from bson import ObjectId
 import re
 
-auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
+# Prefix is handled globally in app.py to avoid double-prefixing (e.g., /api/auth/api/auth)
+auth_bp = Blueprint('auth', __name__)
 
 # =========================
 # SIGNUP
@@ -108,21 +109,9 @@ def login():
 
 
 # =========================
-# PROFILE (✅ NEW)
+# PROFILE MANAGEMENT
 # =========================
 
-from flask import Blueprint, request, jsonify
-from werkzeug.security import generate_password_hash
-from backend.database import get_users_collection
-from backend.auth_utils import require_auth  # Ensure this matches your decorator name
-from bson import ObjectId
-import datetime
-
-auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
-
-# =========================
-# GET PROFILE
-# =========================
 @auth_bp.route('/profile', methods=['GET'])
 @require_auth
 def get_profile():
@@ -130,20 +119,17 @@ def get_profile():
         user_id = request.user_id
         users_collection = get_users_collection()
         user = users_collection.find_one({'_id': ObjectId(user_id)})
-
+        
         if not user:
             return jsonify({'error': 'User not found'}), 404
-
+            
         return jsonify({
             'username': user.get('username'),
             'email': user.get('email')
         }), 200
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': f'Failed to fetch profile: {str(e)}'}), 500
 
-# =========================
-# UPDATE PROFILE (The "Save" Button Logic)
-# =========================
 @auth_bp.route('/profile', methods=['PUT'])
 @require_auth
 def update_profile():
@@ -151,65 +137,85 @@ def update_profile():
         user_id = request.user_id
         data = request.get_json()
         users_collection = get_users_collection()
-
+        
         updated_fields = {}
-        if 'username' in data and data['username'].strip():
+        if 'username' in data: 
             updated_fields['username'] = data['username'].strip()
-        if 'email' in data and data['email'].strip():
+        if 'email' in data: 
             updated_fields['email'] = data['email'].strip().lower()
         
-        updated_fields['updated_at'] = datetime.datetime.utcnow()
-
         if not updated_fields:
-            return jsonify({'error': 'No data provided to update'}), 400
+            return jsonify({'error': 'No fields provided for update'}), 400
 
-        result = users_collection.update_one(
-            {'_id': ObjectId(user_id)},
+        updated_fields['updated_at'] = datetime.utcnow()
+        
+        users_collection.update_one(
+            {'_id': ObjectId(user_id)}, 
             {'$set': updated_fields}
         )
-
-        if result.modified_count == 0:
-            return jsonify({'message': 'No changes made'}), 200
-
         return jsonify({'message': 'Profile updated successfully'}), 200
-
     except Exception as e:
         return jsonify({'error': f'Update failed: {str(e)}'}), 500
 
+@auth_bp.route('/change-password', methods=['POST'])
+@require_auth
+def change_password():
+    try:
+        user_id = request.user_id
+        data = request.get_json()
+        users_collection = get_users_collection()
+        user = users_collection.find_one({'_id': ObjectId(user_id)})
+
+        old_password = data.get('old_password')
+        new_password = data.get('new_password')
+
+        if not old_password or not new_password:
+            return jsonify({'error': 'Both old and new passwords are required'}), 400
+
+        if not check_password_hash(user['password'], old_password):
+            return jsonify({'error': 'Incorrect current password'}), 401
+
+        if len(new_password) < 6:
+            return jsonify({'error': 'New password must be at least 6 characters'}), 400
+
+        hashed = generate_password_hash(new_password)
+        users_collection.update_one(
+            {'_id': ObjectId(user_id)}, 
+            {'$set': {'password': hashed, 'updated_at': datetime.utcnow()}}
+        )
+        return jsonify({'message': 'Password changed successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': f'Password change failed: {str(e)}'}), 500
+
+
 # =========================
-# ME
+# SESSION HELPERS
 # =========================
+
 @auth_bp.route('/me', methods=['GET'])
 @require_auth
 def me():
     try:
         user_id = request.user_id
         users_collection = get_users_collection()
-
         user = users_collection.find_one({'_id': ObjectId(user_id)})
 
         if not user:
             return jsonify({'error': 'User not found'}), 404
 
         return jsonify({
-            'name': user.get('username'),
+            'username': user.get('username'), # Changed from 'name' to 'username' for consistency
             'email': user.get('email')
         }), 200
-
     except Exception as e:
         return jsonify({'error': f'Failed to load user: {str(e)}'}), 500
 
-
-# =========================
-# VERIFY
-# =========================
 @auth_bp.route('/verify', methods=['GET'])
 @require_auth
 def verify():
     try:
         user_id = request.user_id
         users_collection = get_users_collection()
-
         user = users_collection.find_one({'_id': ObjectId(user_id)})
 
         if not user:
@@ -222,14 +228,9 @@ def verify():
                 'email': user['email']
             }
         }), 200
-
     except Exception as e:
         return jsonify({'error': f'Verification failed: {str(e)}'}), 500
 
-
-# =========================
-# LOGOUT
-# =========================
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
     return jsonify({'message': 'Logged out successfully'}), 200
