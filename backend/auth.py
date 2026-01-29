@@ -111,8 +111,17 @@ def login():
 # PROFILE (✅ NEW)
 # =========================
 
+from flask import Blueprint, request, jsonify
+from werkzeug.security import generate_password_hash
+from backend.database import get_users_collection
+from backend.auth_utils import require_auth  # Ensure this matches your decorator name
+from bson import ObjectId
+import datetime
+
+auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
+
 # =========================
-# UPDATE PROFILE (DYNAMIC)
+# GET PROFILE
 # =========================
 @auth_bp.route('/profile', methods=['GET'])
 @require_auth
@@ -120,7 +129,6 @@ def get_profile():
     try:
         user_id = request.user_id
         users_collection = get_users_collection()
-
         user = users_collection.find_one({'_id': ObjectId(user_id)})
 
         if not user:
@@ -130,10 +138,43 @@ def get_profile():
             'username': user.get('username'),
             'email': user.get('email')
         }), 200
-
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# =========================
+# UPDATE PROFILE (The "Save" Button Logic)
+# =========================
+@auth_bp.route('/profile', methods=['PUT'])
+@require_auth
+def update_profile():
+    try:
+        user_id = request.user_id
+        data = request.get_json()
+        users_collection = get_users_collection()
+
+        updated_fields = {}
+        if 'username' in data and data['username'].strip():
+            updated_fields['username'] = data['username'].strip()
+        if 'email' in data and data['email'].strip():
+            updated_fields['email'] = data['email'].strip().lower()
+        
+        updated_fields['updated_at'] = datetime.datetime.utcnow()
+
+        if not updated_fields:
+            return jsonify({'error': 'No data provided to update'}), 400
+
+        result = users_collection.update_one(
+            {'_id': ObjectId(user_id)},
+            {'$set': updated_fields}
+        )
+
+        if result.modified_count == 0:
+            return jsonify({'message': 'No changes made'}), 200
+
+        return jsonify({'message': 'Profile updated successfully'}), 200
+
+    except Exception as e:
+        return jsonify({'error': f'Update failed: {str(e)}'}), 500
 
 # =========================
 # ME

@@ -130,72 +130,99 @@
       </div>
     </div>
 
-    <script>
-      const token = localStorage.getItem("token");
+   <script>
+  const token = localStorage.getItem("token");
 
-      if (!token) {
-        window.location.href = "/login.html";
-      }
+  if (!token) {
+    window.location.href = "/login.html";
+  }
 
-      /* ======================
-   FETCH PROFILE
-====================== */
-      fetch("/api/auth/me", {
-        headers: {
-          Authorization: "Bearer " + token,
-        },
+  /* ======================
+     FETCH PROFILE
+  ====================== */
+  function loadProfile() {
+    fetch("/api/auth/profile", {
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Session expired");
+        return res.json();
       })
-        .then((res) => res.json())
-        .then((data) => {
-          // IMPORTANT: backend sends "name", not "username"
-          document.getElementById("profileName").innerText = data.name;
-          document.getElementById("profileEmail").innerText = data.email;
+      .then((data) => {
+        // Updated to use 'username' to match backend
+        document.getElementById("profileName").innerText = data.username;
+        document.getElementById("profileEmail").innerText = data.email;
 
-          document.getElementById("infoUsername").innerText = data.name;
-          document.getElementById("infoEmail").innerText = data.email;
+        document.getElementById("infoUsername").innerText = data.username;
+        document.getElementById("infoEmail").innerText = data.email;
 
-          document.getElementById("editUsername").value = data.name;
-          document.getElementById("editEmail").value = data.email;
+        document.getElementById("editUsername").value = data.username;
+        document.getElementById("editEmail").value = data.email;
 
-          document.getElementById("avatar").innerText = data.name
-            .charAt(0)
-            .toUpperCase();
-        })
-        .catch((err) => console.error(err));
+        document.getElementById("avatar").innerText = data.username
+          .charAt(0)
+          .toUpperCase();
+      })
+      .catch((err) => {
+        console.error(err);
+        window.location.href = "/login.html";
+      });
+  }
 
-      /* ======================
-   SHOW EDIT FORM
-====================== */
-      function openEditProfile() {
-        document.getElementById("editProfile").style.display = "block";
-      }
+  // Initial Load
+  loadProfile();
 
-      /* ======================
-   SAVE PROFILE
-====================== */
-      function saveProfile() {
-        const username = document.getElementById("editUsername").value.trim();
-        const email = document.getElementById("editEmail").value.trim();
+  /* ======================
+     SHOW EDIT FORM
+  ====================== */
+  function openEditProfile() {
+    const form = document.getElementById("editProfile");
+    form.style.display = form.style.display === "block" ? "none" : "block";
+  }
 
-        fetch("/api/auth/profile", {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + token,
-          },
-          body: JSON.stringify({ username, email }),
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            document.getElementById("editStatus").innerText =
-              "Profile Updated ✔";
-            setTimeout(() => location.reload(), 800);
-          })
-          .catch(() => {
-            document.getElementById("editStatus").innerText =
-              "Update failed ❌";
-          });
-      }
-    </script>
+  /* ======================
+     SAVE PROFILE (AJAX)
+  ====================== */
+  function saveProfile() {
+    const username = document.getElementById("editUsername").value.trim();
+    const email = document.getElementById("editEmail").value.trim();
+    const status = document.getElementById("editStatus");
+
+    if (!username || !email) {
+      status.innerText = "Fields cannot be empty";
+      status.style.color = "red";
+      return;
+    }
+
+    fetch("/api/auth/profile", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
+      body: JSON.stringify({ username, email }),
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (res.ok) {
+          status.innerText = "Profile Updated ✔";
+          status.style.color = "green";
+          // Reload values without full refresh
+          setTimeout(() => {
+            location.reload(); 
+          }, 1000);
+        } else {
+          status.innerText = data.error || "Update failed ❌";
+          status.style.color = "red";
+        }
+      })
+      .catch(() => {
+        status.innerText = "Server error ❌";
+        status.style.color = "red";
+      });
+  }
+</script>
   </body>
 </html>
