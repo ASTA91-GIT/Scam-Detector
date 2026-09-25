@@ -29,14 +29,16 @@
     <!-- Floating Cyber Navbar -->
     <header class="spider-navbar">
         <a href="index.html" class="spider-brand-logo">
-            <div class="spider-brand-emblem">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <span class="spidey-eye-icon left"></span>
+            <div class="spider-brand-emblem" style="background: rgba(255, 23, 68, 0.2); border-color: #ff1744;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff1744" stroke-width="2.2">
                     <circle cx="12" cy="12" r="10"/>
                     <path d="m4.93 4.93 4.24 4.24M14.83 9.17l4.24-4.24M14.83 14.83l4.24 4.24M9.17 14.83l-4.24 4.24"/>
                     <circle cx="12" cy="12" r="4"/>
                 </svg>
             </div>
-            <span>SENTINEL<span style="color:var(--spider-cyan);">SCAN</span></span>
+            <span>SPIDEY <span style="color:var(--spider-cyan);">TRACKER</span></span>
+            <span class="spidey-eye-icon right"></span>
         </a>
 
         <nav class="spider-nav-links">
@@ -61,7 +63,7 @@
 
     <!-- MAIN IMMERSIVE CONTENT -->
     <main>
-        <!-- SECTION 1: 3D HERO VIEWPORT -->
+        <!-- SECTION 1: 3D HERO VIEWPORT WITH SPIDEY TRACKER CONSOLE -->
         <section class="spider-hero-viewport" id="hero">
             <!-- Floating Cybersecurity HUD Overlays -->
             <div class="spider-hud-layer" aria-hidden="true">
@@ -79,31 +81,42 @@
                 </div>
             </div>
 
-            <!-- Hero Text Content -->
-            <div class="spider-hero-content">
-                <div class="spider-hero-tag">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                    AI Cyber-Forensics & Fraud Defense
-                </div>
+            <!-- Spidey Tracker Cyber Monitor Bezel -->
+            <div class="spidey-tracker-bezel" style="max-width: 850px; position: relative;">
+                <!-- Radar Scanner Widget (Top Right of Console) -->
+                <div class="spidey-radar-container" id="spideyRadarWidget"></div>
 
-                <h1 class="spider-hero-title">
-                    DETECT THE <span class="spider-glow-red">SCAM.</span><br>
-                    BEFORE IT <span class="spider-glow-cyan">HITS.</span>
-                </h1>
+                <!-- Perched Guardian Spider-Man Avatar (Bottom Left of Bezel) -->
+                <div class="spidey-corner-guardian" id="spideyBezelAvatar" title="Your Cyber Neighborhood Guardian"></div>
 
-                <p class="spider-hero-sub">
-                    Enter the digital investigation grid. SentinelScan AI uncovers hidden recruitment traps, analyzes offer letters, verifies company domains, and equips you with <strong>CaseAI</strong> before you take the next step.
-                </p>
+                <!-- Hero Text Content -->
+                <div class="spider-hero-content" style="position: relative; z-index: 10;">
+                    <!-- Top Spidey Tracker Header Badge -->
+                    <div class="spidey-tracker-badge">
+                        <span class="spidey-eye-icon left"></span>
+                        SPIDEY TRACKER // FRAUD INTERCEPT
+                        <span class="spidey-eye-icon right"></span>
+                    </div>
 
-                <div class="spider-hero-ctas">
-                    <a href="analyze.html" class="btn-spider-primary">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg>
-                        Analyze a Job Offer
-                    </a>
-                    <a href="#the-threat" class="btn-spider-glass">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
-                        Explore the System
-                    </a>
+                    <h1 class="spider-hero-title">
+                        DETECT THE <span class="spider-glow-red">SCAM.</span><br>
+                        BEFORE IT <span class="spider-glow-cyan">HITS.</span>
+                    </h1>
+
+                    <p class="spider-hero-sub">
+                        Enter the digital investigation grid. Track fraudulent job postings, uncover fake recruiter domains, expose advance-fee traps, and consult <strong>CaseAI</strong> with your friendly neighborhood cybersecurity tracker.
+                    </p>
+
+                    <div class="spider-hero-ctas">
+                        <a href="analyze.html" class="btn-spider-primary">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg>
+                            Analyze a Job Offer
+                        </a>
+                        <a href="#the-threat" class="btn-spider-glass">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+                            Explore the System
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -458,6 +471,7 @@
     <script src="core.js"></script>
     <script src="spider_audio.js"></script>
     <script src="spider_landing_3d.js"></script>
+    <script src="spidey_assets.js"></script>
     <script src="spider_interactions.js"></script>
 </body>
 </html>

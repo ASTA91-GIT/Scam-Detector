@@ -219,101 +219,226 @@
     }
 
     /**
-     * Original Stylized 3D Cyber-Spider Hero Silhouette
+     * Iconic 3D Spider-Man Model & Perch
+     * Recreates the classic red & blue suit, black webbing, large white eye lenses, and athletic crouch pose.
      */
     function buildCyberHeroSilhouette() {
         heroGroup = new THREE.Group();
 
-        // 1. Skyscraper Perch Ledge
-        const ledgeGeo = new THREE.BoxGeometry(6, 1.2, 5);
-        const ledgeMat = new THREE.MeshStandardMaterial({ color: 0x070c18, roughness: 0.8 });
+        // Suit Color Palette
+        const spideyRedMat = new THREE.MeshStandardMaterial({
+            color: 0xd32f2f, // Iconic Spider Red
+            roughness: 0.35,
+            metalness: 0.25
+        });
+        const spideyBlueMat = new THREE.MeshStandardMaterial({
+            color: 0x0d47a1, // Classic Suit Cobalt Blue
+            roughness: 0.4,
+            metalness: 0.3
+        });
+        const webLineMat = new THREE.LineBasicMaterial({
+            color: 0x111111,
+            linewidth: 2
+        });
+        const lensWhiteMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const lensBlackBorderMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+
+        // 1. Skyscraper Perch Rooftop Ledge
+        const ledgeGeo = new THREE.BoxGeometry(6, 1.4, 5);
+        const ledgeMat = new THREE.MeshStandardMaterial({ color: 0x0a0f1d, roughness: 0.85 });
         const ledge = new THREE.Mesh(ledgeGeo, ledgeMat);
-        ledge.position.set(0, -3.5, 0);
+        ledge.position.set(0, -3.4, 0);
         heroGroup.add(ledge);
 
-        // Glowing edge trim on ledge
-        const ledgeEdgeGeo = new THREE.BoxGeometry(6.1, 0.1, 5.1);
+        // Neon cyber trim on ledge
+        const ledgeEdgeGeo = new THREE.BoxGeometry(6.1, 0.12, 5.1);
         const ledgeEdgeMat = new THREE.MeshBasicMaterial({ color: 0x00e5ff });
         const ledgeEdge = new THREE.Mesh(ledgeEdgeGeo, ledgeEdgeMat);
-        ledgeEdge.position.set(0, -2.9, 0);
+        ledgeEdge.position.set(0, -2.7, 0);
         heroGroup.add(ledgeEdge);
 
-        // 2. Athletic Superhero Torso (Stylized angular cyber-mesh)
-        const torsoGeo = new THREE.ConeGeometry(1.6, 3.2, 6);
-        const suitMat = new THREE.MeshStandardMaterial({
-            color: 0x0b1329,
-            roughness: 0.45,
-            metalness: 0.65
-        });
-        heroTorso = new THREE.Mesh(torsoGeo, suitMat);
-        heroTorso.rotation.x = Math.PI; // upside-down cone gives athletic chest V-taper
-        heroTorso.position.set(0, -0.6, 0.2);
-        heroGroup.add(heroTorso);
-
-        // Crimson Spider Chest Emblem
-        const crestGeo = new THREE.OctahedronGeometry(0.7, 0);
-        const crestMat = new THREE.MeshBasicMaterial({ color: 0xff1744 });
-        const crest = new THREE.Mesh(crestGeo, crestMat);
-        crest.scale.set(1.2, 1.5, 0.2);
-        crest.position.set(0, -0.2, 1.1);
-        heroTorso.add(crest);
-
-        // 3. Cyber Masked Head
-        const headGeo = new THREE.SphereGeometry(0.85, 12, 10);
-        headGeo.scale(0.9, 1.15, 1.0);
-        const headMat = new THREE.MeshStandardMaterial({
-            color: 0x0e172e,
-            roughness: 0.4,
-            metalness: 0.7
-        });
-        heroHead = new THREE.Mesh(headGeo, headMat);
-        heroHead.position.set(0, 1.7, 0.35);
+        // 2. Head & Mask (Iconic Red Mask with Webbing & Signature Eyes)
+        const headGeo = new THREE.SphereGeometry(0.9, 20, 16);
+        headGeo.scale(0.85, 1.15, 0.95);
+        heroHead = new THREE.Mesh(headGeo, spideyRedMat);
+        heroHead.position.set(0, 1.6, 0.4);
         heroGroup.add(heroHead);
 
-        // Glowing Cyber Spider Eyes (White with cyan edge bloom)
-        const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-        const leftEyeGeo = new THREE.ConeGeometry(0.24, 0.65, 4);
-        leftEyeGeo.rotateZ(Math.PI / 3.2);
-        const leftEye = new THREE.Mesh(leftEyeGeo, eyeMat);
-        leftEye.position.set(-0.35, 0.08, 0.75);
-        leftEye.scale.set(1, 1, 0.3);
-        heroHead.add(leftEye);
+        // Mask Webbing Lines (Horizontal Latitudinal Rings)
+        for (let r = -0.5; r <= 0.6; r += 0.25) {
+            const ringGeo = new THREE.TorusGeometry(Math.cos(r) * 0.82, 0.015, 6, 24);
+            const ring = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: 0x222222 }));
+            ring.rotation.x = Math.PI / 2;
+            ring.position.y = r * 1.1;
+            heroHead.add(ring);
+        }
 
-        const rightEye = leftEye.clone();
-        rightEye.rotation.z = -Math.PI / 3.2;
-        rightEye.position.set(0.35, 0.08, 0.75);
-        heroHead.add(rightEye);
+        // Mask Vertical Web Lines
+        for (let a = 0; a < 4; a++) {
+            const lineGeo = new THREE.TorusGeometry(0.88, 0.015, 6, 24);
+            const line = new THREE.Mesh(lineGeo, new THREE.MeshBasicMaterial({ color: 0x222222 }));
+            line.rotation.y = (a * Math.PI) / 4;
+            line.scale.set(0.85, 1.15, 0.95);
+            heroHead.add(line);
+        }
 
-        // 4. Arms & Gauntlets (Guardian crouch posture)
-        const armMat = new THREE.MeshStandardMaterial({ color: 0x091024, roughness: 0.5 });
-        const gauntletMat = new THREE.MeshStandardMaterial({ color: 0xff1744, metalness: 0.8 });
+        // Signature Large Expressive Comic Eyes (Left & Right)
+        function createSpideyEye(isLeft) {
+            const eyeGroup = new THREE.Group();
 
-        // Left Arm
-        const leftArmGeo = new THREE.CylinderGeometry(0.25, 0.2, 2.2, 6);
-        const leftArm = new THREE.Mesh(leftArmGeo, armMat);
-        leftArm.position.set(-1.7, -0.7, 0.5);
-        leftArm.rotation.z = Math.PI / 4;
-        leftArm.rotation.x = -Math.PI / 6;
-        heroGroup.add(leftArm);
+            // Iconic Comic Spider Eye: sharp outer angle pointing up-out, curved lower edge
+            const outerShape = new THREE.Shape();
+            outerShape.moveTo(0, 0.44); // top outer tip
+            outerShape.quadraticCurveTo(0.38, 0.12, 0.32, -0.36); // outer curved sweep
+            outerShape.quadraticCurveTo(0.02, -0.26, -0.32, -0.16); // bottom edge
+            outerShape.quadraticCurveTo(-0.28, 0.22, 0, 0.44); // inner slant
+            const outerMesh = new THREE.Mesh(new THREE.ShapeGeometry(outerShape), lensBlackBorderMat);
 
-        leftGauntlet = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.28, 0.8, 6), gauntletMat);
-        leftGauntlet.position.set(-2.3, -1.6, 0.8);
-        heroGroup.add(leftGauntlet);
+            const innerShape = new THREE.Shape();
+            innerShape.moveTo(0, 0.38);
+            innerShape.quadraticCurveTo(0.32, 0.10, 0.27, -0.30);
+            innerShape.quadraticCurveTo(0.02, -0.22, -0.26, -0.13);
+            innerShape.quadraticCurveTo(-0.23, 0.19, 0, 0.38);
+            const innerMesh = new THREE.Mesh(new THREE.ShapeGeometry(innerShape), lensWhiteMat);
+            innerMesh.position.z = 0.02;
 
-        // Right Arm (Forward targeting position)
-        const rightArmGeo = new THREE.CylinderGeometry(0.25, 0.2, 2.2, 6);
-        const rightArm = new THREE.Mesh(rightArmGeo, armMat);
-        rightArm.position.set(1.7, -0.7, 0.5);
-        rightArm.rotation.z = -Math.PI / 4;
-        rightArm.rotation.x = -Math.PI / 6;
-        heroGroup.add(rightArm);
+            eyeGroup.add(outerMesh);
+            eyeGroup.add(innerMesh);
 
-        rightGauntlet = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.28, 0.8, 6), gauntletMat);
-        rightGauntlet.position.set(2.3, -1.6, 0.8);
-        heroGroup.add(rightGauntlet);
+            const flip = isLeft ? 1 : -1;
+            eyeGroup.scale.set(flip * 0.85, 0.85, 0.85);
+            eyeGroup.rotation.y = isLeft ? -0.38 : 0.38;
+            eyeGroup.rotation.z = isLeft ? -0.12 : 0.12;
+            eyeGroup.position.set(isLeft ? -0.38 : 0.38, 0.05, 0.84);
+            return eyeGroup;
+        }
 
-        // Position hero towards right-center of viewport
-        heroGroup.position.set(isMobile ? 0 : 5.5, -0.5, 8);
+        heroHead.add(createSpideyEye(true));
+        heroHead.add(createSpideyEye(false));
+
+        // 3. Torso (Center Red with Black Spider Logo, Blue Flanks)
+        const torsoGroup = new THREE.Group();
+        torsoGroup.position.set(0, -0.3, 0.2);
+
+        // Center Red Chest (V-Taper)
+        const chestGeo = new THREE.CylinderGeometry(1.15, 0.75, 2.0, 10);
+        heroTorso = new THREE.Mesh(chestGeo, spideyRedMat);
+        torsoGroup.add(heroTorso);
+
+        // Blue Side Panels (Flanks)
+        const flankLeft = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1.8, 0.85), spideyBlueMat);
+        flankLeft.position.set(-0.95, 0, 0);
+        torsoGroup.add(flankLeft);
+
+        const flankRight = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1.8, 0.85), spideyBlueMat);
+        flankRight.position.set(0.95, 0, 0);
+        torsoGroup.add(flankRight);
+
+        // Iconic Black Spider Chest Emblem
+        const spiderBodyGeo = new THREE.SphereGeometry(0.18, 8, 8);
+        spiderBodyGeo.scale(0.7, 1.3, 0.3);
+        const spiderBody = new THREE.Mesh(spiderBodyGeo, lensBlackBorderMat);
+        spiderBody.position.set(0, 0.2, 0.98);
+        torsoGroup.add(spiderBody);
+
+        // Spider Legs spreading across chest
+        for (let i = 0; i < 4; i++) {
+            const side = i < 2 ? -1 : 1;
+            const legGeo = new THREE.TorusGeometry(0.35 + (i % 2) * 0.15, 0.025, 4, 12, Math.PI / 1.8);
+            const leg = new THREE.Mesh(legGeo, lensBlackBorderMat);
+            leg.position.set(side * 0.3, 0.2 + (i % 2) * 0.2, 0.95);
+            leg.rotation.z = side * (0.4 + (i % 2) * 0.6);
+            torsoGroup.add(leg);
+        }
+
+        heroGroup.add(torsoGroup);
+
+        // 4. Arms in Dynamic Spider Crouch Stance
+        // Left Arm (Shoulder red, bicep blue, forearm/gauntlet red)
+        const leftArmGroup = new THREE.Group();
+        leftArmGroup.position.set(-1.15, 0.5, 0.2);
+
+        const leftShoulder = new THREE.Mesh(new THREE.SphereGeometry(0.38, 8, 8), spideyRedMat);
+        leftArmGroup.add(leftShoulder);
+
+        const leftBicep = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.24, 1.3, 8), spideyBlueMat);
+        leftBicep.position.set(-0.45, -0.55, 0.1);
+        leftBicep.rotation.z = 0.5;
+        leftArmGroup.add(leftBicep);
+
+        leftGauntlet = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.22, 1.3, 8), spideyRedMat);
+        leftGauntlet.position.set(-0.95, -1.45, 0.5);
+        leftGauntlet.rotation.x = -0.5;
+        leftArmGroup.add(leftGauntlet);
+
+        // Left Hand Gripping Ledge
+        const leftHand = new THREE.Mesh(new THREE.SphereGeometry(0.26, 6, 6), spideyRedMat);
+        leftHand.position.set(-1.1, -2.1, 0.9);
+        leftArmGroup.add(leftHand);
+
+        heroGroup.add(leftArmGroup);
+
+        // Right Arm (Forward Target Stance with Web Shooter Wrist)
+        const rightArmGroup = new THREE.Group();
+        rightArmGroup.position.set(1.15, 0.5, 0.2);
+
+        const rightShoulder = new THREE.Mesh(new THREE.SphereGeometry(0.38, 8, 8), spideyRedMat);
+        rightArmGroup.add(rightShoulder);
+
+        const rightBicep = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.24, 1.3, 8), spideyBlueMat);
+        rightBicep.position.set(0.45, -0.55, 0.1);
+        rightBicep.rotation.z = -0.5;
+        rightArmGroup.add(rightBicep);
+
+        rightGauntlet = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.22, 1.3, 8), spideyRedMat);
+        rightGauntlet.position.set(0.95, -1.45, 0.5);
+        rightGauntlet.rotation.x = -0.5;
+        rightArmGroup.add(rightGauntlet);
+
+        // Right Web-Shooter Wrist Nozzle
+        const webShooterNozzle = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.08, 0.08, 0.2, 8),
+            new THREE.MeshBasicMaterial({ color: 0x00e5ff })
+        );
+        webShooterNozzle.position.set(1.15, -1.9, 0.9);
+        webShooterNozzle.rotation.x = Math.PI / 2;
+        rightArmGroup.add(webShooterNozzle);
+
+        const rightHand = new THREE.Mesh(new THREE.SphereGeometry(0.26, 6, 6), spideyRedMat);
+        rightHand.position.set(1.1, -2.1, 0.9);
+        rightArmGroup.add(rightHand);
+
+        heroGroup.add(rightArmGroup);
+
+
+
+        // 5. Perched Crouch Legs (Blue Thighs, Red Spider Boots on Ledge)
+        // Left Leg
+        const leftThigh = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.32, 1.6, 8), spideyBlueMat);
+        leftThigh.position.set(-1.0, -1.4, -0.2);
+        leftThigh.rotation.x = 1.1;
+        leftThigh.rotation.z = -0.4;
+        heroGroup.add(leftThigh);
+
+        const leftBoot = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.28, 1.8, 8), spideyRedMat);
+        leftBoot.position.set(-1.3, -2.3, 0.5);
+        leftBoot.rotation.x = -0.8;
+        heroGroup.add(leftBoot);
+
+        // Right Leg
+        const rightThigh = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.32, 1.6, 8), spideyBlueMat);
+        rightThigh.position.set(1.0, -1.4, -0.2);
+        rightThigh.rotation.x = 1.1;
+        rightThigh.rotation.z = 0.4;
+        heroGroup.add(rightThigh);
+
+        const rightBoot = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.28, 1.8, 8), spideyRedMat);
+        rightBoot.position.set(1.3, -2.3, 0.5);
+        rightBoot.rotation.x = -0.8;
+        heroGroup.add(rightBoot);
+
+        // Position hero towards right side of hero viewport (desktop) or center (mobile)
+        heroGroup.position.set(isMobile ? 0 : 5.8, -0.4, 7.8);
         heroGroup.scale.set(1.15, 1.15, 1.15);
         scene.add(heroGroup);
     }
