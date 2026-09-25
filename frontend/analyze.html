@@ -1,255 +1,220 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analyze Job Offer - Job Scam Detector</title>
+    <title>Forensic Analysis Workspace - ScamGuard AI</title>
     <link rel="stylesheet" href="styles.css">
+    <script>
+        (function() {
+            const saved = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', saved);
+        })();
+    </script>
 </head>
-
 <body>
 
-    <!-- ================= NAVBAR ================= -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-brand">
-                <h2>🛡️ Scam Detector</h2>
-            </div>
-            <div class="nav-menu">
-                <a href="dashboard.html" class="nav-link">Dashboard</a>
-                <a href="analyze.html" class="nav-link active">Analyze</a>
-                <button id="themeToggle" class="btn btn-outline">🌙 Dark Mode</button>
-                <button id="logoutBtn" class="btn btn-outline">Logout</button>
-            </div>
-        </div>
-    </nav>
+    <div class="app-shell">
+        <aside class="app-sidebar" id="appSidebar"></aside>
 
-    <!-- ================= PAGE ================= -->
-    <div class="container">
+        <div class="app-main">
+            <header class="app-topbar" id="appTopbar"></header>
 
-        <!-- HEADER -->
-        <div class="analysis-header">
-            <h1>Analyze Job Offer</h1>
-            <p>Upload an offer letter, paste job description, or enter company details</p>
-        </div>
-
-        <!-- ================= 3 COLUMN LAYOUT ================= -->
-        <div class="analysis-layout">
-
-            <!-- ================= LEFT: RISK GUIDE ================= -->
-            <aside class="risk-guide">
-                <h3>📊 Risk Level Guide</h3>
-
-                <div class="risk-item safe">
-                    <span class="risk-dot"></span>
-                    <div>
-                        <strong>Safe</strong>
-                        <p>Score: 80 – 100</p>
-                        <small>Legitimate offers with no payment or pressure</small>
-                    </div>
-                </div>
-
-                <div class="risk-item suspicious">
-                    <span class="risk-dot"></span>
-                    <div>
-                        <strong>Suspicious</strong>
-                        <p>Score: 50 – 79</p>
-                        <small>Verify company and avoid sharing details</small>
-                    </div>
-                </div>
-
-                <div class="risk-item danger">
-                    <span class="risk-dot"></span>
-                    <div>
-                        <strong>High Risk</strong>
-                        <p>Score: 0 – 49</p>
-                        <small>Likely scam — do not pay or respond</small>
-                    </div>
-                </div>
-            </aside>
-
-            <!-- ================= CENTER: ANALYSIS ================= -->
-            <section class="analysis-main">
-
-                <!-- FORM -->
-                <div class="analysis-card">
-                    <form id="analysisForm" class="analysis-form">
-
-                        <!-- TABS -->
-                        <div class="form-tabs">
-                            <button type="button" class="tab-btn active" data-tab="text">Text Input</button>
-                            <button type="button" class="tab-btn" data-tab="file">Upload File</button>
+            <main class="app-content">
+                <div class="analyze-workspace">
+                    <!-- Header -->
+                    <div class="dash-header" style="margin-bottom: 1.5rem;">
+                        <div>
+                            <h1 style="font-size: 2rem;">Forensic Job Scanner</h1>
+                            <p style="color: var(--text-secondary); font-size: 0.95rem;">
+                                Evaluate job descriptions, formal offer letters, recruiter domains, and suspicious recruitment signals.
+                            </p>
                         </div>
+                    </div>
 
-                        <!-- TEXT TAB -->
-                        <div id="textTab" class="tab-content active">
-                            <div class="form-group">
-                                <label for="jobText">Job Description / Offer Letter Text</label>
-                                <textarea id="jobText" rows="10"
-                                    placeholder="Paste the job description or offer letter text here..."></textarea>
+                    <!-- Input Mode Selector Tabs -->
+                    <div class="analyze-mode-tabs">
+                        <button type="button" class="mode-tab-btn active" id="tabModeText" data-mode="text">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                            <span>Paste Job Description</span>
+                        </button>
+                        <button type="button" class="mode-tab-btn" id="tabModeFile" data-mode="file">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            <span>Upload Document / OCR</span>
+                        </button>
+                        <button type="button" class="mode-tab-btn" id="tabModeUrl" data-mode="url">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                            <span>URL Phishing Scanner</span>
+                        </button>
+                    </div>
+
+                    <!-- Main Form -->
+                    <form id="analyzeForm">
+                        <!-- MODE 1: TEXT EDITOR -->
+                        <div id="sectionText" class="cyber-card" style="margin-bottom: 1.5rem;">
+                            <div class="editor-toolbar">
+                                <label class="form-label" for="jobText" style="margin-bottom:0;">Offer Text / Email Content</label>
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <button type="button" class="btn btn-sm btn-outline" id="pasteClipboardBtn">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+                                        Paste
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline" id="clearTextBtn">Clear</button>
+                                </div>
+                            </div>
+
+                            <textarea id="jobText" class="form-control" rows="11" placeholder="Paste the job posting, recruiter email, interview invitation, or offer letter contents here..."></textarea>
+
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+                                <div class="sample-load-pills">
+                                    <span style="font-size: 0.78rem; color: var(--text-muted);">Quick-load sample:</span>
+                                    <button type="button" class="sample-pill-btn" id="sampleCrypto">Crypto Re-shipping Scam</button>
+                                    <button type="button" class="sample-pill-btn" id="sampleFee">Advance Training Fee Scam</button>
+                                    <button type="button" class="sample-pill-btn" id="sampleLegit">Legitimate Tech Offer</button>
+                                </div>
+                                <div class="char-counter" id="charCounter">0 characters | 0 words</div>
                             </div>
                         </div>
 
-                        <!-- FILE TAB -->
-                        <div id="fileTab" class="tab-content">
-                            <div class="form-group">
-                                <label>Upload Offer Letter</label>
-                                <div class="file-upload-area" id="fileUploadArea">
-                                    <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt" hidden>
-                                    <div class="file-upload-content">
-                                        <div class="file-icon">📄</div>
-                                        <p>Click or drag & drop file</p>
+                        <!-- MODE 2: FILE DROPZONE -->
+                        <div id="sectionFile" class="cyber-card" style="display:none; margin-bottom: 1.5rem;">
+                            <div class="file-dropzone" id="fileDropzone">
+                                <div class="dropzone-icon">
+                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                </div>
+                                <div class="dropzone-title">Drop your offer letter here or click to browse</div>
+                                <div class="dropzone-sub">Supports PDF, DOC, DOCX, TXT, PNG, JPG (Max 10MB) &bull; Built-in OCR extraction</div>
+                                <input type="file" id="fileUploadInput" accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg" style="display:none;">
+                            </div>
+
+                            <div id="filePreviewCard" class="file-preview-card" style="display:none;">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <span style="font-size: 1.5rem;">📄</span>
+                                    <div>
+                                        <strong id="previewFileName" style="color:var(--text-primary); font-size:0.92rem;">offer_letter.pdf</strong>
+                                        <div id="previewFileSize" style="color:var(--text-muted); font-size:0.78rem;">1.2 MB &bull; Ready for analysis</div>
                                     </div>
                                 </div>
-                                <div id="fileName" class="file-name hidden"></div>
+                                <button type="button" class="btn btn-sm btn-outline" id="removeFileBtn" style="color:var(--risk-danger);">Remove</button>
                             </div>
                         </div>
 
-                        <!-- COMPANY INFO -->
-                        <div class="form-group">
-                            <label>Company Email (Optional)</label>
-                            <input type="email" id="companyEmail" placeholder="hr@company.com">
+                        <!-- MODE 3: URL SCANNER -->
+                        <div id="sectionUrl" class="cyber-card" style="display:none; margin-bottom: 1.5rem;">
+                            <h3 style="margin-bottom: 0.5rem;">Recruitment Portal / Link Phishing Audit</h3>
+                            <p style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 1rem;">
+                                Scrutinizes company domains, HTTPS certificates, deceptive homoglyphs, and phishing paths without navigating to malicious binaries.
+                            </p>
+                            <div class="form-group">
+                                <label class="form-label" for="scanUrlInput">Target Website or Career Portal URL</label>
+                                <div style="display: flex; gap: 0.75rem;">
+                                    <input type="text" id="scanUrlInput" class="form-control" placeholder="https://careers-verify.company-portal.xyz/apply">
+                                    <button type="button" class="btn btn-outline" id="runUrlScanBtn">Scan URL</button>
+                                </div>
+                            </div>
+                            <div id="urlScanResult" style="display:none; margin-top: 1rem;"></div>
                         </div>
 
-                        <div class="form-group">
-                            <label>Company Website (Optional)</label>
-                            <input type="url" id="companyWebsite" placeholder="https://company.com">
+                        <!-- COMPANY VERIFICATION (Optional Forensics Enrichment) -->
+                        <div class="company-verify-box">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <h3 style="font-size: 1.05rem;">Company & Recruiter Verification (Recommended)</h3>
+                                    <p style="color: var(--text-muted); font-size: 0.82rem;">
+                                        Cross-referencing recruiter contact domains and official websites significantly enhances accuracy.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="company-verify-grid">
+                                <div class="form-group" style="margin-bottom:0.75rem;">
+                                    <label class="form-label" for="companyName">Claimed Company Name</label>
+                                    <input type="text" id="companyName" class="form-control" placeholder="e.g. Apex Global Logistics">
+                                </div>
+
+                                <div class="form-group" style="margin-bottom:0.75rem;">
+                                    <label class="form-label" for="jobTitle">Job Title / Role</label>
+                                    <input type="text" id="jobTitle" class="form-control" placeholder="e.g. Senior Data Analyst">
+                                </div>
+
+                                <div class="form-group" style="margin-bottom:0.75rem;">
+                                    <label class="form-label" for="companyEmail">Recruiter Email Address</label>
+                                    <input type="email" id="companyEmail" class="form-control" placeholder="recruiter@company.com or hr@gmail.com">
+                                </div>
+
+                                <div class="form-group" style="margin-bottom:0.75rem;">
+                                    <label class="form-label" for="companyWebsite">Official Company Website</label>
+                                    <input type="url" id="companyWebsite" class="form-control" placeholder="https://company.com">
+                                </div>
+
+                                <div class="form-group" style="margin-bottom:0.75rem;">
+                                    <label class="form-label" for="companyPhone">Recruiter Phone / WhatsApp (Optional)</label>
+                                    <input type="text" id="companyPhone" class="form-control" placeholder="+1 (555) 019-2834">
+                                </div>
+
+                                <div class="form-group" style="margin-bottom:0.75rem;">
+                                    <label class="form-label" for="jobLocation">Location (Remote / City)</label>
+                                    <input type="text" id="jobLocation" class="form-control" placeholder="e.g. 100% Remote (USA)">
+                                </div>
+                            </div>
                         </div>
 
-                        <div id="errorMessage" class="error-message hidden"></div>
-
-                        <!-- ACTIONS -->
-                        <button class="btn btn-primary btn-block btn-large">
-                            <span id="analyzeBtnText">Analyze Job Offer</span>
-                            <span id="analyzeSpinner" class="spinner hidden"></span>
-                        </button>
-
-                        <div style="display: flex; gap: 12px; margin-top: 10px;">
-                            <button type="button" id="resetAnalysisBtn" class="btn btn-outline btn-block">
-                                ➕ New Analysis
+                        <!-- Submit Button -->
+                        <div style="margin-top: 2rem;">
+                            <button type="submit" class="btn btn-primary btn-large btn-block" id="submitScanBtn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg>
+                                <span id="submitScanText">Execute Forensic Scam Analysis</span>
                             </button>
-
-                            <button type="button" id="clearAnalysisBtn" class="btn btn-outline btn-block">
-                                🧹 Clear
-                            </button>
                         </div>
-
-
                     </form>
                 </div>
-
-                <!-- RESULTS -->
-                <div id="resultContainer" class="result-container hidden">
-
-                    <!-- SCORE SUMMARY -->
-                    <!-- SCORE SUMMARY -->
-                    <div class="card">
-                        <h2 id="riskLevelTitle">Risk Level</h2>
-
-                        <!-- SCORE BAR -->
-                        <div class="score-wrapper">
-                            <div class="score-bar-bg">
-                                <div id="scoreBar" class="score-bar"></div>
-                            </div>
-                            <p id="trustScoreText">Trust Score: --</p>
-                        </div>
-                    </div>
-
-                    <!-- AI REASONING -->
-                    <div class="card">
-                        <h3>🧠 AI Risk Reasoning</h3>
-                        <ul id="aiReasoningList"></ul>
-                    </div>
-
-                    <!-- RED FLAGS -->
-                    <div class="card">
-                        <h3>🚩 Detected Red Flags</h3>
-                        <ul id="redFlagsList"></ul>
-                    </div>
-
-                    <!-- RECOMMENDATIONS -->
-                    <div class="card">
-                        <h3>✅ Recommended Actions</h3>
-                        <ul id="recommendationList"></ul>
-                    </div>
-                    <!-- 🤖 AI SCAM ANALYSIS -->
-                    <div class="card hidden" id="aiAnalysisCard">
-                        <h3>🤖 AI Scam Analysis</h3>
-
-                        <p>
-                            <strong>AI Risk Level:</strong>
-                            <span id="aiRiskLevel">--</span>
-                        </p>
-
-                        <p>
-                            <strong>Scam Probability:</strong>
-                            <span id="aiProbability">--</span>%
-                        </p>
-
-                        <h4>🧠 AI Explanation</h4>
-                        <p id="aiExplanation"></p>
-
-                        <h4>✅ AI Safety Advice</h4>
-                        <ul id="aiAdviceList"></ul>
-                    </div>
-                    <div class="card hidden" id="aiExplanationCard">
-                        <h3>🤖 AI Detailed Explanation</h3>
-                        <p id="aiExplanationText"></p>
-                    </div>
-
-
-
-                </div>
-
-            </section>
-
-            <!-- ================= RIGHT: TRUSTED SOURCES ================= -->
-            <aside class="trusted-sources">
-                <h3>🔐 Trusted Verification Sources</h3>
-
-                <ul class="trusted-list">
-                    <li>
-                        <span class="trusted-icon">🌐</span>
-                        <div>
-                            <strong>Company Official Website</strong>
-                            <p>Verify offers via the official domain</p>
-                        </div>
-                    </li>
-
-                    <li>
-                        <span class="trusted-icon">💼</span>
-                        <div>
-                            <strong>LinkedIn Company Page</strong>
-                            <p>Check employee profiles and activity</p>
-                        </div>
-                    </li>
-
-                    <li>
-                        <span class="trusted-icon">🏛️</span>
-                        <div>
-                            <strong>Government / University Portals</strong>
-                            <p>Use official placement portals</p>
-                        </div>
-                    </li>
-
-                    <li>
-                        <span class="trusted-icon">🧾</span>
-                        <div>
-                            <strong>Glassdoor / AmbitionBox</strong>
-                            <p>Check reviews and scam warnings</p>
-                        </div>
-                    </li>
-                </ul>
-            </aside>
-
+            </main>
         </div>
     </div>
 
-    <!-- ================= SCRIPTS ================= -->
-    <script src="auth.js"></script>
+    <!-- Multi-Step Animated Scanning Progress Modal -->
+    <div class="scan-progress-overlay" id="scanProgressModal">
+        <div class="scan-progress-card">
+            <div class="scan-progress-radar">
+                <div class="scan-radar-sweep"></div>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+
+            <h3 style="font-size: 1.3rem; margin-bottom: 0.25rem;">Analyzing Job Offer</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem;" id="scanStatusSubtitle">Running forensic pattern matching...</p>
+
+            <div class="scan-steps-list">
+                <div class="scan-step-item active" id="stepUpload">
+                    <div class="scan-step-icon">1</div>
+                    <span>Packaging payload and document verification</span>
+                </div>
+                <div class="scan-step-item" id="stepExtract">
+                    <div class="scan-step-icon">2</div>
+                    <span>Extracting offer text and structural metadata</span>
+                </div>
+                <div class="scan-step-item" id="stepHeuristics">
+                    <div class="scan-step-icon">3</div>
+                    <span>Evaluating advance fee & urgency manipulation</span>
+                </div>
+                <div class="scan-step-item" id="stepDomain">
+                    <div class="scan-step-icon">4</div>
+                    <span>Cross-referencing recruiter domains & DNS status</span>
+                </div>
+                <div class="scan-step-item" id="stepDossier">
+                    <div class="scan-step-icon">5</div>
+                    <span>Compiling cybersecurity risk score & findings</span>
+                </div>
+            </div>
+
+            <div class="progress-bar-wrap">
+                <div class="progress-bar-fill" id="scanProgressBar" style="width: 20%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="core.js"></script>
+    <script src="case_ai.js"></script>
     <script src="analyze.js"></script>
-
 </body>
-
 </html>

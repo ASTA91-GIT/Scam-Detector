@@ -1,228 +1,373 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>User Profile</title>
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyst Profile & Security - ScamGuard AI</title>
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        (function() {
+            const saved = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', saved);
+        })();
+    </script>
+</head>
+<body>
 
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: "Segoe UI", sans-serif;
-      }
+    <div class="app-shell">
+        <!-- Sidebar Shell -->
+        <aside class="app-sidebar" id="appSidebar"></aside>
 
-      body {
-        min-height: 100vh;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #333;
-      }
+        <div class="app-main">
+            <!-- Topbar Shell -->
+            <header class="app-topbar" id="appTopbar"></header>
 
-      .profile-card {
-        background: #fff;
-        width: 360px;
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-        text-align: center;
-        animation: fadeIn 0.6s ease-in-out;
-      }
+            <main class="app-content">
+                <!-- Profile Hero Card -->
+                <div class="profile-hero-card">
+                    <div class="avatar-upload-wrap">
+                        <div id="profileHeaderAvatar">
+                            <div class="user-avatar-initials avatar-lg">SA</div>
+                        </div>
+                        <label for="avatarFileInput" class="avatar-upload-overlay" title="Upload new photo">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                        </label>
+                        <input type="file" id="avatarFileInput" accept="image/png,image/jpeg,image/webp" style="display:none;">
+                    </div>
 
-      .avatar {
-        width: 90px;
-        height: 90px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: #fff;
-        font-size: 36px;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 15px;
-      }
+                    <div class="profile-meta-block">
+                        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                            <h2 class="profile-username" id="profileHeaderName">Security Analyst</h2>
+                            <span class="badge badge-safe">Verified Analyst</span>
+                        </div>
+                        <p class="profile-email" id="profileHeaderEmail">analyst@domain.com</p>
+                        <div style="display: flex; gap: 1.5rem; color: var(--text-muted); font-size: 0.82rem; flex-wrap: wrap;">
+                            <span>Member since: <strong style="color:var(--text-secondary);" id="profileMemberSince">--</strong></span>
+                            <span>Last session: <strong style="color:var(--text-secondary);" id="profileLastLogin">--</strong></span>
+                        </div>
+                    </div>
 
-      h2 {
-        margin-bottom: 6px;
-      }
+                    <div style="display: flex; gap: 0.75rem; align-items: center;">
+                        <button class="btn btn-outline btn-sm" id="removeAvatarBtn" style="display:none;">Remove Photo</button>
+                        <button class="btn btn-primary btn-sm" id="quickEditBtn">Edit Profile</button>
+                    </div>
+                </div>
 
-      .email {
-        font-size: 14px;
-        color: #666;
-        margin-bottom: 20px;
-      }
+                <!-- Navigation Tabs -->
+                <div class="cyber-tabs" id="profileTabs">
+                    <button class="cyber-tab-btn active" data-tab="overview">Overview</button>
+                    <button class="cyber-tab-btn" data-tab="edit">Edit Profile</button>
+                    <button class="cyber-tab-btn" data-tab="security">Security & Credentials</button>
+                    <button class="cyber-tab-btn" data-tab="activity">Audit Activity</button>
+                    <button class="cyber-tab-btn" data-tab="preferences">Preferences</button>
+                    <button class="cyber-tab-btn" data-tab="privacy">Privacy & Danger Zone</button>
+                </div>
 
-      .info {
-        text-align: left;
-        margin-bottom: 20px;
-      }
+                <!-- TAB 1: OVERVIEW -->
+                <div class="cyber-tab-panel active" id="tab-overview">
+                    <div class="dash-main-grid">
+                        <div class="cyber-card">
+                            <h3 style="margin-bottom: 1.25rem;">Account Verification Meta</h3>
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <div class="activity-row">
+                                    <span class="activity-action">Analyst Handle</span>
+                                    <span class="activity-details" id="metaUsername">--</span>
+                                </div>
+                                <div class="activity-row">
+                                    <span class="activity-action">Primary Email</span>
+                                    <span class="activity-details" id="metaEmail">--</span>
+                                </div>
+                                <div class="activity-row">
+                                    <span class="activity-action">Account Status</span>
+                                    <span class="badge badge-safe">Active &bull; Multi-factor Ready</span>
+                                </div>
+                                <div class="activity-row">
+                                    <span class="activity-action">Registration Date</span>
+                                    <span class="activity-details" id="metaCreated">--</span>
+                                </div>
+                                <div class="activity-row">
+                                    <span class="activity-action">Last Authentication</span>
+                                    <span class="activity-details" id="metaLogin">--</span>
+                                </div>
+                            </div>
+                        </div>
 
-      .info div {
-        margin-bottom: 10px;
-        font-size: 15px;
-      }
+                        <div class="cyber-card">
+                            <h3 style="margin-bottom: 1.25rem;">Forensic Lifetime Stats</h3>
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <div class="stat-card" style="padding: 1rem;">
+                                    <div class="stat-header">TOTAL RUN AUDITS</div>
+                                    <div class="stat-value" id="overviewTotalScans">0</div>
+                                </div>
+                                <div class="stat-card" style="padding: 1rem;">
+                                    <div class="stat-header">HIGH-RISK DETECTIONS</div>
+                                    <div class="stat-value" style="color:var(--risk-danger);" id="overviewHighRisk">0</div>
+                                </div>
+                                <div class="stat-card" style="padding: 1rem;">
+                                    <div class="stat-header">SAVED DOSSIERS</div>
+                                    <div class="stat-value" style="color:var(--accent-cyan);" id="overviewSavedCount">0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-      .info span {
-        font-weight: 600;
-      }
+                <!-- TAB 2: EDIT PROFILE -->
+                <div class="cyber-tab-panel" id="tab-edit">
+                    <div class="cyber-card" style="max-width: 640px;">
+                        <h3 style="margin-bottom: 0.5rem;">Edit Personal Information</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                            Update your display name and email address across the forensics portal.
+                        </p>
 
-      button {
-        width: 100%;
-        padding: 10px;
-        border: none;
-        border-radius: 10px;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: #fff;
-        font-size: 15px;
-        cursor: pointer;
-      }
+                        <form id="editProfileForm">
+                            <div class="form-group">
+                                <label class="form-label" for="editUsername">Display Name / Username</label>
+                                <input type="text" id="editUsername" class="form-control" required>
+                            </div>
 
-      #editProfile {
-        display: none;
-        margin-top: 15px;
-      }
+                            <div class="form-group">
+                                <label class="form-label" for="editEmail">Email Address</label>
+                                <input type="email" id="editEmail" class="form-control" required>
+                            </div>
 
-      input {
-        width: 100%;
-        padding: 8px;
-        margin-bottom: 10px;
-        border-radius: 8px;
-        border: 1px solid #ccc;
-      }
+                            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                                <button type="submit" class="btn btn-primary" id="saveProfileBtn">
+                                    <span id="saveProfileText">Save Changes</span>
+                                    <span id="saveProfileSpinner" class="spinner" style="display:none;"></span>
+                                </button>
+                                <button type="button" class="btn btn-outline" id="cancelEditProfileBtn">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
 
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="profile-card">
-      <div class="avatar" id="avatar">U</div>
+                <!-- TAB 3: SECURITY & CREDENTIALS -->
+                <div class="cyber-tab-panel" id="tab-security">
+                    <div class="dash-main-grid">
+                        <div class="cyber-card">
+                            <h3 style="margin-bottom: 0.5rem;">Change Password</h3>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                                Ensure your account is safeguarded with an enterprise-grade password.
+                            </p>
 
-      <h2 id="profileName">Loading...</h2>
-      <div class="email" id="profileEmail">Loading...</div>
+                            <form id="changePasswordForm">
+                                <div class="form-group">
+                                    <label class="form-label" for="currentPassword">Current Password</label>
+                                    <div style="position: relative;">
+                                        <input type="password" id="currentPassword" class="form-control" required>
+                                        <button type="button" class="pwd-toggle" data-target="currentPassword" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer;">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                        </button>
+                                    </div>
+                                </div>
 
-      <div class="info">
-        <div><span>Username:</span> <span id="infoUsername"></span></div>
-        <div><span>Email:</span> <span id="infoEmail"></span></div>
-        <div><span>Account:</span> Active</div>
-      </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="newPassword">New Password</label>
+                                    <div style="position: relative;">
+                                        <input type="password" id="newPassword" class="form-control" required>
+                                        <button type="button" class="pwd-toggle" data-target="newPassword" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer;">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                        </button>
+                                    </div>
 
-      <button onclick="openEditProfile()">Edit Profile</button>
+                                    <div class="password-meter">
+                                        <div class="password-meter-fill" id="newPassMeter"></div>
+                                    </div>
 
-      <!-- Edit Profile Section -->
-      <div id="editProfile">
-        <input type="text" id="editUsername" placeholder="Username" />
-        <input type="email" id="editEmail" placeholder="Email" />
-        <button onclick="saveProfile()">Save</button>
-        <p id="editStatus" style="margin-top: 8px; font-size: 13px"></p>
-      </div>
+                                    <ul class="rules-checklist" id="newPassRules">
+                                        <li id="rule-p-length"><span>○</span> 8+ characters</li>
+                                        <li id="rule-p-upper"><span>○</span> Uppercase letter</li>
+                                        <li id="rule-p-lower"><span>○</span> Lowercase letter</li>
+                                        <li id="rule-p-number"><span>○</span> Number</li>
+                                        <li id="rule-p-special"><span>○</span> Special character</li>
+                                    </ul>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="confirmNewPassword">Confirm New Password</label>
+                                    <input type="password" id="confirmNewPassword" class="form-control" required>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary" id="changePasswordBtn" style="margin-top: 1rem;">
+                                    <span id="changePassText">Update Password</span>
+                                    <span id="changePassSpinner" class="spinner" style="display:none;"></span>
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="cyber-card">
+                            <h3 style="margin-bottom: 0.5rem;">Active Sessions & Tokens</h3>
+                            <p style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 1.5rem;">
+                                Manage current JWT credentials and device authorization.
+                            </p>
+
+                            <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.5rem;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                                    <strong>Current Browser Session</strong>
+                                    <span class="badge badge-safe">ACTIVE NOW</span>
+                                </div>
+                                <small style="color: var(--text-muted);">Protected via Signed HMAC-SHA256 Token</small>
+                            </div>
+
+                            <button class="btn btn-outline btn-block" id="logoutAllSessionsBtn" style="color: var(--risk-danger); border-color: rgba(239,68,68,0.3);">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+                                Terminate All Active Sessions
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 4: AUDIT ACTIVITY LOG -->
+                <div class="cyber-tab-panel" id="tab-activity">
+                    <div class="cyber-card">
+                        <div class="dash-card-header">
+                            <div>
+                                <h3>Security Audit Log</h3>
+                                <p style="color: var(--text-muted); font-size: 0.85rem;">Chronological record of account modifications, authentications, and scan events.</p>
+                            </div>
+                            <button class="btn btn-sm btn-outline" id="refreshActivityBtn">Refresh Log</button>
+                        </div>
+
+                        <div id="activityLogContainer">
+                            <div class="skeleton skeleton-card" style="height: 140px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 5: PREFERENCES -->
+                <div class="cyber-tab-panel" id="tab-preferences">
+                    <div class="cyber-card" style="max-width: 680px;">
+                        <h3 style="margin-bottom: 1.5rem;">System & Notification Preferences</h3>
+
+                        <form id="preferencesForm">
+                            <div class="form-group" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem;">
+                                <label class="form-label">Theme Interface</label>
+                                <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
+                                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                        <input type="radio" name="prefTheme" value="dark"> Dark Cybersecurity
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                        <input type="radio" name="prefTheme" value="light"> Light Operational
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem;">
+                                <label class="form-label">Notification Channels</label>
+                                <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem;">
+                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                        <input type="checkbox" id="prefAnalysisNotifs" checked style="accent-color: var(--accent-cyan);">
+                                        <span>Analysis result notifications in topbar</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                        <input type="checkbox" id="prefSecurityNotifs" checked style="accent-color: var(--accent-cyan);">
+                                        <span>Security credential alerts (passwords, logins)</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                        <input type="checkbox" id="prefEmailNotifs" checked style="accent-color: var(--accent-cyan);">
+                                        <span>Critical high-risk email digests</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem;">
+                                <label class="form-label">Default Analysis Input Mode</label>
+                                <select id="prefDefaultMode" class="form-control" style="max-width: 240px; margin-top: 0.5rem;">
+                                    <option value="text">Paste Job Description</option>
+                                    <option value="file">Upload Document (PDF/DOCX)</option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary" id="savePrefsBtn" style="margin-top: 1rem;">
+                                Save Preferences
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- TAB 6: PRIVACY & DANGER ZONE -->
+                <div class="cyber-tab-panel" id="tab-privacy">
+                    <div class="cyber-card" style="max-width: 720px;">
+                        <h3 style="margin-bottom: 0.5rem;">Data Sovereignty & Privacy Controls</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                            Export your complete profile and forensic archive, or purge data permanently.
+                        </p>
+
+                        <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+                            <div>
+                                <strong style="font-size: 1rem;">Download Complete Personal Data (GDPR)</strong>
+                                <p style="color: var(--text-muted); font-size: 0.82rem; margin-top: 2px;">
+                                    Exports all scans, saved reports, activity logs, and account meta into a sanitized JSON archive.
+                                </p>
+                            </div>
+                            <button class="btn btn-outline btn-sm" id="exportDataBtn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                Export JSON Archive
+                            </button>
+                        </div>
+
+                        <!-- Danger Zone -->
+                        <div class="danger-zone-card">
+                            <h4>DANGER ZONE: DESTRUCTIVE ACTIONS</h4>
+                            <p style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 1.25rem;">
+                                Actions in this section are irreversible and permanently purge databases and files.
+                            </p>
+
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 1rem; border-bottom: 1px solid rgba(239,68,68,0.2); gap: 1rem; flex-wrap: wrap;">
+                                    <div>
+                                        <strong style="color: var(--text-primary);">Clear Analysis History</strong>
+                                        <p style="color: var(--text-muted); font-size: 0.8rem;">Permanently delete all previous scan records and uploaded documents.</p>
+                                    </div>
+                                    <button class="btn btn-outline btn-sm" id="clearHistoryBtn" style="color: var(--risk-danger); border-color: rgba(239,68,68,0.4);">
+                                        Purge All History
+                                    </button>
+                                </div>
+
+                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+                                    <div>
+                                        <strong style="color: var(--risk-danger);">Delete Account Permanently</strong>
+                                        <p style="color: var(--text-muted); font-size: 0.8rem;">Erase user credentials, saved dossiers, notifications, and profile.</p>
+                                    </div>
+                                    <button class="btn btn-danger btn-sm" id="deleteAccountBtn">
+                                        Delete My Account
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
     </div>
 
-   <script>
-  const token = localStorage.getItem("token");
+    <!-- Delete Account Password Confirmation Modal -->
+    <div class="cyber-modal-overlay" id="deleteAccountModal">
+        <div class="cyber-modal">
+            <div class="cyber-modal-header">
+                <h3 class="cyber-modal-title" style="color: var(--risk-danger);">Confirm Account Deletion</h3>
+                <button class="cyber-modal-close" id="closeDeleteModal">&times;</button>
+            </div>
+            <div class="cyber-modal-body">
+                <p style="margin-bottom: 1rem;">
+                    This action will permanently delete your account, all uploaded documents, scan records, and saved reports. This cannot be undone.
+                </p>
+                <div class="form-group">
+                    <label class="form-label" for="deleteConfirmPassword">Please enter your password to confirm:</label>
+                    <input type="password" id="deleteConfirmPassword" class="form-control" placeholder="Current password">
+                </div>
+            </div>
+            <div class="cyber-modal-footer">
+                <button class="btn btn-outline" id="cancelDeleteModal">Cancel</button>
+                <button class="btn btn-danger" id="confirmPermanentDeleteBtn">Permanently Delete</button>
+            </div>
+        </div>
+    </div>
 
-  if (!token) {
-    window.location.href = "/login.html";
-  }
-
-  /* ======================
-     FETCH PROFILE
-  ====================== */
-  function loadProfile() {
-    fetch("/api/auth/profile", {
-      headers: {
-        Authorization: "Bearer " + token,
-      },
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Session expired");
-        return res.json();
-      })
-      .then((data) => {
-        // Updated to use 'username' to match backend
-        document.getElementById("profileName").innerText = data.username;
-        document.getElementById("profileEmail").innerText = data.email;
-
-        document.getElementById("infoUsername").innerText = data.username;
-        document.getElementById("infoEmail").innerText = data.email;
-
-        document.getElementById("editUsername").value = data.username;
-        document.getElementById("editEmail").value = data.email;
-
-        document.getElementById("avatar").innerText = data.username
-          .charAt(0)
-          .toUpperCase();
-      })
-      .catch((err) => {
-        console.error(err);
-        window.location.href = "/login.html";
-      });
-  }
-
-  // Initial Load
-  loadProfile();
-
-  /* ======================
-     SHOW EDIT FORM
-  ====================== */
-  function openEditProfile() {
-    const form = document.getElementById("editProfile");
-    form.style.display = form.style.display === "block" ? "none" : "block";
-  }
-
-  /* ======================
-     SAVE PROFILE (AJAX)
-  ====================== */
-  function saveProfile() {
-    const username = document.getElementById("editUsername").value.trim();
-    const email = document.getElementById("editEmail").value.trim();
-    const status = document.getElementById("editStatus");
-
-    if (!username || !email) {
-      status.innerText = "Fields cannot be empty";
-      status.style.color = "red";
-      return;
-    }
-
-    fetch("/api/auth/profile", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
-      },
-      body: JSON.stringify({ username, email }),
-    })
-      .then(async (res) => {
-        const data = await res.json();
-        if (res.ok) {
-          status.innerText = "Profile Updated ✔";
-          status.style.color = "green";
-          // Reload values without full refresh
-          setTimeout(() => {
-            location.reload(); 
-          }, 1000);
-        } else {
-          status.innerText = data.error || "Update failed ❌";
-          status.style.color = "red";
-        }
-      })
-      .catch(() => {
-        status.innerText = "Server error ❌";
-        status.style.color = "red";
-      });
-  }
-</script>
-  </body>
+    <!-- Scripts -->
+    <script src="core.js"></script>
+    <script src="case_ai.js"></script>
+    <script src="profile.js"></script>
+</body>
 </html>

@@ -1,39 +1,278 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analysis Result - Job Scam Detector</title>
+    <title>Forensic Risk Assessment Dossier - ScamGuard AI</title>
     <link rel="stylesheet" href="styles.css">
+    <script>
+        (function() {
+            const saved = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', saved);
+        })();
+    </script>
+    <style>
+        @media print {
+            .app-sidebar, .app-topbar, .app-mobile-nav, .result-actions-bar, #saveReportBtn, #shareReportBtn {
+                display: none !important;
+            }
+            .app-main { margin-left: 0 !important; }
+            .app-content { padding: 0 !important; }
+            body { background: #fff !important; color: #000 !important; }
+            .cyber-card, .result-header-panel, .breakdown-card {
+                background: #fff !important;
+                border: 1px solid #ccc !important;
+                box-shadow: none !important;
+                color: #000 !important;
+            }
+        }
+    </style>
 </head>
-
 <body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-brand">
-                <h2>🛡️ Scam Detector</h2>
-            </div>
-            <div class="nav-menu">
-                <a href="dashboard.html" class="nav-link">Dashboard</a>
-                <a href="analyze.html" class="nav-link">Analyze</a>
-                <button id="themeToggle" class="btn btn-outline">
-    🌙 Dark Mode
-</button>
 
-                <button id="logoutBtn" class="btn btn-outline">Logout</button>
-            </div>
-        </div>
-    </nav>
+    <div class="app-shell">
+        <aside class="app-sidebar" id="appSidebar"></aside>
 
-    <div class="container">
-        <div id="resultContent">
-            <!-- Result content will be loaded here -->
+        <div class="app-main">
+            <header class="app-topbar" id="appTopbar"></header>
+
+            <main class="app-content">
+                <!-- Loading State Container -->
+                <div id="resultLoadingState" style="text-align: center; padding: 4rem 1rem;">
+                    <div class="spinner" style="width: 44px; height: 44px; border-width: 3px; border-top-color: var(--accent-cyan);"></div>
+                    <p style="color: var(--text-secondary); margin-top: 1rem; font-size: 1.05rem;">Loading Forensic Risk Assessment...</p>
+                </div>
+
+                <!-- Error State Container -->
+                <div id="resultErrorState" style="display:none; text-align:center; padding: 4rem 1rem;">
+                    <div class="empty-state">
+                        <div class="empty-icon" style="color: var(--risk-danger);">⚠️</div>
+                        <div class="empty-title" id="resultErrorTitle">Report Not Found</div>
+                        <p class="empty-desc" id="resultErrorDesc">The requested forensic audit record could not be loaded or authorization expired.</p>
+                        <a href="dashboard.html" class="btn btn-primary btn-sm">Return to Dashboard</a>
+                    </div>
+                </div>
+
+                <!-- Main Result Container -->
+                <div id="resultMainContainer" style="display: none;">
+                    <!-- Top Risk Assessment Panel -->
+                    <div class="result-header-panel">
+                        <div class="result-main-gauge-box">
+                            <div class="radial-gauge" style="width: 140px; height: 140px;">
+                                <svg class="radial-svg" viewBox="0 0 160 160">
+                                    <circle class="radial-bg" cx="80" cy="80" r="70" />
+                                    <circle class="radial-fill" id="resultRadialFill" cx="80" cy="80" r="70" style="stroke: #10b981; stroke-dashoffset: 440;" />
+                                </svg>
+                                <div class="radial-content">
+                                    <div class="radial-number" id="resultTrustScore">--</div>
+                                    <div class="radial-label">Trust Score</div>
+                                </div>
+                            </div>
+
+                            <div class="result-meta-info">
+                                <div style="display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.25rem;">
+                                    <span class="badge" id="resultRiskBadge">ANALYZING</span>
+                                    <span style="font-size: 0.8rem; color: var(--text-muted);" id="resultAuditId">ID: #--</span>
+                                </div>
+                                <h2 id="resultJobTitle">Software Engineer Offer</h2>
+                                <p style="color: var(--text-secondary); font-size: 0.92rem;" id="resultCompanyDate">
+                                    Claimed: <strong id="resultCompanyName" style="color:var(--text-primary);">Acme Corp</strong> &bull; <span id="resultTimestamp">Date</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Action Toolbar -->
+                        <div class="result-actions-bar">
+                            <button class="btn btn-outline btn-sm" id="askCaseAiBtn" style="border-color: var(--accent-cyan); color: var(--accent-cyan); background: rgba(0, 229, 255, 0.08); font-weight: 600;" title="Investigate this case with CaseAI">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+                                Ask CaseAI
+                            </button>
+                            <button class="btn btn-outline btn-sm" id="saveReportBtn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+                                <span id="saveBtnText">Save Report</span>
+                            </button>
+                            <button class="btn btn-outline btn-sm" id="downloadPdfBtn" title="Print / Export Dossier">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                Download Report
+                            </button>
+                            <button class="btn btn-outline btn-sm" id="shareReportBtn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                                Share Link
+                            </button>
+                            <a href="analyze.html" class="btn btn-primary btn-sm">Analyze Another</a>
+                        </div>
+                    </div>
+
+                    <!-- Executive Summary Card -->
+                    <div class="cyber-card" style="margin-bottom: 2rem;">
+                        <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Executive Security Summary</h3>
+                        <p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.95rem;" id="resultAiExplanation">
+                            Detailed AI summary examining recruiter intent, urgency pressure, and manipulation tactics.
+                        </p>
+                    </div>
+
+                    <!-- Risk Breakdown Matrix (6 Pillars) -->
+                    <div class="dash-card-header">
+                        <h3>Risk Breakdown Vectors</h3>
+                        <small style="color: var(--text-muted);">Scores out of 100 (Higher = Safer)</small>
+                    </div>
+                    <div class="breakdown-grid" id="riskBreakdownGrid">
+                        <div class="breakdown-card">
+                            <div class="breakdown-card-head">
+                                <span>PAYMENT RISK</span>
+                                <span>💳</span>
+                            </div>
+                            <div class="breakdown-score" id="scorePayment">--</div>
+                            <small style="color: var(--text-muted); font-size: 0.75rem;">Advance fee analysis</small>
+                        </div>
+                        <div class="breakdown-card">
+                            <div class="breakdown-card-head">
+                                <span>IDENTITY RISK</span>
+                                <span>🪪</span>
+                            </div>
+                            <div class="breakdown-score" id="scoreIdentity">--</div>
+                            <small style="color: var(--text-muted); font-size: 0.75rem;">Personal info safety</small>
+                        </div>
+                        <div class="breakdown-card">
+                            <div class="breakdown-card-head">
+                                <span>URGENCY RISK</span>
+                                <span>⏱️</span>
+                            </div>
+                            <div class="breakdown-score" id="scoreUrgency">--</div>
+                            <small style="color: var(--text-muted); font-size: 0.75rem;">Pressure tactics</small>
+                        </div>
+                        <div class="breakdown-card">
+                            <div class="breakdown-card-head">
+                                <span>CONTACT RISK</span>
+                                <span>📧</span>
+                            </div>
+                            <div class="breakdown-score" id="scoreContact">--</div>
+                            <small style="color: var(--text-muted); font-size: 0.75rem;">Recruiter email domain</small>
+                        </div>
+                        <div class="breakdown-card">
+                            <div class="breakdown-card-head">
+                                <span>COMPANY RISK</span>
+                                <span>🌐</span>
+                            </div>
+                            <div class="breakdown-score" id="scoreCompany">--</div>
+                            <small style="color: var(--text-muted); font-size: 0.75rem;">DNS & web presence</small>
+                        </div>
+                        <div class="breakdown-card">
+                            <div class="breakdown-card-head">
+                                <span>LANGUAGE RISK</span>
+                                <span>📝</span>
+                            </div>
+                            <div class="breakdown-score" id="scoreLanguage">--</div>
+                            <small style="color: var(--text-muted); font-size: 0.75rem;">Grammar & scam patterns</small>
+                        </div>
+                    </div>
+
+                    <!-- Split: Left Red Flags, Right Recommendations & Company Info -->
+                    <div class="dash-main-grid">
+                        <!-- Detected Red Flags with Exact Evidence Snippets -->
+                        <div>
+                            <div class="dash-card-header">
+                                <h3>Detected Red Flags & Evidence</h3>
+                            </div>
+                            <div id="redFlagsContainer">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Recommendations & Company Verification -->
+                        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                            <!-- Actionable Recommendations Checklist -->
+                            <div class="cyber-card">
+                                <div class="dash-card-header">
+                                    <h3>Recommended Actions</h3>
+                                </div>
+                                <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem;" id="recommendationsList">
+                                    <!-- Populated dynamically -->
+                                </ul>
+                            </div>
+
+                            <!-- Company Verification Details -->
+                            <div class="cyber-card">
+                                <div class="dash-card-header">
+                                    <h3>Company Footprint Verification</h3>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.88rem;">
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Website DNS:</span>
+                                        <strong id="verifyDnsStatus" style="color: var(--risk-safe);">Verified</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Email Domain:</span>
+                                        <strong id="verifyEmailDomain">Corporate Domain</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Domain Match:</span>
+                                        <strong id="verifyDomainMatch">Matches Website</strong>
+                                    </div>
+                                    <div id="verifyWebsiteLink" style="padding-top: 0.5rem; border-top: 1px solid var(--border-subtle); margin-top: 0.25rem;">
+                                        <!-- Link if provided -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
         </div>
     </div>
 
-    <script src="auth.js"></script>
+    <!-- Share Report Modal -->
+    <div class="cyber-modal-overlay" id="shareReportModal">
+        <div class="cyber-modal">
+            <div class="cyber-modal-header">
+                <h3 class="cyber-modal-title">Share Forensic Dossier</h3>
+                <button class="cyber-modal-close" id="closeShareModal">&times;</button>
+            </div>
+            <div class="cyber-modal-body">
+                <p style="margin-bottom: 1rem; font-size: 0.9rem;">
+                    This sanitized link provides a clean read-only overview of this forensic threat assessment. Personal account credentials and contact details are hidden.
+                </p>
+                <div class="form-group">
+                    <label class="form-label" for="shareableLinkInput">Public Report Link</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="shareableLinkInput" class="form-control" readonly>
+                        <button class="btn btn-outline" id="copyShareLinkBtn">Copy</button>
+                    </div>
+                </div>
+            </div>
+            <div class="cyber-modal-footer">
+                <button class="btn btn-primary" id="doneShareBtn">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Report Notes Modal -->
+    <div class="cyber-modal-overlay" id="saveReportModal">
+        <div class="cyber-modal">
+            <div class="cyber-modal-header">
+                <h3 class="cyber-modal-title">Bookmark to Saved Reports</h3>
+                <button class="cyber-modal-close" id="closeSaveModal">&times;</button>
+            </div>
+            <div class="cyber-modal-body">
+                <div class="form-group">
+                    <label class="form-label" for="savedReportTitle">Custom Report Title</label>
+                    <input type="text" id="savedReportTitle" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="savedReportNotes">Investigator Notes</label>
+                    <textarea id="savedReportNotes" class="form-control" rows="3" placeholder="Add personal notes, follow-up actions, recruiter handle, or evidence links..."></textarea>
+                </div>
+            </div>
+            <div class="cyber-modal-footer">
+                <button class="btn btn-outline" id="cancelSaveModal">Cancel</button>
+                <button class="btn btn-primary" id="confirmSaveReportBtn">Save to Repository</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="core.js"></script>
+    <script src="case_ai.js"></script>
     <script src="result.js"></script>
 </body>
-
 </html>

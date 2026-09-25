@@ -34,3 +34,7 @@ Thumbs.db
 node_modules/
 package-lock.json
 package.json
+
+# Local database data
+backend/mongodb-data/
+backend/mongodb-data

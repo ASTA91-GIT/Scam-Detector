@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platform Settings - ScamGuard AI</title>
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        (function() {
+            const saved = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', saved);
+        })();
+    </script>
+</head>
+<body>
+
+    <div class="app-shell">
+        <aside class="app-sidebar" id="appSidebar"></aside>
+
+        <div class="app-main">
+            <header class="app-topbar" id="appTopbar"></header>
+
+            <main class="app-content">
+                <div class="dash-header">
+                    <div>
+                        <h1 style="font-size: 2rem;">Platform Settings & Controls</h1>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">
+                            Configure display mode, alerts, system telemetry, and privacy options.
+                        </p>
+                    </div>
+                </div>
+
+                <div style="max-width: 760px; display: flex; flex-direction: column; gap: 1.5rem;">
+                    <!-- Section 1: Appearance -->
+                    <div class="cyber-card">
+                        <h3 style="margin-bottom: 0.5rem;">Appearance & Interface</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 1.25rem;">
+                            Select your visual theme. Changes persist across sessions.
+                        </p>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <label id="themeOptionDark" style="border: 2px solid var(--accent-cyan); background: var(--bg-surface); padding: 1.25rem; border-radius: var(--radius-md); cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <strong>🌙 Dark Cybersecurity</strong>
+                                    <input type="radio" name="settingsTheme" value="dark" checked style="accent-color: var(--accent-cyan);">
+                                </div>
+                                <small style="color: var(--text-muted);">High-contrast dark-first interface optimized for forensic analysis.</small>
+                            </label>
+
+                            <label id="themeOptionLight" style="border: 1px solid var(--border-subtle); background: var(--bg-surface); padding: 1.25rem; border-radius: var(--radius-md); cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <strong>☀️ Light Operational</strong>
+                                    <input type="radio" name="settingsTheme" value="light" style="accent-color: var(--accent-cyan);">
+                                </div>
+                                <small style="color: var(--text-muted);">Clean daylight interface with standard document contrast.</small>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Notifications -->
+                    <div class="cyber-card">
+                        <h3 style="margin-bottom: 0.5rem;">Alert Notifications</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 1.25rem;">
+                            Choose which events trigger in-app notification badges and emails.
+                        </p>
+
+                        <form id="settingsNotifForm" style="display: flex; flex-direction: column; gap: 1rem;">
+                            <label style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: var(--bg-surface); border-radius: var(--radius-md); cursor: pointer;">
+                                <div>
+                                    <strong style="font-size: 0.95rem;">Analysis Completed Alerts</strong>
+                                    <p style="color: var(--text-muted); font-size: 0.82rem; margin-top: 2px;">Display in-app notification when job scans finish processing.</p>
+                                </div>
+                                <input type="checkbox" id="settingNotifAnalysis" checked style="width: 18px; height: 18px; accent-color: var(--accent-cyan);">
+                            </label>
+
+                            <label style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: var(--bg-surface); border-radius: var(--radius-md); cursor: pointer;">
+                                <div>
+                                    <strong style="font-size: 0.95rem;">Security & Credential Warnings</strong>
+                                    <p style="color: var(--text-muted); font-size: 0.82rem; margin-top: 2px;">Notify on password changes, profile edits, and unusual logins.</p>
+                                </div>
+                                <input type="checkbox" id="settingNotifSecurity" checked style="width: 18px; height: 18px; accent-color: var(--accent-cyan);">
+                            </label>
+
+                            <label style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: var(--bg-surface); border-radius: var(--radius-md); cursor: pointer;">
+                                <div>
+                                    <strong style="font-size: 0.95rem;">Email Threat Summaries</strong>
+                                    <p style="color: var(--text-muted); font-size: 0.82rem; margin-top: 2px;">Dispatch high-risk warnings to your registered account email.</p>
+                                </div>
+                                <input type="checkbox" id="settingNotifEmail" checked style="width: 18px; height: 18px; accent-color: var(--accent-cyan);">
+                            </label>
+
+                            <button type="submit" class="btn btn-primary btn-sm" style="align-self: flex-start; margin-top: 0.5rem;">
+                                Save Alert Preferences
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Section 3: Account & Session Shortcuts -->
+                    <div class="cyber-card">
+                        <h3 style="margin-bottom: 0.5rem;">Account & Session Management</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 1.25rem;">
+                            Direct links to credentials, avatar customization, and session controls.
+                        </p>
+
+                        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                            <a href="profile.html#edit" class="btn btn-outline btn-sm">Edit Profile Information</a>
+                            <a href="profile.html#security" class="btn btn-outline btn-sm">Change Account Password</a>
+                            <button class="btn btn-outline btn-sm" id="settingsLogoutBtn" style="color: var(--risk-danger);">
+                                Sign Out Session
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Section 4: Privacy & Danger Zone -->
+                    <div class="cyber-card">
+                        <h3 style="margin-bottom: 0.5rem;">Data Export</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 1rem;">
+                            Download your complete account telemetry, scan records, and saved dossiers in JSON format.
+                        </p>
+                        <button class="btn btn-outline btn-sm" id="settingsExportBtn">
+                            Export Personal Data (JSON)
+                        </button>
+
+                        <div class="danger-zone-card" style="margin-top: 1.5rem;">
+                            <h4>DANGER ZONE</h4>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">
+                                Irreversible account and database deletion actions.
+                            </p>
+                            <a href="profile.html#privacy" class="btn btn-danger btn-sm">
+                                Go to Account Deletion Controls
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="core.js"></script>
+    <script src="case_ai.js"></script>
+    <script src="settings.js"></script>
+</body>
+</html>

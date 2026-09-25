@@ -1,63 +1,195 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Job Scam Detector</title>
+    <title>Security Dashboard - ScamGuard AI</title>
     <link rel="stylesheet" href="styles.css">
+    <script>
+        (function() {
+            const saved = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', saved);
+        })();
+    </script>
 </head>
-
 <body>
 
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-brand">
-                <h2>🛡️ Scam Detector</h2>
-            </div>
-            <div class="nav-menu">
-                <a href="/profile" class="nav-link">👤 Profile</a>
+    <div class="app-shell">
+        <!-- Sidebar Shell (Injected by core.js) -->
+        <aside class="app-sidebar" id="appSidebar"></aside>
 
-                <a href="dashboard.html" class="nav-link active">Dashboard</a>
-                <a href="analyze.html" class="nav-link">Analyze</a>
-                <button id="themeToggle" class="btn btn-outline">
-    🌙 Dark Mode
-</button>
+        <div class="app-main">
+            <!-- Topbar Shell (Injected by core.js) -->
+            <header class="app-topbar" id="appTopbar"></header>
 
-                <button id="logoutBtn" class="btn btn-outline">Logout</button>
-            </div>
+            <!-- Dashboard Content -->
+            <main class="app-content">
+                <!-- Header Greeting -->
+                <div class="dash-header">
+                    <div>
+                        <h1 class="dash-greeting" id="dashGreeting">Good day, Analyst</h1>
+                        <p class="dash-subtitle">Here is your live scam detection activity and threat telemetry.</p>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem;">
+                        <a href="analyze.html" class="btn btn-primary">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg>
+                            New Forensic Scan
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Safety Score Explanation Card -->
+                <div class="safety-score-card" id="safetyScoreCard">
+                    <div class="safety-score-gauge">
+                        <div class="safety-score-number" id="dashSafetyScore">--</div>
+                        <div style="font-size: 0.65rem; color: var(--accent-cyan); font-weight: 700; text-transform: uppercase;">SAFETY</div>
+                    </div>
+                    <div class="safety-score-meta">
+                        <h4>Security Posture Rating</h4>
+                        <p id="dashSafetyExplanation">Calculating telemetry based on verified safe offers versus detected high-risk threats across your scans...</p>
+                    </div>
+                </div>
+
+                <!-- Metrics Grid -->
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span>TOTAL SCANS</span>
+                            <div class="stat-icon" style="background: rgba(6, 182, 212, 0.12); color: var(--accent-cyan);">📊</div>
+                        </div>
+                        <div class="stat-value" id="statTotalScans">--</div>
+                        <div class="stat-meta">Forensic audits executed</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span>HIGH RISK DETECTED</span>
+                            <div class="stat-icon" style="background: var(--risk-danger-bg); color: var(--risk-danger);">🚨</div>
+                        </div>
+                        <div class="stat-value" style="color: var(--risk-danger);" id="statHighRisk">--</div>
+                        <div class="stat-meta">Critical threat indicators</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span>SUSPICIOUS OFFERS</span>
+                            <div class="stat-icon" style="background: var(--risk-warning-bg); color: var(--risk-warning);">⚠️</div>
+                        </div>
+                        <div class="stat-value" style="color: var(--risk-warning);" id="statSuspicious">--</div>
+                        <div class="stat-meta">Anomalies requiring review</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span>SAFE OFFERS</span>
+                            <div class="stat-icon" style="background: var(--risk-safe-bg); color: var(--risk-safe);">🛡️</div>
+                        </div>
+                        <div class="stat-value" style="color: var(--risk-safe);" id="statSafe">--</div>
+                        <div class="stat-meta">Clean verification passes</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span>SAVED REPORTS</span>
+                            <div class="stat-icon" style="background: rgba(59, 130, 246, 0.12); color: var(--accent-blue);">🔖</div>
+                        </div>
+                        <div class="stat-value" id="statSavedReports">--</div>
+                        <div class="stat-meta">Bookmarked dossiers</div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Main Split -->
+                <div class="dash-main-grid">
+                    <!-- Left: Recent Timeline & Trends -->
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <!-- Recent Activity Timeline -->
+                        <div class="cyber-card">
+                            <div class="dash-card-header">
+                                <h3>Recent Forensic Scans</h3>
+                                <a href="history.html" class="btn btn-sm btn-outline">View All History</a>
+                            </div>
+
+                            <div class="timeline-list" id="dashTimelineList">
+                                <div class="skeleton skeleton-card" style="height: 120px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Risk Trend Chart / Scan Activity -->
+                        <div class="cyber-card">
+                            <div class="dash-card-header">
+                                <h3>Scan Volume & Trend</h3>
+                                <small style="color: var(--text-muted);">Recent activity timeline</small>
+                            </div>
+                            <div id="riskTrendContainer" style="padding: 1rem 0; min-height: 160px; display: flex; align-items: flex-end; gap: 12px; justify-content: space-around;">
+                                <!-- Rendered dynamically by dashboard.js -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Risk Donut, Quick Actions, Common Threat Signals -->
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <!-- Risk Overview Donut Chart -->
+                        <div class="cyber-card" style="text-align: center;">
+                            <div class="dash-card-header" style="justify-content: center;">
+                                <h3>Risk Distribution</h3>
+                            </div>
+                            <div style="position: relative; width: 170px; height: 170px; margin: 0.5rem auto 1rem;">
+                                <canvas id="riskDonutCanvas" width="170" height="170"></canvas>
+                                <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none;">
+                                    <span id="donutAvgScore" style="font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; line-height: 1;">--</span>
+                                    <small style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase;">Avg Score</small>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: center; gap: 1rem; font-size: 0.78rem;">
+                                <span style="display: flex; align-items: center; gap: 4px; color: var(--risk-safe);">● Safe</span>
+                                <span style="display: flex; align-items: center; gap: 4px; color: var(--risk-warning);">● Suspicious</span>
+                                <span style="display: flex; align-items: center; gap: 4px; color: var(--risk-danger);">● High Risk</span>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="cyber-card">
+                            <div class="dash-card-header">
+                                <h3>Quick Actions</h3>
+                            </div>
+                            <div class="quick-actions-grid">
+                                <a href="analyze.html" class="quick-action-btn">
+                                    <span class="quick-action-icon">🔍</span>
+                                    <span>Analyze Offer</span>
+                                </a>
+                                <a href="analyze.html?mode=file" class="quick-action-btn">
+                                    <span class="quick-action-icon">📄</span>
+                                    <span>Upload Doc</span>
+                                </a>
+                                <a href="history.html" class="quick-action-btn">
+                                    <span class="quick-action-icon">📜</span>
+                                    <span>Audit History</span>
+                                </a>
+                                <a href="saved.html" class="quick-action-btn">
+                                    <span class="quick-action-icon">🔖</span>
+                                    <span>Saved Reports</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Recent Threat Signals -->
+                        <div class="cyber-card">
+                            <div class="dash-card-header">
+                                <h3>Top Detected Signals</h3>
+                            </div>
+                            <div id="threatSignalsList">
+                                <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1rem;">No threat signals recorded yet.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
         </div>
-    </nav>
-
-    <div class="container">
-
-        <div class="dashboard-header">
-            <h1>Dashboard</h1>
-            <a href="analyze.html" class="btn btn-primary">+ New Analysis</a>
-        </div>
-
-        <!-- USER INFO -->
-        <div class="card">
-            <h3>👤 Logged in User</h3>
-            <p id="userName">Name: Loading...</p>
-            <p id="userEmail">Email: Loading...</p>
-        </div>
-
-        <!-- STATS -->
-        <div id="statsCards" class="stats-grid"></div>
-
-        <div class="section-header">
-            <h2>Recent Analyses</h2>
-        </div>
-
-        <!-- 🔥 FIX: ID ADDED -->
-        <div class="analyses-list" id="analysesList"></div>
-
     </div>
 
-    <!-- ✅ SCRIPT ORDER -->
-    <script src="auth.js"></script>
+    <!-- Scripts -->
+    <script src="core.js"></script>
+    <script src="case_ai.js"></script>
     <script src="dashboard.js"></script>
 </body>
-
 </html>

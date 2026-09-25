@@ -1,94 +1,463 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI-Powered Job & Internship Scam Detector</title>
+    <title>Scam Detector — Detect The Scam. Before It Hits.</title>
+    <meta name="description" content="Immersive 3D AI-powered cybersecurity forensics platform to detect fake job offers, recruitment scams, and employment fraud.">
+
+    <!-- CSS Design Systems -->
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="spider_landing.css">
+
+    <!-- Three.js CDN for 3D Cyber City, Digital Web & Hero Scene -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        // Apply theme immediately to prevent flashing
+        (function() {
+            const saved = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', saved);
+        })();
+    </script>
 </head>
-<body>
-    <div class="container">
-        <header class="hero">
-            <div class="hero-content">
-                <h1 class="hero-title">
-                    <span class="gradient-text">AI-Powered</span> Job & Internship Scam Detector
+<body class="spider-landing-body">
+
+    <!-- 3D Three.js Background Canvas Layer -->
+    <div id="spiderCanvasContainer" aria-hidden="true"></div>
+
+    <!-- Floating Cyber Navbar -->
+    <header class="spider-navbar">
+        <a href="index.html" class="spider-brand-logo">
+            <div class="spider-brand-emblem">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="m4.93 4.93 4.24 4.24M14.83 9.17l4.24-4.24M14.83 14.83l4.24 4.24M9.17 14.83l-4.24 4.24"/>
+                    <circle cx="12" cy="12" r="4"/>
+                </svg>
+            </div>
+            <span>SENTINEL<span style="color:var(--spider-cyan);">SCAN</span></span>
+        </a>
+
+        <nav class="spider-nav-links">
+            <a href="#the-threat" class="spider-nav-link">The Threat</a>
+            <a href="#how-it-works" class="spider-nav-link">How It Works</a>
+            <a href="#company-intel" class="spider-nav-link">Company Intel</a>
+            <a href="#case-assistant" class="spider-nav-link">CaseAI</a>
+            <a href="#security-features" class="spider-nav-link">Features</a>
+            <a href="#network" class="spider-nav-link">Network</a>
+            <a href="intelligence.html" class="spider-nav-link">Intel Hub</a>
+        </nav>
+
+        <div style="display: flex; align-items: center; gap: 0.85rem;">
+            <!-- Sound Synthesizer Toggle -->
+            <button class="btn btn-outline btn-sm spider-sound-toggle" title="Toggle Cyber Audio FX" aria-pressed="false">
+                <span style="color:var(--text-muted);">🔇 Sound: OFF</span>
+            </button>
+            <a href="login.html" class="btn btn-outline btn-sm">Sign In</a>
+            <a href="analyze.html" class="btn-spider-primary" style="padding: 0.5rem 1.15rem; font-size: 0.85rem;">Analyze Now</a>
+        </div>
+    </header>
+
+    <!-- MAIN IMMERSIVE CONTENT -->
+    <main>
+        <!-- SECTION 1: 3D HERO VIEWPORT -->
+        <section class="spider-hero-viewport" id="hero">
+            <!-- Floating Cybersecurity HUD Overlays -->
+            <div class="spider-hud-layer" aria-hidden="true">
+                <div class="spider-hud-item hud-top-right">
+                    <div><span class="hud-indicator-dot"></span>CASE STATUS: <strong>READY</strong></div>
+                    <div style="margin-top:4px;">NEURAL WEB: <span class="hud-signal-bar">CONNECTED</span></div>
+                </div>
+                <div class="spider-hud-item hud-mid-left">
+                    <div><span class="hud-indicator-dot red"></span>RISK ENGINE ACTIVE</div>
+                    <div style="margin-top:4px;">THREAT HEURISTICS: <span style="color:#ff1744;">████████░░ 82%</span></div>
+                </div>
+                <div class="spider-hud-item hud-bottom-right">
+                    <div>AI FORENSICS: <strong>● ONLINE</strong></div>
+                    <div style="margin-top:4px;">PROMPT SHIELD: <span style="color:var(--spider-cyan);">ACTIVE</span></div>
+                </div>
+            </div>
+
+            <!-- Hero Text Content -->
+            <div class="spider-hero-content">
+                <div class="spider-hero-tag">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    AI Cyber-Forensics & Fraud Defense
+                </div>
+
+                <h1 class="spider-hero-title">
+                    DETECT THE <span class="spider-glow-red">SCAM.</span><br>
+                    BEFORE IT <span class="spider-glow-cyan">HITS.</span>
                 </h1>
-                <p class="hero-subtitle">
-                    Protect yourself from fraudulent job offers and internship scams. 
-                    Upload offer letters, paste job descriptions, or enter company details 
-                    to get instant AI-powered risk analysis.
+
+                <p class="spider-hero-sub">
+                    Enter the digital investigation grid. SentinelScan AI uncovers hidden recruitment traps, analyzes offer letters, verifies company domains, and equips you with <strong>CaseAI</strong> before you take the next step.
                 </p>
-                <div class="hero-buttons">
-                    <a href="login.html" class="btn btn-primary">Get Started</a>
-                    <a href="#features" class="btn btn-secondary">Learn More</a>
-                </div>
-            </div>
-            <div class="hero-image">
-                <div class="illustration">
-                    <div class="shield-icon">🛡️</div>
-                </div>
-            </div>
-        </header>
 
-        <section id="features" class="features">
-            <h2 class="section-title">How It Works</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">📄</div>
-                    <h3>Upload Offer Letter</h3>
-                    <p>Upload PDF, DOC, or TXT files containing job offers or internship letters</p>
+                <div class="spider-hero-ctas">
+                    <a href="analyze.html" class="btn-spider-primary">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg>
+                        Analyze a Job Offer
+                    </a>
+                    <a href="#the-threat" class="btn-spider-glass">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+                        Explore the System
+                    </a>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🔍</div>
-                    <h3>AI Analysis</h3>
-                    <p>Advanced NLP algorithms analyze text for scam indicators, urgency language, and red flags</p>
+            </div>
+
+            <a href="#the-threat" class="spider-scroll-cue">
+                <span>Investigate Threat Landscape</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+            </a>
+        </section>
+
+        <!-- SECTION 2: THE THREAT -->
+        <section class="spider-section" id="the-threat">
+            <div class="spider-section-header">
+                <span class="spider-section-badge" style="border-color:rgba(255,23,68,0.4); color:#ff5252;">Threat Horizon</span>
+                <h2 class="spider-section-title">Not Every Job Offer <br><span class="spider-glow-red">Is What It Seems.</span></h2>
+                <p class="spider-section-desc">
+                    Sophisticated threat actors weaponize fake executive branding, lookalike domains, and psychological urgency traps. These are actual deceptive patterns identified in digital employment scams:
+                </p>
+            </div>
+
+            <div class="threat-fragments-grid">
+                <div class="threat-fragment-card">
+                    <div class="threat-quote">"PAY ₹5,000 REGISTRATION FEE BEFORE LAPTOP DISPATCH"</div>
+                    <div class="threat-explanation">
+                        <strong>Advance-Fee Weaponization:</strong> Scammers masquerade as corporate HR demanding mandatory hardware deposits via non-reversible UPI or wire transfer.
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🏢</div>
-                    <h3>Company Verification</h3>
-                    <p>Verify company websites, check email domains, and validate company information</p>
+
+                <div class="threat-fragment-card">
+                    <div class="threat-quote">"URGENT: ACCEPT WITHIN 30 MINUTES OR OFFER IS FORFEITED"</div>
+                    <div class="threat-explanation">
+                        <strong>Psychological Coercion:</strong> Artificial deadlines induce panic to prevent the candidate from conducting independent verification with the real employer.
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">📊</div>
-                    <h3>Risk Scoring</h3>
-                    <p>Get a comprehensive trust score (0-100) with detailed explanations and risk levels</p>
+
+                <div class="threat-fragment-card">
+                    <div class="threat-quote">"SELECTED FOR $65/HR ROLE WITHOUT ANY FORMAL INTERVIEW"</div>
+                    <div class="threat-explanation">
+                        <strong>Disproportionate Compensation:</strong> Inflated pay for trivial remote data entry designed to lure candidates into identity theft or money mule rings.
+                    </div>
+                </div>
+
+                <div class="threat-fragment-card">
+                    <div class="threat-quote">"RECRUITER ON TELEGRAM: SEND BANK PASSBOOK & GOVT ID"</div>
+                    <div class="threat-explanation">
+                        <strong>Off-Grid Communication:</strong> Threat actors steer candidates away from verifiable corporate email onto Telegram, WhatsApp, or Signal.
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section class="features">
-            <h2 class="section-title">What We Detect</h2>
-            <div class="detection-grid">
-                <div class="detection-item">
-                    <span class="badge badge-danger">⚠️</span>
-                    <span>Suspicious Keywords</span>
+        <!-- SECTION 3: HOW THE SYSTEM WORKS -->
+        <section class="spider-section" id="how-it-works">
+            <div class="spider-section-header">
+                <span class="spider-section-badge">Forensic Pipeline</span>
+                <h2 class="spider-section-title">How The System <span class="spider-glow-cyan">Works.</span></h2>
+                <p class="spider-section-desc">
+                    A multi-vector cybersecurity investigation pipeline extracts text, checks DNS authorities, evaluates domain integrity, and generates an actionable case report.
+                </p>
+            </div>
+
+            <div class="pipeline-nodes-grid">
+                <div class="pipeline-node-card">
+                    <div class="pipeline-node-icon">📄</div>
+                    <div class="pipeline-node-title">1. Job Offer</div>
+                    <div class="pipeline-node-desc">Paste raw offer text or submit PDF/DOCX documents.</div>
                 </div>
-                <div class="detection-item">
-                    <span class="badge badge-danger">⚠️</span>
-                    <span>Urgency & Pressure Tactics</span>
+
+                <div class="pipeline-node-card">
+                    <div class="pipeline-node-icon">🔍</div>
+                    <div class="pipeline-node-title">2. Text / OCR</div>
+                    <div class="pipeline-node-desc">Multi-engine text extraction and metadata inspection.</div>
                 </div>
-                <div class="detection-item">
-                    <span class="badge badge-danger">⚠️</span>
-                    <span>Financial Red Flags</span>
+
+                <div class="pipeline-node-card">
+                    <div class="pipeline-node-icon">🧠</div>
+                    <div class="pipeline-node-title">3. AI Extraction</div>
+                    <div class="pipeline-node-desc">Identifies recruiter names, domains, fees, and requirements.</div>
                 </div>
-                <div class="detection-item">
-                    <span class="badge badge-danger">⚠️</span>
-                    <span>Grammar & Language Issues</span>
+
+                <div class="pipeline-node-card">
+                    <div class="pipeline-node-icon">🏢</div>
+                    <div class="pipeline-node-title">4. Company Intel</div>
+                    <div class="pipeline-node-desc">Cross-references corporate domains against recruiter emails.</div>
                 </div>
-                <div class="detection-item">
-                    <span class="badge badge-danger">⚠️</span>
-                    <span>Free Email Domains</span>
+
+                <div class="pipeline-node-card">
+                    <div class="pipeline-node-icon">🛡️</div>
+                    <div class="pipeline-node-title">5. Risk Analysis</div>
+                    <div class="pipeline-node-desc">Scores 6 forensic pillars from 0 to 100 with red flags.</div>
                 </div>
-                <div class="detection-item">
-                    <span class="badge badge-danger">⚠️</span>
-                    <span>Unverified Websites</span>
+
+                <div class="pipeline-node-card">
+                    <div class="pipeline-node-icon">📊</div>
+                    <div class="pipeline-node-title">6. Case Dossier</div>
+                    <div class="pipeline-node-desc">Generates evidence report, checklist, and shareable link.</div>
                 </div>
             </div>
         </section>
 
-        <footer class="footer">
-            <p>&copy; 2026 AI-Powered Job Scam Detector. Built to protect job seekers.</p>
-        </footer>
-    </div>
+        <!-- SECTION 4: COMPANY INTELLIGENCE -->
+        <section class="spider-section" id="company-intel">
+            <div class="holo-showcase-split">
+                <div>
+                    <span class="spider-section-badge">Corporate Verification</span>
+                    <h2 class="spider-section-title">Know Who Is <br><span class="spider-glow-cyan">Behind The Offer.</span></h2>
+                    <p class="spider-section-desc" style="margin-bottom:1.5rem;">
+                        Scammers frequently clone legitimate corporate names while conducting communications through spoofed lookalike domains or free public webmail.
+                    </p>
+                    <ul style="color:#94a3b8; line-height:1.7; font-size:0.92rem; padding-left:1.2rem; margin-bottom:2rem;">
+                        <li><strong>MX & DNS Cross-Referencing:</strong> Validates whether recruiter mail servers match authentic corporate records.</li>
+                        <li><strong>Lookalike Typosquatting Detection:</strong> Spots malicious permutations like <code>company-hr-careers.biz</code>.</li>
+                        <li><strong>Physical Registry Lookups:</strong> Confirms company legal identity and registered headquarters.</li>
+                    </ul>
+                    <a href="analyze.html" class="btn-spider-primary">Run Company Verification</a>
+                </div>
+
+                <!-- 3D Holographic Company Card -->
+                <div class="holo-card-wrap">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--spider-border); padding-bottom:1rem; margin-bottom:1rem;">
+                        <div>
+                            <span style="font-size:0.72rem; text-transform:uppercase; color:var(--spider-cyan); letter-spacing:1px;">Forensic Target</span>
+                            <h3 style="font-size:1.35rem; margin:0.2rem 0;">Example Technologies Pvt Ltd</h3>
+                        </div>
+                        <span class="badge badge-warning">SUSPICIOUS SIGNALS</span>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; font-size:0.85rem; margin-bottom:1.25rem;">
+                        <div style="background:rgba(6,9,19,0.6); padding:0.65rem; border-radius:6px; border:1px solid var(--spider-border);">
+                            <span style="font-size:0.7rem; color:var(--text-muted); display:block;">INDUSTRY</span>
+                            <strong>Information Technology</strong>
+                        </div>
+                        <div style="background:rgba(6,9,19,0.6); padding:0.65rem; border-radius:6px; border:1px solid var(--spider-border);">
+                            <span style="font-size:0.7rem; color:var(--text-muted); display:block;">LOCATION</span>
+                            <strong>Mumbai, India</strong>
+                        </div>
+                        <div style="background:rgba(6,9,19,0.6); padding:0.65rem; border-radius:6px; border:1px solid var(--spider-border);">
+                            <span style="font-size:0.7rem; color:var(--text-muted); display:block;">OFFICIAL WEBSITE</span>
+                            <strong>exampletechnologies.com</strong>
+                        </div>
+                        <div style="background:rgba(6,9,19,0.6); padding:0.65rem; border-radius:6px; border:1px solid var(--spider-border);">
+                            <span style="font-size:0.7rem; color:var(--text-muted); display:block;">RECRUITER DOMAIN</span>
+                            <strong style="color:var(--spider-red);">example-hr@gmail.com</strong>
+                        </div>
+                    </div>
+
+                    <div style="font-size:0.85rem; border-top:1px solid var(--spider-border); padding-top:0.85rem;">
+                        <div style="color:#22c55e; margin-bottom:0.35rem;">✓ Official employer domain identified & active</div>
+                        <div style="color:#22c55e; margin-bottom:0.35rem;">✓ Corporate LinkedIn presence verified</div>
+                        <div style="color:var(--spider-red); font-weight:600;">⚠ Recruiter domain mismatch: communication via free Gmail</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: AI CASE ASSISTANT (CaseAI) -->
+        <section class="spider-section" id="case-assistant">
+            <div class="holo-showcase-split" style="direction: rtl;">
+                <div style="direction: ltr;">
+                    <span class="spider-section-badge" style="border-color:var(--spider-cyan);">Investigative Agent</span>
+                    <h2 class="spider-section-title">Ask The <span class="spider-glow-cyan">Case.</span></h2>
+                    <p class="spider-section-desc" style="margin-bottom:1.5rem;">
+                        Meet <strong>CaseAI</strong> — an investigation assistant that understands the exact job offer, company identity, recruiter details, and evidence snippets of your case.
+                    </p>
+                    <ul style="color:#94a3b8; line-height:1.7; font-size:0.92rem; padding-left:1.2rem; margin-bottom:2rem;">
+                        <li><strong>Case-Grounded Answers:</strong> Never gives generic advice. Answers specifically using facts extracted from your case.</li>
+                        <li><strong>Evidence vs Inference:</strong> Strictly separates facts found in the document from cyber threat inferences.</li>
+                        <li><strong>Tokenless Architecture:</strong> Automated rolling memory so you can investigate without context exhaustion.</li>
+                    </ul>
+                    <a href="analyze.html" class="btn-spider-primary">Launch CaseAI Assistant</a>
+                </div>
+
+                <!-- Animated Interactive CaseAI Simulator -->
+                <div class="holo-card-wrap" style="direction: ltr; min-height: 380px; display:flex; flex-direction:column;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--spider-border); padding-bottom:0.85rem; margin-bottom:1rem;">
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <div style="width:28px; height:28px; border-radius:6px; background:rgba(0,229,255,0.2); border:1px solid var(--spider-cyan); display:flex; align-items:center; justify-content:center; color:var(--spider-cyan); font-size:0.85rem;">✦</div>
+                            <div>
+                                <strong style="font-size:0.95rem;">CaseAI Investigator</strong>
+                                <small style="display:block; font-size:0.7rem; color:var(--spider-cyan);">● Case Context Loaded: Apex Global</small>
+                            </div>
+                        </div>
+                        <span class="badge badge-safe">CONTINUOUS MEMORY</span>
+                    </div>
+
+                    <div id="spiderCaseAiDemoMessages" style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+                        <!-- Animated typewriter Q&A loop handled by spider_interactions.js -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 6: SECURITY FEATURES (3D Floating Cards) -->
+        <section class="spider-section" id="security-features">
+            <div class="spider-section-header">
+                <span class="spider-section-badge">Platform Arsenal</span>
+                <h2 class="spider-section-title">Built For Deep <span class="spider-glow-red">Investigation.</span></h2>
+                <p class="spider-section-desc">
+                    Comprehensive digital defense tools designed for candidates, job hunters, and cyber analysts.
+                </p>
+            </div>
+
+            <div class="spider-features-grid">
+                <div class="spider-feature-card">
+                    <div class="spider-feature-head">
+                        <div class="spider-feature-icon">🛡️</div>
+                        <h3 style="font-size:1.15rem; margin:0;">AI Risk Scoring</h3>
+                    </div>
+                    <p style="color:#94a3b8; font-size:0.9rem; line-height:1.5;">
+                        Multi-dimensional 0–100 risk scoring evaluating advance-fee fraud, psychological urgency, domain legitimacy, and linguistic manipulation.
+                    </p>
+                </div>
+
+                <div class="spider-feature-card red-accent">
+                    <div class="spider-feature-head">
+                        <div class="spider-feature-icon" style="color:var(--spider-red); border-color:var(--spider-red); background:rgba(255,23,68,0.15);">🏢</div>
+                        <h3 style="font-size:1.15rem; margin:0;">Company Intelligence</h3>
+                    </div>
+                    <p style="color:#94a3b8; font-size:0.9rem; line-height:1.5;">
+                        Automated corporate background verification. Correlates recruiter email domains against authentic business registries and WHOIS records.
+                    </p>
+                </div>
+
+                <div class="spider-feature-card">
+                    <div class="spider-feature-head">
+                        <div class="spider-feature-icon">📑</div>
+                        <h3 style="font-size:1.15rem; margin:0;">Document & OCR Engine</h3>
+                    </div>
+                    <p style="color:#94a3b8; font-size:0.9rem; line-height:1.5;">
+                        Extracts text from PDF offer letters, scanned images, and DOCX files. Analyzes hidden formatting, unverified stamps, and watermarks.
+                    </p>
+                </div>
+
+                <div class="spider-feature-card red-accent">
+                    <div class="spider-feature-head">
+                        <div class="spider-feature-icon" style="color:var(--spider-red); border-color:var(--spider-red); background:rgba(255,23,68,0.15);">✦</div>
+                        <h3 style="font-size:1.15rem; margin:0;">CaseAI Assistant</h3>
+                    </div>
+                    <p style="color:#94a3b8; font-size:0.9rem; line-height:1.5;">
+                        Specialized forensic conversational agent. Ask questions about the active case, generate recruiter verification questions, and create checklists.
+                    </p>
+                </div>
+
+                <div class="spider-feature-card">
+                    <div class="spider-feature-head">
+                        <div class="spider-feature-icon">🔍</div>
+                        <h3 style="font-size:1.15rem; margin:0;">Evidence Quote Snippets</h3>
+                    </div>
+                    <p style="color:#94a3b8; font-size:0.9rem; line-height:1.5;">
+                        Highlights the exact sentences and phrases in the candidate's offer letter that triggered red flags, ensuring total transparency.
+                    </p>
+                </div>
+
+                <div class="spider-feature-card red-accent">
+                    <div class="spider-feature-head">
+                        <div class="spider-feature-icon" style="color:var(--spider-red); border-color:var(--spider-red); background:rgba(255,23,68,0.15);">📜</div>
+                        <h3 style="font-size:1.15rem; margin:0;">Forensic Archive & Export</h3>
+                    </div>
+                    <p style="color:#94a3b8; font-size:0.9rem; line-height:1.5;">
+                        Maintain persistent investigation history, bookmark verified dossiers, edit investigator notes, and export shareable PDF reports.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 7: INTERACTIVE INVESTIGATION NETWORK -->
+        <section class="spider-section" id="network">
+            <div class="spider-section-header">
+                <span class="spider-section-badge">Investigation Graph</span>
+                <h2 class="spider-section-title">The Connected <span class="spider-glow-cyan">Threat Web.</span></h2>
+                <p class="spider-section-desc">
+                    In forensic cyber investigation, no clue exists in isolation. Hover over nodes to explore how our intelligence web correlates disparate signals:
+                </p>
+            </div>
+
+            <div class="spider-network-container">
+                <div class="network-nodes-interactive">
+                    <div class="network-node-bubble" data-node="company">🏢 COMPANY ENTITY</div>
+                    <div class="network-node-bubble" data-node="website">🌐 OFFICIAL WEBSITE</div>
+                    <div class="network-node-bubble" data-node="recruiter">👤 RECRUITER IDENTITY</div>
+                    <div class="network-node-bubble" data-node="email">✉️ EMAIL DOMAIN</div>
+                    <div class="network-node-bubble" data-node="job">📄 JOB REQUIREMENTS</div>
+                    <div class="network-node-bubble threat" data-node="signal">🚨 THREAT SIGNALS</div>
+                </div>
+
+                <div id="networkTooltipBox" style="margin-top:2rem; padding:1.25rem; background:rgba(6,9,19,0.85); border:1px dashed var(--spider-cyan); border-radius:var(--radius-lg); min-height:80px; display:flex; flex-direction:column; justify-content:center; transition:border-color 0.25s;">
+                    <h4 style="color:var(--spider-cyan); margin-bottom:0.25rem; font-size:1rem;">Interactive Spider-Web Node</h4>
+                    <p style="color:#94a3b8; font-size:0.86rem; margin:0;">Hover over any node above to inspect its forensic correlation role in SentinelScan AI.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 8: FINAL CTA BANNER -->
+        <section class="spider-section" style="padding-bottom: 8rem;">
+            <div class="spider-final-cta-card">
+                <h2 style="font-family:var(--font-display); font-size:clamp(2.4rem, 5vw, 3.8rem); font-weight:900; line-height:1.1; margin-bottom:1rem; text-transform:uppercase;">
+                    BEFORE YOU TRUST <br>THE <span class="spider-glow-red">OFFER.</span>
+                </h2>
+                <p style="font-size:1.2rem; color:#cbd5e1; margin-bottom:2.5rem; max-width:620px; margin-left:auto; margin-right:auto;">
+                    Investigate it. Protect your savings, credentials, and identity with SentinelScan AI.
+                </p>
+                <div style="display:flex; justify-content:center; gap:1.25rem; flex-wrap:wrap;">
+                    <a href="analyze.html" class="btn-spider-primary" style="padding:1.1rem 2.5rem; font-size:1.05rem;">
+                        Analyze a Job Offer
+                    </a>
+                    <a href="dashboard.html" class="btn-spider-glass" style="padding:1.1rem 2.2rem; font-size:1.05rem;">
+                        Enter Platform Dashboard
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- SPIDER-MAN CYBER FOOTER -->
+    <footer class="spider-footer">
+        <div style="max-width:1300px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:2rem; margin-bottom:2.5rem;">
+            <div>
+                <a href="index.html" class="spider-brand-logo" style="margin-bottom:0.75rem;">
+                    <span>SENTINEL<span style="color:var(--spider-cyan);">SCAN</span></span>
+                </a>
+                <p style="color:#64748b; font-size:0.85rem; line-height:1.6;">
+                    Spider-Man-inspired digital forensics intelligence platform dedicated to protecting job seekers from recruitment fraud and advance-fee deception.
+                </p>
+            </div>
+            <div>
+                <strong style="color:#ffffff; font-size:0.9rem; display:block; margin-bottom:0.75rem;">PLATFORM NAVIGATION</strong>
+                <div style="display:flex; flex-direction:column; gap:0.45rem; font-size:0.85rem;">
+                    <a href="analyze.html" style="color:#94a3b8; text-decoration:none;">Analyze a Job Offer</a>
+                    <a href="dashboard.html" style="color:#94a3b8; text-decoration:none;">Security Operations Dashboard</a>
+                    <a href="history.html" style="color:#94a3b8; text-decoration:none;">Analysis History</a>
+                    <a href="saved.html" style="color:#94a3b8; text-decoration:none;">Saved Dossiers</a>
+                    <a href="intelligence.html" style="color:#94a3b8; text-decoration:none;">Scam Intelligence Hub</a>
+                </div>
+            </div>
+            <div>
+                <strong style="color:#ffffff; font-size:0.9rem; display:block; margin-bottom:0.75rem;">SECURITY & TRUST</strong>
+                <p style="color:#64748b; font-size:0.82rem; line-height:1.5;">
+                    SentinelScan AI provides risk assessments based on pattern recognition and public verifiable domain records. It does not replace official legal counsel.
+                </p>
+            </div>
+        </div>
+
+        <div style="max-width:1300px; margin:0 auto; padding-top:1.5rem; border-top:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; font-size:0.78rem; color:#64748b;">
+            <div>© 2026 SentinelScan AI. All rights reserved. Original superhero cyber-aesthetic inspired design.</div>
+            <div style="display:flex; gap:1.25rem;">
+                <a href="https://github.com/ASTA91-GIT/scam-detector" target="_blank" rel="noopener noreferrer" style="color:#94a3b8; text-decoration:none;">GitHub Project</a>
+                <a href="intelligence.html#reporting" style="color:#94a3b8; text-decoration:none;">Cybercrime Reporting</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="core.js"></script>
+    <script src="spider_audio.js"></script>
+    <script src="spider_landing_3d.js"></script>
+    <script src="spider_interactions.js"></script>
 </body>
 </html>

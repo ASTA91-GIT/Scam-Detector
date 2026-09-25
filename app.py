@@ -7,6 +7,9 @@ from backend.database import init_db
 from backend.auth import auth_bp
 from backend.analysis import analysis_bp
 from backend.dashboard import dashboard_bp
+from backend.saved_reports import saved_reports_bp
+from backend.notifications import notifications_bp
+from backend.case_chat import case_chat_bp
 
 load_dotenv()
 
@@ -22,19 +25,24 @@ init_db()
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(analysis_bp, url_prefix='/api/analysis')
 app.register_blueprint(dashboard_bp, url_prefix='/api/dashboard')
+app.register_blueprint(saved_reports_bp, url_prefix='/api/saved-reports')
+app.register_blueprint(notifications_bp, url_prefix='/api/notifications')
+app.register_blueprint(case_chat_bp, url_prefix='/api')
 
 @app.route('/')
 def index():
     return send_from_directory('frontend', 'index.html')
 
-@app.route('/profile')
-def profile_page():
-    return send_from_directory('frontend', 'profile.html')
-
 @app.route('/<path:path>')
 def serve_frontend(path):
     if path.startswith("api/"):
         return jsonify({'error': 'API route not found'}), 404
+    frontend_dir = os.path.join(os.path.dirname(__file__), 'frontend')
+    full_path = os.path.join(frontend_dir, path)
+    if os.path.exists(full_path) and os.path.isfile(full_path):
+        return send_from_directory('frontend', path)
+    if os.path.exists(full_path + '.html'):
+        return send_from_directory('frontend', path + '.html')
     return send_from_directory('frontend', path)
 
 @app.errorhandler(413)
@@ -47,5 +55,6 @@ def internal_error(e):
 
 if __name__ == '__main__':
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], 'avatars'), exist_ok=True)
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)

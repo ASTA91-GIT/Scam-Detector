@@ -27,7 +27,8 @@ ALLOWED_EXTENSIONS = {
 }
 
 # ⚠️ REQUIRED FOR WINDOWS (POPPLER)
-POPPLER_PATH = r"D:\SOFTWARES\poppler\Library\bin"  # 🔴 CHANGE if different
+
+POPPLER_PATH = r"D:\poppler\Library\bin" # 🔴 CHANGE if different
 
 # -----------------------------
 # FILE TYPE CHECK

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scam Intelligence & Threat Knowledge Base - ScamGuard AI</title>
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        (function() {
+            const saved = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', saved);
+        })();
+    </script>
+</head>
+<body>
+
+    <div class="app-shell">
+        <aside class="app-sidebar" id="appSidebar"></aside>
+
+        <div class="app-main">
+            <header class="app-topbar" id="appTopbar"></header>
+
+            <main class="app-content">
+                <div class="dash-header">
+                    <div>
+                        <h1 style="font-size: 2rem;">Scam Intelligence & Threat Knowledge Base</h1>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">
+                            Actionable intelligence, searchable indicator library, and interactive candidate defense checklists.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Navigation Quick Anchor Bar -->
+                <div style="display: flex; gap: 0.75rem; margin-bottom: 2rem; flex-wrap: wrap;">
+                    <a href="#common-scams" class="btn btn-outline btn-sm">Common Scam Schemes</a>
+                    <a href="#red-flags" class="btn btn-outline btn-sm">Red Flag Directory</a>
+                    <a href="#checklist" class="btn btn-outline btn-sm">Interactive Safety Checklist</a>
+                    <a href="#comparison" class="btn btn-outline btn-sm">Genuine vs Fraud Comparison</a>
+                    <a href="#reporting" class="btn btn-outline btn-sm">Report Fraud Directory</a>
+                </div>
+
+                <!-- SECTION 1: COMMON JOB SCAMS -->
+                <section id="common-scams" style="margin-bottom: 3.5rem;">
+                    <div class="dash-card-header">
+                        <div>
+                            <span class="section-tag">THREAT MODELLING</span>
+                            <h2>Primary Recruitment Fraud Typologies</h2>
+                        </div>
+                    </div>
+
+                    <div class="landing-grid-3">
+                        <div class="cyber-card">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">💳</div>
+                            <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Upfront Training & Equipment Fees</h3>
+                            <p style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5;">
+                                Scammers pretend to hire candidates and immediately mandate payment for proprietary training software, onboarding hardware, or background checks via Zelle, Venmo, or wire transfer.
+                            </p>
+                        </div>
+
+                        <div class="cyber-card">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🪙</div>
+                            <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Cryptocurrency & "Task Optimization"</h3>
+                            <p style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5;">
+                                Victims are recruited for "e-commerce order optimization" or "app review ratings" on Telegram. They are prompted to deposit USDT/crypto to unlock frozen balances before discovering funds cannot be withdrawn.
+                            </p>
+                        </div>
+
+                        <div class="cyber-card">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📦</div>
+                            <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Package Re-shipping Schemes</h3>
+                            <p style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5;">
+                                Advertised as "Quality Assurance Specialist" or "Logistics Coordinator". Victims receive packages bought with stolen credit cards and reship them overseas, becoming unwitting accomplices in fencing rings.
+                            </p>
+                        </div>
+
+                        <div class="cyber-card">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🏛️</div>
+                            <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Fake Government & Public Agency Roles</h3>
+                            <p style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5;">
+                                Impersonators forge official seals, offering immediate appointment letters for postal, defense, or census roles in exchange for "processing fees" or security vetting bonds.
+                            </p>
+                        </div>
+
+                        <div class="cyber-card">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎓</div>
+                            <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Fake Internship Stipend Schemes</h3>
+                            <p style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5;">
+                                College students and recent graduates are promised guaranteed certificates and high stipends but are required to pay registration or "offer letter processing charges."
+                            </p>
+                        </div>
+
+                        <div class="cyber-card">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🪪</div>
+                            <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Executive & HR Impersonation</h3>
+                            <p style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5;">
+                                Fraudsters clone names and LinkedIn profiles of genuine corporate HR managers. They conduct superficial text interviews via Telegram or WhatsApp and harvest SSNs and banking details.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECTION 2: SEARCHABLE RED FLAG DIRECTORY -->
+                <section id="red-flags" style="margin-bottom: 3.5rem;">
+                    <div class="dash-card-header">
+                        <div>
+                            <span class="section-tag">INDICATOR REPOSITORY</span>
+                            <h2>Searchable Red Flag Directory</h2>
+                        </div>
+                    </div>
+
+                    <div class="cyber-card" style="margin-bottom: 1.5rem; padding: 1rem 1.25rem;">
+                        <input type="text" id="flagSearchInput" class="form-control" placeholder="Search scam indicators (e.g., 'telegram', 'check', 'crypto', 'kindly', 'salary')...">
+                    </div>
+
+                    <div id="redFlagDirectoryList" class="landing-grid-3">
+                        <!-- Populated dynamically by intelligence.js -->
+                    </div>
+                </section>
+
+                <!-- SECTION 3: INTERACTIVE SAFETY CHECKLIST -->
+                <section id="checklist" style="margin-bottom: 3.5rem;">
+                    <div class="cyber-card">
+                        <div class="dash-card-header">
+                            <div>
+                                <span class="section-tag">VERIFICATION PROTOCOL</span>
+                                <h2>Candidate Due Diligence Checklist</h2>
+                            </div>
+                            <div style="font-size: 0.9rem; color: var(--accent-cyan); font-weight: 700;" id="checklistProgressText">
+                                0 / 7 Verified
+                            </div>
+                        </div>
+
+                        <div class="progress-bar-wrap" style="margin-bottom: 1.5rem;">
+                            <div class="progress-bar-fill" id="checklistProgressBar" style="width: 0%;"></div>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 1rem;" id="interactiveChecklist">
+                            <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; padding: 0.75rem; background: var(--bg-surface); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                                <input type="checkbox" class="safety-check" style="margin-top: 4px; accent-color: var(--accent-cyan); width: 18px; height: 18px;">
+                                <div>
+                                    <strong style="color: var(--text-primary); font-size: 0.95rem;">1. Verify Recruiter Corporate Email Domain</strong>
+                                    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 2px;">Ensure recruiter emails from @company.com rather than free domains (@gmail.com, @yahoo.com) or deceptive lookalike domains (@company-careers.xyz).</p>
+                                </div>
+                            </label>
+
+                            <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; padding: 0.75rem; background: var(--bg-surface); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                                <input type="checkbox" class="safety-check" style="margin-top: 4px; accent-color: var(--accent-cyan); width: 18px; height: 18px;">
+                                <div>
+                                    <strong style="color: var(--text-primary); font-size: 0.95rem;">2. Independent Company Switchboard Verification</strong>
+                                    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 2px;">Locate the company's verified corporate phone number from their official website and call the HR department to confirm the recruiter and requisition ID.</p>
+                                </div>
+                            </label>
+
+                            <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; padding: 0.75rem; background: var(--bg-surface); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                                <input type="checkbox" class="safety-check" style="margin-top: 4px; accent-color: var(--accent-cyan); width: 18px; height: 18px;">
+                                <div>
+                                    <strong style="color: var(--text-primary); font-size: 0.95rem;">3. Absolute Zero-Payment Rule</strong>
+                                    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 2px;">Legitimate enterprises never ask candidates for training fees, hardware courier deposits, or background check costs.</p>
+                                </div>
+                            </label>
+
+                            <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; padding: 0.75rem; background: var(--bg-surface); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                                <input type="checkbox" class="safety-check" style="margin-top: 4px; accent-color: var(--accent-cyan); width: 18px; height: 18px;">
+                                <div>
+                                    <strong style="color: var(--text-primary); font-size: 0.95rem;">4. Require Live Video or In-Person Technical Interviews</strong>
+                                    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 2px;">Legitimate employers do not conduct interviews exclusively via text questionnaires on messaging apps (Telegram, WhatsApp, Signal).</p>
+                                </div>
+                            </label>
+
+                            <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; padding: 0.75rem; background: var(--bg-surface); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                                <input type="checkbox" class="safety-check" style="margin-top: 4px; accent-color: var(--accent-cyan); width: 18px; height: 18px;">
+                                <div>
+                                    <strong style="color: var(--text-primary); font-size: 0.95rem;">5. Guard PII & Banking Credentials</strong>
+                                    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 2px;">Never disclose SSN, national identity card numbers, or direct deposit bank routing info before executing a verified contractual offer.</p>
+                                </div>
+                            </label>
+
+                            <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; padding: 0.75rem; background: var(--bg-surface); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                                <input type="checkbox" class="safety-check" style="margin-top: 4px; accent-color: var(--accent-cyan); width: 18px; height: 18px;">
+                                <div>
+                                    <strong style="color: var(--text-primary); font-size: 0.95rem;">6. Cross-reference Recruiter on Professional Networks</strong>
+                                    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 2px;">Examine the recruiter's tenure, mutual connections, and corporate profile on LinkedIn. Verify that their identity is not freshly created.</p>
+                                </div>
+                            </label>
+
+                            <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; padding: 0.75rem; background: var(--bg-surface); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                                <input type="checkbox" class="safety-check" style="margin-top: 4px; accent-color: var(--accent-cyan); width: 18px; height: 18px;">
+                                <div>
+                                    <strong style="color: var(--text-primary); font-size: 0.95rem;">7. Execute ScamGuard Forensics Audit</strong>
+                                    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 2px;">Drop the letter into the ScamGuard forensic engine to cross-examine known fraud signatures, NLP urgency, and DNS status.</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECTION 4: GENUINE VS SCAM COMPARISON -->
+                <section id="comparison" style="margin-bottom: 3.5rem;">
+                    <div class="dash-card-header">
+                        <div>
+                            <span class="section-tag">ANATOMY COMPARISON</span>
+                            <h2>Genuine Offer vs Fraudulent Letter</h2>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;" id="comparisonGrid">
+                        <!-- Genuine Card -->
+                        <div class="cyber-card" style="border-top: 4px solid var(--risk-safe);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                                <h3 style="color: var(--risk-safe);">✓ Authentic Corporate Offer</h3>
+                                <span class="badge badge-safe">SAFE PATTERNS</span>
+                            </div>
+                            <ul style="display: flex; flex-direction: column; gap: 0.65rem; font-size: 0.88rem; color: var(--text-secondary); padding-left: 1.2rem;">
+                                <li>Sent from authenticated enterprise domain (e.g., <code>talent@acme.com</code>).</li>
+                                <li>Preceded by multiple multi-stage video or in-person technical interviews.</li>
+                                <li>Includes detailed benefits, formal PTO, and standard tax withholding paperwork.</li>
+                                <li>Provides adequate evaluation period (typically 3 to 7 business days) without pressure.</li>
+                                <li>Equipment is shipped directly by company IT; <strong>zero candidate expenditure</strong> required.</li>
+                            </ul>
+                        </div>
+
+                        <!-- Fraud Card -->
+                        <div class="cyber-card" style="border-top: 4px solid var(--risk-danger);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                                <h3 style="color: var(--risk-danger);">✗ Fraudulent Recruitment Scheme</h3>
+                                <span class="badge badge-danger">DANGER SIGNALS</span>
+                            </div>
+                            <ul style="display: flex; flex-direction: column; gap: 0.65rem; font-size: 0.88rem; color: var(--text-secondary); padding-left: 1.2rem;">
+                                <li>Sent from free providers (<code>acme.recruitment@gmail.com</code>) or lookalikes.</li>
+                                <li>Immediate job offer extended after a quick questionnaire or no interview at all.</li>
+                                <li>Disproportionately high compensation ($75/hr for basic entry data entry).</li>
+                                <li>Extreme urgency ("Accept within 2 hours or position will be forfeited").</li>
+                                <li>Requests money for equipment vendors, training licenses, or cashier check cashing.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECTION 5: REPORT FRAUD DIRECTORY -->
+                <section id="reporting" style="margin-bottom: 2rem;">
+                    <div class="cyber-card" style="border-left: 4px solid var(--accent-cyan); padding: 2rem;">
+                        <h3 style="margin-bottom: 0.5rem;">Official Cybercrime & Fraud Reporting Authorities</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.92rem; margin-bottom: 1.5rem;">
+                            If you have encountered or fallen victim to an employment fraud scheme, report it immediately to official law enforcement agencies:
+                        </p>
+
+                        <div class="landing-grid-3">
+                            <div style="background: var(--bg-surface); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                                <strong>United States: FTC</strong>
+                                <p style="color: var(--text-muted); font-size: 0.82rem; margin: 4px 0 8px;">Federal Trade Commission Fraud Network</p>
+                                <a href="https://reportfraud.ftc.gov" target="_blank" rel="noopener noreferrer" style="font-size: 0.85rem;">reportfraud.ftc.gov &rarr;</a>
+                            </div>
+
+                            <div style="background: var(--bg-surface); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                                <strong>United States: FBI IC3</strong>
+                                <p style="color: var(--text-muted); font-size: 0.82rem; margin: 4px 0 8px;">Internet Crime Complaint Center</p>
+                                <a href="https://www.ic3.gov" target="_blank" rel="noopener noreferrer" style="font-size: 0.85rem;">ic3.gov &rarr;</a>
+                            </div>
+
+                            <div style="background: var(--bg-surface); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                                <strong>United Kingdom: Action Fraud</strong>
+                                <p style="color: var(--text-muted); font-size: 0.82rem; margin: 4px 0 8px;">National Fraud & Cyber Crime Reporting</p>
+                                <a href="https://www.actionfraud.police.uk" target="_blank" rel="noopener noreferrer" style="font-size: 0.85rem;">actionfraud.police.uk &rarr;</a>
+                            </div>
+
+                            <div style="background: var(--bg-surface); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                                <strong>India: Cyber Crime Portal</strong>
+                                <p style="color: var(--text-muted); font-size: 0.82rem; margin: 4px 0 8px;">Ministry of Home Affairs Cyber Crime Dept</p>
+                                <a href="https://cybercrime.gov.in" target="_blank" rel="noopener noreferrer" style="font-size: 0.85rem;">cybercrime.gov.in &rarr;</a>
+                            </div>
+
+                            <div style="background: var(--bg-surface); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                                <strong>Australia: Scamwatch</strong>
+                                <p style="color: var(--text-muted); font-size: 0.82rem; margin: 4px 0 8px;">Australian Competition & Consumer Comm</p>
+                                <a href="https://www.scamwatch.gov.au" target="_blank" rel="noopener noreferrer" style="font-size: 0.85rem;">scamwatch.gov.au &rarr;</a>
+                            </div>
+
+                            <div style="background: var(--bg-surface); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                                <strong>Canada: Anti-Fraud Centre</strong>
+                                <p style="color: var(--text-muted); font-size: 0.82rem; margin: 4px 0 8px;">RCMP Canadian Anti-Fraud Centre</p>
+                                <a href="https://www.antifraudcentre-centreantifraude.ca" target="_blank" rel="noopener noreferrer" style="font-size: 0.85rem;">antifraudcentre.ca &rarr;</a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="core.js"></script>
+    <script src="case_ai.js"></script>
+    <script src="intelligence.js"></script>
+</body>
+</html>
