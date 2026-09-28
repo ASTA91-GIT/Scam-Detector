@@ -302,5 +302,6 @@
         resetSpiderSense: resetSpiderSense
     };
 
-    document.addEventListener('DOMContentLoaded', initSpideyTrackerElements);
+    // Disabled to keep landing page hero clean and cinematic without HUD clutter
+    // document.addEventListener('DOMContentLoaded', initSpideyTrackerElements);
 })();
