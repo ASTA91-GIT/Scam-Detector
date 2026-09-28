@@ -23,6 +23,9 @@ from backend.ocr_utils import (
     assess_extraction_quality
 )
 
+import uuid
+from PIL import Image
+
 # -----------------------------
 # CONFIGURATION
 # -----------------------------
@@ -32,8 +35,22 @@ ALLOWED_EXTENSIONS = {
     'png', 'jpg', 'jpeg', 'webp'
 }
 
+MAX_DOCUMENT_PAGES = int(os.getenv('MAX_DOCUMENT_PAGES', '20'))
+MAX_IMAGE_DIMENSION = 10000  # pixels
+MAX_IMAGE_PIXELS = 25000000  # decompression bomb guard
+
+# File magic bytes signatures
+FILE_SIGNATURES = {
+    'pdf': [b'%PDF-'],
+    'png': [b'\x89PNG\r\n\x1a\n'],
+    'jpg': [b'\xff\xd8\xff'],
+    'jpeg': [b'\xff\xd8\xff'],
+    'webp': [b'RIFF'],
+    'docx': [b'PK\x03\x04'],
+}
+
 # -----------------------------
-# FILE TYPE VALIDATION
+# FILE TYPE VALIDATION & SECURITY
 # -----------------------------
 
 def allowed_file(filename: str) -> bool:
@@ -42,6 +59,78 @@ def allowed_file(filename: str) -> bool:
         return False
     ext = filename.rsplit('.', 1)[1].lower()
     return ext in ALLOWED_EXTENSIONS
+
+
+def validate_file_security(file_storage) -> Tuple[bool, str, str]:
+    """
+    Validates file upload strictly:
+    - Verifies extension
+    - Validates file signatures / magic bytes
+    - Prevents executable uploads (MZ, ELF, etc.)
+    - Validates PDF page count limit
+    - Validates image dimensions and decompression bomb protection
+    Returns:
+        (is_valid: bool, file_ext: str, error_msg: str)
+    """
+    filename = file_storage.filename or ""
+    if not allowed_file(filename):
+        return False, "", "File type not permitted. Allowed: PDF, PNG, JPG, JPEG, WEBP, DOC, DOCX, TXT."
+
+    ext = filename.rsplit('.', 1)[1].lower()
+
+    # Read initial bytes for magic signature inspection
+    stream = file_storage.stream
+    stream.seek(0)
+    header = stream.read(2048)
+    stream.seek(0)
+
+    # Immediately reject executables
+    if header.startswith(b'MZ') or header.startswith(b'\x7fELF') or header.startswith(b'#!'):
+        return False, ext, "Malicious file signature detected. Executable files are strictly prohibited."
+
+    # Validate known signatures
+    if ext in FILE_SIGNATURES:
+        signatures = FILE_SIGNATURES[ext]
+        matched = any(header.startswith(sig) for sig in signatures)
+        if ext == 'webp' and matched:
+            # WEBP has RIFF at 0 and WEBP at 8
+            matched = len(header) >= 12 and header[8:12] == b'WEBP'
+
+        if not matched:
+            return False, ext, f"File content does not match the declared extension (.{ext}). Magic byte mismatch."
+
+    # Specific deep inspection for PDFs
+    if ext == 'pdf':
+        try:
+            reader = PyPDF2.PdfReader(stream)
+            num_pages = len(reader.pages)
+            stream.seek(0)
+            if num_pages > MAX_DOCUMENT_PAGES:
+                return False, ext, f"Document exceeds maximum permitted pages ({num_pages} > {MAX_DOCUMENT_PAGES})."
+            if num_pages == 0:
+                return False, ext, "Malformed or empty PDF document."
+        except Exception as e:
+            stream.seek(0)
+            return False, ext, f"Corrupted or malformed PDF structure: {str(e)}"
+
+    # Specific deep inspection for Images (Pillow decompression bomb protection & dimensions)
+    if ext in ['png', 'jpg', 'jpeg', 'webp']:
+        try:
+            Image.MAX_IMAGE_PIXELS = MAX_IMAGE_PIXELS
+            with Image.open(stream) as img:
+                img.verify()
+            stream.seek(0)
+            with Image.open(stream) as img:
+                width, height = img.size
+                if width > MAX_IMAGE_DIMENSION or height > MAX_IMAGE_DIMENSION:
+                    stream.seek(0)
+                    return False, ext, f"Image dimensions too large ({width}x{height}, max {MAX_IMAGE_DIMENSION}x{MAX_IMAGE_DIMENSION})."
+            stream.seek(0)
+        except Exception as img_err:
+            stream.seek(0)
+            return False, ext, f"Corrupted, invalid, or oversized image: {str(img_err)}"
+
+    return True, ext, ""
 
 
 # -----------------------------
@@ -188,27 +277,32 @@ def extract_text_from_file(file_path: str, file_extension: str) -> Dict[str, Any
 def save_uploaded_file(file, user_id: str) -> Tuple[str, str]:
     """
     Saves uploaded file securely:
-    - Verifies extension
-    - Sanitizes filename to prevent path traversal
-    - Prefixes with user_id to ensure user isolation
+    - Performs deep security validation (magic bytes, page limit, decompression bomb guard)
+    - Sanitizes original filename for display
+    - Generates random internal UUID filename to isolate filesystem and prevent path injection
+    - Ensures file path cannot escape uploads directory
     """
-    if not allowed_file(file.filename):
-        raise ValueError("File type not allowed. Supported formats: PDF, PNG, JPG, JPEG, WEBP, DOC, DOCX, TXT")
+    is_valid, ext, err_msg = validate_file_security(file)
+    if not is_valid:
+        raise ValueError(err_msg)
 
-    # Sanitize original filename
-    base_name = secure_filename(os.path.basename(file.filename))
+    # Sanitize original filename for display / metadata
+    base_name = secure_filename(os.path.basename(file.filename or "upload_document"))
     if not base_name:
-        base_name = "upload_document"
+        base_name = f"document.{ext}"
 
-    safe_filename = f"{user_id}_{base_name}"
+    # Random internal storage filename (UUID-based)
+    internal_filename = f"{uuid.uuid4().hex}_{str(user_id)[:8]}.{ext}"
 
     upload_dir = current_app.config.get('UPLOAD_FOLDER', 'uploads')
     os.makedirs(upload_dir, exist_ok=True)
 
-    file_path = os.path.join(upload_dir, safe_filename)
-    # Ensure resolved path is strictly within upload directory (prevent traversal)
-    if not os.path.abspath(file_path).startswith(os.path.abspath(upload_dir)):
+    file_path = os.path.join(upload_dir, internal_filename)
+    # Ensure resolved path is strictly within upload directory (prevent path traversal)
+    abs_upload = os.path.abspath(upload_dir)
+    abs_target = os.path.abspath(file_path)
+    if not abs_target.startswith(abs_upload):
         raise PermissionError("Path traversal attempt detected.")
 
     file.save(file_path)
-    return file_path, safe_filename
+    return file_path, base_name

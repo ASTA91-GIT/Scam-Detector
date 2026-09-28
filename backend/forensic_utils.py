@@ -118,13 +118,197 @@ def extract_entities(text: str, metadata: Optional[Dict[str, Any]] = None) -> Di
     }
 
 
+
+# Known major brand domains for lookalike / typosquatting detection
+TARGETED_BRANDS = {
+    "microsoft.com": "Microsoft",
+    "google.com": "Google",
+    "paypal.com": "PayPal",
+    "amazon.com": "Amazon",
+    "apple.com": "Apple",
+    "linkedin.com": "LinkedIn",
+    "meta.com": "Meta",
+    "facebook.com": "Facebook",
+    "netflix.com": "Netflix",
+    "chase.com": "Chase",
+    "wellsfargo.com": "Wells Fargo",
+    "binance.com": "Binance",
+    "coinbase.com": "Coinbase",
+    "dropbox.com": "Dropbox",
+    "adobe.com": "Adobe",
+    "telegram.org": "Telegram",
+    "whatsapp.com": "WhatsApp"
+}
+
+# Common character substitution map for homoglyph / typosquatting detection
+HOMOGLYPH_MAP = {
+    '0': 'o',
+    '1': 'l',
+    'i': 'l',
+    '5': 's',
+    '3': 'e',
+    '4': 'a',
+    '8': 'b',
+    'v': 'u',
+}
+
+
+def _levenshtein_distance(s1: str, s2: str) -> int:
+    """Calculates Levenshtein edit distance between two strings"""
+    if len(s1) < len(s2):
+        return _levenshtein_distance(s2, s1)
+    if len(s2) == 0:
+        return len(s1)
+    previous_row = range(len(s2) + 1)
+    for i, c1 in enumerate(s1):
+        current_row = [i + 1]
+        for j, c2 in enumerate(s2):
+            insertions = previous_row[j + 1] + 1
+            deletions = current_row[j] + 1
+            substitutions = previous_row[j] + (c1 != c2)
+            current_row.append(min(insertions, deletions, substitutions))
+        previous_row = current_row
+    return previous_row[-1]
+
+
+def detect_lookalike_domain(domain: str, claimed_company: str = "") -> Dict[str, Any]:
+    """
+    Detects typosquatting, character substitutions (micros0ft.com, paypa1.com),
+    hyphen manipulation (company-careers-example.com, company-support-login.com),
+    and Punycode (xn--) impersonation.
+    Returns:
+        possible_lookalike: bool
+        similarity_score: int (0-100)
+        matched_brand: str
+        explanation: str
+    NOTE: Do NOT automatically call a domain malicious solely because similarity is high.
+    """
+    if not domain:
+        return {
+            "possible_lookalike": False,
+            "similarity_score": 0,
+            "matched_brand": "None",
+            "target_domain": "",
+            "explanation": "No domain provided for lookalike evaluation."
+        }
+
+    clean_dom = domain.lower().strip()
+    if clean_dom.startswith("www."):
+        clean_dom = clean_dom[4:]
+
+    # Check Punycode / Unicode lookalike
+    if clean_dom.startswith("xn--") or ".xn--" in clean_dom:
+        return {
+            "possible_lookalike": True,
+            "similarity_score": 88,
+            "matched_brand": "Internationalized Domain / Punycode",
+            "target_domain": clean_dom,
+            "explanation": "Punycode (xn--) domain detected, which can be used for homograph character spoofing."
+        }
+
+    # Normalize homoglyphs/substitutions
+    normalized = clean_dom
+    has_substitutions = False
+    sub_explanations = []
+    for num_char, letter in HOMOGLYPH_MAP.items():
+        if num_char in normalized:
+            has_substitutions = True
+            sub_explanations.append(f"'{num_char}' substituted for '{letter}'")
+            normalized = normalized.replace(num_char, letter)
+
+    # Check hyphen manipulation / suspicious prefixes & suffixes
+    suspicious_keywords = ["careers", "support", "login", "portal", "verify", "secure", "auth", "jobs", "hr"]
+    parts = clean_dom.split('.')
+    main_label = parts[0] if parts else clean_dom
+
+    has_suspicious_hyphen = False
+    for kw in suspicious_keywords:
+        if f"-{kw}" in main_label or f"{kw}-" in main_label:
+            has_suspicious_hyphen = True
+            break
+
+    # Compare against targeted brands
+    best_match_brand = ""
+    best_match_dom = ""
+    highest_sim = 0
+    best_explanation = ""
+
+    for target_dom, brand in TARGETED_BRANDS.items():
+        target_label = target_dom.split('.')[0]
+        # Direct exact match is legitimate brand domain, not a lookalike
+        if clean_dom == target_dom:
+            return {
+                "possible_lookalike": False,
+                "similarity_score": 100,
+                "matched_brand": brand,
+                "target_domain": target_dom,
+                "explanation": f"Domain is the legitimate official domain for {brand}."
+            }
+
+        # Check normalized match (e.g. micros0ft.com -> microsoft.com)
+        if normalized == target_dom:
+            return {
+                "possible_lookalike": True,
+                "similarity_score": 95,
+                "matched_brand": brand,
+                "target_domain": target_dom,
+                "explanation": f"Character substitution detected mimicking {brand} ({target_dom}): {', '.join(sub_explanations)}."
+            }
+
+        # Levenshtein distance on main labels
+        dist = _levenshtein_distance(main_label, target_label)
+        max_len = max(len(main_label), len(target_label))
+        sim = int(max(0, (1 - dist / max_len) * 100))
+
+        # Check if brand name is embedded with hyphens e.g. "paypal-careers.com"
+        if target_label in main_label and main_label != target_label:
+            sim = max(sim, 82)
+
+        if sim > highest_sim:
+            highest_sim = sim
+            best_match_brand = brand
+            best_match_dom = target_dom
+
+    if highest_sim >= 80:
+        exp = f"Domain structure is similar to {best_match_brand} ({best_match_dom})."
+        if has_substitutions:
+            exp += f" Contains character substitutions: {', '.join(sub_explanations)}."
+        if has_suspicious_hyphen:
+            exp += " Contains hyphenated credential/portal pattern."
+        return {
+            "possible_lookalike": True,
+            "similarity_score": highest_sim,
+            "matched_brand": best_match_brand,
+            "target_domain": best_match_dom,
+            "explanation": exp
+        }
+
+    if has_suspicious_hyphen:
+        return {
+            "possible_lookalike": True,
+            "similarity_score": 72,
+            "matched_brand": "Generic Portal",
+            "target_domain": clean_dom,
+            "explanation": f"Domain '{clean_dom}' contains hyphenated credential/career portal keywords."
+        }
+
+    return {
+        "possible_lookalike": False,
+        "similarity_score": highest_sim,
+        "matched_brand": best_match_brand if highest_sim > 50 else "None",
+        "target_domain": best_match_dom if highest_sim > 50 else "",
+        "explanation": "No significant typosquatting or brand lookalike patterns detected."
+    }
+
+
 def extract_domain_intelligence(
     metadata: Optional[Dict[str, Any]] = None,
     entities: Optional[Dict[str, str]] = None,
     text: str = ""
 ) -> Dict[str, Any]:
     """
-    Evaluates claimed web presence, DNS resolution, domain status, and email consistency.
+    Evaluates claimed web presence, DNS resolution, domain status, email consistency,
+    and typosquatting lookalike analysis.
     Domain age and existence are provided as context, NOT definitive proof of fraud.
     """
     meta = metadata or {}
@@ -149,7 +333,7 @@ def extract_domain_intelligence(
 
     active_domain = target_domain or email_domain or ""
 
-    # Check DNS reachability
+    # Check DNS reachability & records
     has_a_record = False
     has_mx_record = False
     has_ns_record = False
@@ -190,12 +374,15 @@ def extract_domain_intelligence(
         match_status = "UNSPECIFIED"
         match_label = "No recruiter email address provided for domain cross-referencing."
 
-    # Domain Age Context (Heuristic estimation without blocking external WHOIS network calls)
+    # Lookalike Domain Detection
+    lookalike_info = detect_lookalike_domain(active_domain, claimed_company)
+
+    # Domain Age Context (Heuristic & contextual, never invented)
     is_free = email_domain in FREE_EMAIL_DOMAINS
     is_suspicious_tld = any(active_domain.endswith(tld) for tld in SUSPICIOUS_TLDS)
 
     if not active_domain:
-        domain_age_context = "No public domain identified"
+        domain_age_context = "Domain age unavailable"
         domain_created = "N/A"
         registrar = "N/A"
     elif is_free:
@@ -203,11 +390,11 @@ def extract_domain_intelligence(
         domain_created = "Established Provider"
         registrar = "Public Email Service"
     elif has_a_record:
-        domain_age_context = "Established Active Domain (DNS Verified)"
+        domain_age_context = "Domain age unavailable (DNS Active)"
         domain_created = "Active Record"
         registrar = "Public Registry"
     else:
-        domain_age_context = "Unverified or Recently Registered Host"
+        domain_age_context = "Domain age unavailable (Unresolved Host)"
         domain_created = "Pending Verification"
         registrar = "Unknown Registrar"
 
@@ -228,8 +415,63 @@ def extract_domain_intelligence(
         "https_available": True if target_domain else False,
         "email_domain_match": match_status,
         "match_label": match_label,
-        "is_suspicious_tld": is_suspicious_tld
+        "is_suspicious_tld": is_suspicious_tld,
+        "lookalike": lookalike_info
     }
+
+
+def extract_url_intelligence(text: str, claimed_company: str = "") -> List[Dict[str, Any]]:
+    """
+    Extracts URLs from document text and assesses security context:
+    HTTPS status, domain, lookalike similarity, and risk context.
+    Observed fact != final scam verdict.
+    """
+    if not text:
+        return []
+
+    # Find URLs
+    raw_urls = re.findall(r'https?://[^\s<>"\')]+|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}/[^\s<>"\')]*', text)
+    results = []
+    seen = set()
+
+    for u in raw_urls:
+        clean_u = u.strip().rstrip('.,;:!?)')
+        if clean_u in seen:
+            continue
+        seen.add(clean_u)
+
+        full_url = clean_u if clean_u.startswith("http") else f"https://{clean_u}"
+        try:
+            parsed = urlparse(full_url)
+            domain = (parsed.netloc or parsed.path).lower().split(':')[0]
+            is_https = full_url.lower().startswith("https://")
+        except Exception:
+            continue
+
+        lookalike = detect_lookalike_domain(domain, claimed_company)
+
+        # Risk context
+        if lookalike.get("possible_lookalike"):
+            risk_context = "Elevated uncertainty (Lookalike pattern detected)"
+        elif any(domain.endswith(tld) for tld in SUSPICIOUS_TLDS):
+            risk_context = "Elevated uncertainty (High-risk TLD)"
+        elif not is_https:
+            risk_context = "Unencrypted connection (HTTP)"
+        else:
+            risk_context = "Standard public web address"
+
+        results.append({
+            "url": clean_u,
+            "domain": domain,
+            "https": is_https,
+            "redirects": 0,
+            "lookalike": "Possible" if lookalike.get("possible_lookalike") else "None",
+            "lookalike_details": lookalike,
+            "domain_age": "Domain age unavailable",
+            "risk_context": risk_context
+        })
+
+    return results
 
 
 def build_forensic_signals(reasoning: List[Dict[str, Any]], doc_type: str = "JOB_OFFER") -> List[Dict[str, Any]]:

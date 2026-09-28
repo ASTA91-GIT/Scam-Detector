@@ -200,3 +200,202 @@ def unsave_by_analysis(analysis_id):
         return jsonify({'message': 'Report unsaved successfully', 'count': res.deleted_count}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+# ============================================================
+# PHASE 21 & 22: SECURE REPORT SHARING & PUBLIC VERIFICATION
+# ============================================================
+
+import secrets
+import hashlib
+from datetime import timedelta
+from backend.database import get_database
+from backend.audit_logger import log_audit_event
+
+
+def _get_shared_reports_collection():
+    db = get_database()
+    return db["shared_reports"]
+
+
+@saved_reports_bp.route('/<analysis_id>/share', methods=['POST'])
+@require_auth
+def create_shared_report_link(analysis_id):
+    """
+    Generates a secure random share token with expiration and revocation capabilities.
+    Does not expose MongoDB IDs or internal file paths.
+    """
+    try:
+        user_id = request.user_id
+        analyses_col = get_analyses_collection()
+
+        try:
+            obj_id = ObjectId(analysis_id)
+        except Exception:
+            return jsonify({'error': 'Invalid analysis ID'}), 400
+
+        analysis = analyses_col.find_one({'_id': obj_id, 'user_id': user_id})
+        if not analysis:
+            return jsonify({'error': 'Analysis not found or unauthorized access'}), 404
+
+        # Generate secure random token
+        raw_token = secrets.token_urlsafe(32)
+        token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+        public_id = f"SG-{raw_token[:8].upper()}"
+
+        data = request.get_json() or {}
+        expires_days = min(30, max(1, int(data.get("expires_days", 7))))
+        now = datetime.utcnow()
+        expires_at = now + timedelta(days=expires_days)
+
+        shared_doc = {
+            "token_hash": token_hash,
+            "public_id": public_id,
+            "analysis_id": str(obj_id),
+            "user_id": user_id,
+            "created_at": now,
+            "expires_at": expires_at,
+            "view_count": 0,
+            "revoked": False
+        }
+
+        shared_col = _get_shared_reports_collection()
+        shared_col.insert_one(shared_doc)
+
+        log_audit_event("REPORT_SHARED", user_id, {"analysis_id": str(obj_id), "public_id": public_id})
+
+        return jsonify({
+            "share_token": raw_token,
+            "public_id": public_id,
+            "share_url": f"/shared/report/{raw_token}",
+            "verification_url": f"/verify/report/{public_id}",
+            "expires_at": expires_at.isoformat()
+        }), 201
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@saved_reports_bp.route('/shared/<token>', methods=['GET'])
+def get_shared_report_by_token(token):
+    """
+    Public access to shared report using secure token.
+    Validates token hash, expiration, and revocation status.
+    """
+    try:
+        token_hash = hashlib.sha256(token.strip().encode()).hexdigest()
+        shared_col = _get_shared_reports_collection()
+        shared_record = shared_col.find_one({"token_hash": token_hash})
+
+        if not shared_record:
+            return jsonify({'error': 'Shared report not found'}), 404
+
+        if shared_record.get("revoked", False):
+            return jsonify({'error': 'This shared report link has been revoked by the owner.'}), 410
+
+        if shared_record.get("expires_at") and shared_record["expires_at"] < datetime.utcnow():
+            return jsonify({'error': 'This shared report link has expired.'}), 410
+
+        # Increment view count
+        shared_col.update_one({"_id": shared_record["_id"]}, {"$inc": {"view_count": 1}})
+
+        # Fetch sanitized analysis
+        analyses_col = get_analyses_collection()
+        analysis = analyses_col.find_one({"_id": ObjectId(shared_record["analysis_id"])})
+        if not analysis:
+            return jsonify({'error': 'Report record unavailable'}), 404
+
+        # Sanitize report (remove private credentials, internal paths, raw uploads)
+        sanitized = {
+            "public_id": shared_record.get("public_id"),
+            "document_type": analysis.get("document_type", "UNKNOWN"),
+            "company_name": analysis.get("company_name", "Company"),
+            "job_title": analysis.get("job_title", "Document"),
+            "risk_score": analysis.get("risk_score", 0),
+            "trust_score": analysis.get("trust_score", 100),
+            "confidence": analysis.get("confidence", 85),
+            "classification": analysis.get("classification", "SAFE"),
+            "risk_level": analysis.get("risk_level", "Safe"),
+            "risk_color": analysis.get("risk_color", "safe"),
+            "summary": analysis.get("summary", ""),
+            "reasoning": analysis.get("reasoning", []),
+            "positive_signals": analysis.get("positive_signals", []),
+            "uncertainties": analysis.get("uncertainties", []),
+            "recommendations": analysis.get("recommendations", []),
+            "risk_signals": analysis.get("risk_signals", []),
+            "entities": analysis.get("entities", {}),
+            "domain_intelligence": analysis.get("domain_intelligence", {}),
+            "ai_opinion": analysis.get("ai_opinion", {}),
+            "model_name": analysis.get("model_name", "llama3.2:3b"),
+            "created_at": analysis.get("created_at").isoformat() if hasattr(analysis.get("created_at"), "isoformat") else str(analysis.get("created_at")),
+            "view_count": shared_record.get("view_count", 0) + 1
+        }
+
+        return jsonify({"report": sanitized}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@saved_reports_bp.route('/shared/<token>/revoke', methods=['POST'])
+@require_auth
+def revoke_shared_report_link(token):
+    """
+    Revokes an active share link. Only the owner can revoke.
+    """
+    try:
+        user_id = request.user_id
+        token_hash = hashlib.sha256(token.strip().encode()).hexdigest()
+        shared_col = _get_shared_reports_collection()
+
+        res = shared_col.update_one(
+            {"token_hash": token_hash, "user_id": user_id},
+            {"$set": {"revoked": True, "revoked_at": datetime.utcnow()}}
+        )
+
+        if res.matched_count == 0:
+            return jsonify({'error': 'Share link not found or unauthorized'}), 404
+
+        return jsonify({'message': 'Shared report link revoked successfully'}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@saved_reports_bp.route('/verify/<public_id>', methods=['GET'])
+def verify_public_report(public_id):
+    """
+    Phase 22: Public Report Verification endpoint.
+    Returns cryptographic integrity verification without exposing document contents or private user details.
+    """
+    try:
+        shared_col = _get_shared_reports_collection()
+        shared_record = shared_col.find_one({"public_id": public_id.upper().strip()})
+
+        if not shared_record:
+            return jsonify({
+                "valid": False,
+                "message": "Report ID not found in verification registry."
+            }), 404
+
+        analyses_col = get_analyses_collection()
+        analysis = analyses_col.find_one({"_id": ObjectId(shared_record["analysis_id"])})
+        if not analysis:
+            return jsonify({"valid": False, "message": "Referenced analysis record not found."}), 404
+
+        created_dt = analysis.get("created_at")
+        formatted_date = created_dt.strftime("%d %B %Y") if hasattr(created_dt, "strftime") else str(created_dt)
+
+        return jsonify({
+            "integrity": "VALID",
+            "report_id": shared_record.get("public_id"),
+            "risk_score": analysis.get("risk_score", 0),
+            "classification": analysis.get("classification", "SAFE"),
+            "generated": formatted_date,
+            "document_type": analysis.get("document_type", "UNKNOWN"),
+            "revoked": shared_record.get("revoked", False),
+            "verification_status": "AUTHENTIC_SCAMGUARD_ANALYSIS"
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

@@ -1,0 +1,77 @@
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: scamguard-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: job_scam_detector
+    networks:
+      - scamguard-net
+
+  scamguard-mail:
+    build:
+      context: ./services/mail
+      dockerfile: Dockerfile
+    container_name: scamguard-mail
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    environment:
+      NODE_ENV: production
+      MAIL_PORT: 5001
+      MAIL_SERVICE_SECRET: ${MAIL_SERVICE_SECRET:-change-this-secret-in-production}
+      SMTP_HOST: ${SMTP_HOST:-smtp.example.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-no-reply@scamguard.local}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-ScamGuard AI Forensics}
+    networks:
+      - scamguard-net
+
+  scamguard-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: scamguard-api
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongodb
+      - scamguard-mail
+    environment:
+      FLASK_ENV: production
+      SECRET_KEY: ${SECRET_KEY:-change-this-secret-in-production}
+      JWT_SECRET: ${JWT_SECRET:-change-this-secret-in-production}
+      MONGODB_URI: mongodb://mongodb:27017/job_scam_detector
+      DATABASE_NAME: job_scam_detector
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2:3b}
+      MAIL_SERVICE_URL: http://scamguard-mail:5001
+      MAIL_SERVICE_SECRET: ${MAIL_SERVICE_SECRET:-change-this-secret-in-production}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5000}
+      MAX_UPLOAD_SIZE: 10485760
+      MAX_DOCUMENT_PAGES: 20
+      FILE_RETENTION_HOURS: 24
+      RATE_LIMIT_ENABLED: "true"
+      HIGH_RISK_EMAIL_THRESHOLD: 75
+    volumes:
+      - uploads-data:/app/uploads
+    networks:
+      - scamguard-net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  mongo-data:
+  uploads-data:
+
+networks:
+  scamguard-net:
+    driver: bridge

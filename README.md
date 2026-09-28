@@ -1,240 +1,221 @@
-# AI-Powered Job & Internship Scam Detector
+# ScamGuard AI — Production-Ready Forensic Scam Intelligence Platform
 
-A full-stack cybersecurity application that uses a **Local Offline Large Language Model (LLM)** and an intelligent multi-pass OCR extraction pipeline to detect fraudulent job offers and internship scams. Built with Flask (Python), MongoDB, Ollama, and vanilla JavaScript with rich 3D animations.
+ScamGuard AI is an enterprise-grade cybersecurity SaaS application that analyzes employment offers, recruitment correspondence, and onboarding documents to detect fraudulent scams, advance fee fraud, impersonation, and identity harvesting.
 
----
-
-## 🎯 Architecture & Primary Intelligence Flow
-
-The system runs entirely **locally and offline** without requiring any external cloud AI API keys (no OpenAI, Gemini, Groq, or Hugging Face required during inference).
-
-```
-USER UPLOAD (PDF, PNG, JPG, WEBP, or Text)
-    ↓
-FILE VALIDATION & SECURITY SANITIZATION
-    ↓
-OCR / PDF EXTRACTION (pypdf + pypdfium2 + Tesseract)
-    ↓
-TEXT CLEANING & PRESERVATION OF STRUCTURE
-    ↓
-LOCAL OFFLINE LLM (Ollama: llama3.2:3b / llama3.1:8b)
-    ↓
-SEMANTIC & CONTEXTUAL FORENSIC ANALYSIS
-    ↓
-CALIBRATED RISK SCORE (0–100) + CONFIDENCE (0–100)
-    ↓
-EVIDENCE-LINKED REASONING WITH EXACT QUOTES
-    ↓
-RESULT PAGE & CASEAI INVESTIGATION ASSISTANT
-```
+Built with a hardened Python/Flask core, local offline AI via Ollama, a dedicated Node.js Nodemailer microservice, and MongoDB.
 
 ---
 
-## ✨ Key Features
-
-### 1. Local Offline AI (No Cloud API Keys)
-- **Primary Engine**: Uses **Ollama** running locally on `http://localhost:11434`.
-- **Supported Models**: `llama3.2:3b` (fast, GPU/CPU-friendly) or `llama3.1:8b`.
-- **100% Offline & Private**: Candidate resumes, job offers, and sensitive personal information never leave the machine.
-- **Fail-Safe Integrity**: If Ollama or the configured model is unavailable, the backend clearly reports:
-  > *"Local AI model unavailable. Start Ollama and ensure the configured model is installed."*
-  Never produces fake AI results or silently falls back to third-party cloud services.
-
-### 2. Semantic Forensic Analysis (Beyond Keyword Matching)
-- Decides risk based on **meaning, intent, and social engineering behaviors**, not hardcoded keyword counts.
-- Detects:
-  - Upfront advance payments, registration fees, and equipment deposits.
-  - Cashier check overpayment and money mule schemes.
-  - Artificial urgency, deadline pressure, and coercion.
-  - Mismatched recruiter domains (e.g., claiming Microsoft but using a free Gmail address).
-  - Out-of-band communication redirection (demanding Telegram/WhatsApp contact).
-  - Premature credential and identity harvesting (SSN, ID scans, banking logins).
-
-### 3. Separation of AI-Generated Content from Scams
-- Perfectly formatted AI-written documents are **NOT** automatically classified as scams.
-- The detector evaluates whether the *content and contractual terms* contain suspicious characteristics.
-- Includes a dedicated `document_assessment` check distinguishing potential synthetic document formatting from fraudulent behavior.
-
-### 4. Advanced OCR & PDF Text Extraction
-- **Supported Formats**: PDF (text-based and scanned), PNG, JPG, JPEG, and WEBP.
-- **Multi-Pass OCR**: Uses adaptive thresholding and grayscale pre-processing.
-- **Pure Python PDF Rendering**: Uses `pypdfium2` for scanned PDF page rendering without requiring external Windows Poppler binaries.
-- **Transparency on Extraction Quality**: Warns users if image blur or low resolution degrades extraction confidence.
-
-### 5. Evidence-Linked Reasoning ("Why Did I Get This Score?")
-- Every risk factor includes:
-  - **Finding**: Summary of the suspicious tactic.
-  - **Severity**: `LOW`, `MEDIUM`, `HIGH`, or `CRITICAL`.
-  - **Evidence**: Direct, verbatim quoted text from the uploaded document.
-  - **Explanation**: Actionable breakdown of the risk.
-  - **Score Impact**: Points contributed to the overall 0–100 score.
-
-### 6. Interactive CaseAI Assistant
-- Full conversational AI assistant tied directly to each analyzed case.
-- Explains findings, drafts inquiry emails to official company HR departments, generates evidence verification checklists, and streams real-time SSE responses.
-
----
-
-## 📁 Project Structure
+## 🏗️ System Architecture
 
 ```
-scam-detector/
-├── app.py                       # Main Flask entrypoint & API router
-├── seed_test_user.py            # Idempotent development test account seeder
-├── requirements.txt             # Python dependencies
-├── .env                         # Environment configuration
-├── backend/
-│   ├── ai/
-│   │   ├── provider.py          # AI Provider abstract base class
-│   │   ├── ollama_provider.py   # Ollama local offline inference client
-│   │   ├── provider_factory.py  # Provider factory & status health checks
-│   │   ├── prompts.py           # Forensic analyst prompts & injection defense
-│   │   └── case_context.py      # CaseAI context linkage
-│   ├── ai_analyzer.py           # Analysis routing abstraction
-│   ├── analysis.py              # Primary scam analysis orchestration
-│   ├── auth.py                  # JWT authentication routes
-│   ├── auth_utils.py            # Password hashing & JWT helpers
-│   ├── case_ai.py               # CaseAI interactive chat service
-│   ├── case_ai_routes.py        # CaseAI HTTP & SSE streaming endpoints
-│   ├── database.py              # MongoDB connection & collections
-│   ├── file_utils.py            # File validation, sanitization & extraction
-│   └── ocr_utils.py             # Multi-pass OCR & pypdfium2 PDF pipeline
-├── frontend/
-│   ├── index.html               # 3D Spider-Man themed landing page
-│   ├── analyze.html             # Multi-format upload & text analysis UI
-│   ├── analyze.js               # 7-stage animated analysis pipeline controller
-│   ├── result.html              # Forensic report, evidence cards & CaseAI UI
-│   ├── result.js                # Evidence cards & CaseAI chat controller
-│   ├── dashboard.html           # Case history & statistics
-│   ├── login.html / signup.html # Authentication pages
-│   └── styles.css               # Core styling & glassmorphic themes
-└── tests/
-    ├── test_scam_detection_suite.py # Complete 10-test automated verification suite
-    └── data/                        # OCR & blur test artifacts
+                          [ Client Browser ]
+                                   │
+              ┌────────────────────┴────────────────────┐
+              │ HTTPS / Strict CSP / Security Headers   │
+              ▼                                         ▼
+   [ Flask API Backend (5000) ]             [ Frontend SPA ]
+      - Auth & Token Revocation                - HTML5 / CSS3 / Vanilla JS
+      - Multi-Stage Analysis Pipeline          - Forensic Investigation Console
+      - SSRF & Safe Network Filters            - Real-time Stage Progression
+      - File Upload Security Validation        - Security Center & Sessions
+      - Rate Limiting & Audit Logging          - Standalone Forensic A4 PDF
+              │                     │
+              ▼                     ▼
+     [ Local Ollama AI ]     [ MongoDB (27017) ]
+      - llama3.2:3b           - Users & Sessions
+      - 100% Offline          - Analyses & History
+      - Zero Cloud Fallback   - Audit Logs & Indexes
+              │
+              ▼
+   [ Node.js Mail Service (5001) ]
+      - Express + Nodemailer
+      - Generic SMTP / Dev Simulator
+      - Protected by Internal Secret
 ```
 
 ---
 
-## 🚀 Setup Instructions
+## 🛡️ Enterprise Security Features
+
+1. **Local Authoritative AI Analysis (Zero Cloud Fallback)**
+   - All forensic analysis is executed locally and privately using Ollama (`llama3.2:3b`).
+   - Resumes, offers, and extracted personal data never leave your infrastructure.
+   - If Ollama is offline, the API reports a transparent 503 service unavailable response rather than faking results or leaking data to third-party cloud LLMs.
+
+2. **File Upload Security & Magic Byte Validation**
+   - Filename sanitization and internal UUID randomization preventing path traversal.
+   - Deep signature verification (magic bytes) for PDF (`%PDF-`), PNG, JPEG, WEBP, and DOCX.
+   - Executable rejection (`MZ`, `ELF`, shell scripts).
+   - Decompression bomb guard via Pillow (`Image.MAX_IMAGE_PIXELS`).
+   - Page count limit enforcement (`MAX_DOCUMENT_PAGES=20`).
+
+3. **Server-Side Request Forgery (SSRF) Protection**
+   - Blocks all requests to private networks, loopback addresses (`127.0.0.1`, `localhost`), link-local IPs, and cloud metadata endpoints (`169.254.169.254`).
+   - Protocol restriction to `http://` and `https://` only.
+   - DNS resolution pre-flight validation preventing DNS rebinding.
+
+4. **Dedicated Node.js Nodemailer Microservice**
+   - Clean Express service running on port 5001.
+   - Protected with internal bearer secret (`MAIL_SERVICE_SECRET`).
+   - Supports generic production SMTP alongside an automated local development simulator.
+   - 7 responsive email templates: `welcome`, `verify-email`, `password-reset`, `security-alert`, `analysis-complete`, `report-share`, and `account-deleted`.
+
+5. **Token Revocation & Active Session Management**
+   - Active device sessions tracking (User-Agent parsing, IP metadata, last seen).
+   - Immediate token invalidation via `token_version` incrementing upon password reset or remote logout.
+   - "Sign Out Other Sessions" capabilities.
+
+6. **Rate Limiting & Immutable Audit Logging**
+   - Sliding-window in-memory rate limiting across sensitive endpoints (`/login`, `/register`, `/forgot-password`, `/analyze`).
+   - Immutable audit logging in `audit_logs` collection for all key security events.
+
+7. **Automatic File Retention Cleanup**
+   - Automated pruning of temporary uploaded files exceeding retention policy (`FILE_RETENTION_HOURS=24`).
+
+8. **Secure Report Sharing & Public Verification**
+   - High-entropy cryptographic share tokens (`/shared/report/<token>`) with optional expiration and owner revocation.
+   - Public report verification registry (`/verify/report/<public_id>`) proving analysis authenticity without exposing private documents.
+
+---
+
+## 📋 Environment Configuration
+
+Copy `.env.example` to `.env`:
+
+```bash
+cp .env.example .env
+```
+
+Key environment variables:
+
+| Variable | Description | Default / Example |
+| :--- | :--- | :--- |
+| `FLASK_ENV` | Application environment (`development` or `production`) | `production` |
+| `SECRET_KEY` | Flask cryptographic session key | Secure random string |
+| `JWT_SECRET` | Secret key for signing authentication JWTs | Secure random string |
+| `MONGODB_URI` | MongoDB connection URI | `mongodb://127.0.0.1:27017/job_scam_detector` |
+| `OLLAMA_BASE_URL`| Local Ollama API host | `http://127.0.0.1:11434` |
+| `OLLAMA_MODEL` | Authoritative forensic model | `llama3.2:3b` |
+| `MAIL_SERVICE_URL` | Internal Node.js mail service endpoint | `http://localhost:5001` |
+| `MAIL_SERVICE_SECRET` | Shared secret protecting the internal mail API | Secure random string |
+| `SMTP_HOST` | Outbound mail SMTP host | `smtp.example.com` |
+| `SMTP_PORT` | Outbound mail SMTP port | `587` |
+| `SMTP_USER` | SMTP authentication username | `apikey` |
+| `SMTP_PASSWORD` | SMTP authentication password | Secret |
+| `SMTP_FROM` | Sender email address | `no-reply@scamguard.local` |
+| `FRONTEND_URL` | Allowed origin for production CORS | `http://localhost:5000` |
+| `MAX_UPLOAD_SIZE` | Maximum upload size in bytes | `10485760` (10MB) |
+| `MAX_DOCUMENT_PAGES`| Maximum permitted pages in a PDF | `20` |
+| `FILE_RETENTION_HOURS`| Temporary document cleanup interval | `24` |
+| `RATE_LIMIT_ENABLED` | Global rate limiting toggle | `true` |
+| `HIGH_RISK_EMAIL_THRESHOLD` | Score triggering high-risk email alerts | `75` |
+
+---
+
+## 🚀 Quickstart & Local Execution
 
 ### Prerequisites
-- Python 3.10+ (tested on Python 3.12 / 3.14)
-- MongoDB running locally (`mongodb://127.0.0.1:27017/`)
-- [Ollama](https://ollama.com) installed and running locally
-- Tesseract OCR (optional, for image OCR)
+- Python 3.10+
+- Node.js 18+
+- MongoDB 6.0+ (running locally on port 27017)
+- Ollama with model `llama3.2:3b` (`ollama pull llama3.2:3b`)
 
-### Step 1: Install Dependencies
+### 1. Install Dependencies
 ```bash
+# Python dependencies
 pip install -r requirements.txt
+
+# Mail microservice dependencies
+cd services/mail
+npm install
+cd ../..
 ```
 
-### Step 2: Configure Ollama & Local Model
-1. Start the Ollama background service:
-   ```bash
-   ollama serve
-   ```
-2. Pull the preferred local model:
-   ```bash
-   ollama pull llama3.2:3b
-   ```
-   *(Or for 8B models on higher-spec machines: `ollama pull llama3.1:8b`)*
+### 2. Start Services
 
-### Step 3: Configure Environment (`.env`)
-Create or edit `.env` in the project root:
-```env
-MONGO_URI=mongodb://127.0.0.1:27017/job_scam_detector
-PORT=5000
-SECRET_KEY=dev-secret-key-change-in-production
-FLASK_ENV=development
-FLASK_DEBUG=True
-
-# File Upload Configuration
-MAX_FILE_SIZE=10485760
-UPLOAD_FOLDER=uploads
-ALLOWED_EXTENSIONS=pdf,doc,docx,txt,png,jpg,jpeg,webp
-
-# Local Offline AI Configuration (Ollama)
-OLLAMA_BASE_URL=http://localhost:11434
-AI_MODEL=llama3.2:3b
-OLLAMA_TIMEOUT=120
-```
-
-### Step 4: Seed the Dedicated Development Test User
-Create or reset the idempotent test account:
+**Terminal 1: Ollama Server**
 ```bash
-python seed_test_user.py
+ollama serve
 ```
-**Test Credentials:**
-- **Email**: `test@scamdetector.local`
-- **Password**: `Test@12345`
-- **Role**: Test User with full access to login, upload, reports, and CaseAI.
 
-### Step 5: Start the Backend Server
+**Terminal 2: Node.js Mail Microservice**
+```bash
+node services/mail/server.js
+```
+
+**Terminal 3: Flask Backend & Web Application**
 ```bash
 python app.py
 ```
-The server will start on `http://127.0.0.1:5000`.
+
+Open your browser at `http://localhost:5000`.
+
+---
+
+## 🐳 Docker Production Deployment
+
+Run the complete multi-service stack (Flask API + Node Mail Service + MongoDB):
+
+```bash
+docker compose up -d --build
+```
+
+The stack exposes:
+- ScamGuard Web & API: `http://localhost:5000`
+- MongoDB: `localhost:27017`
+- Mail Service (Internal): `http://localhost:5001`
+
+---
+
+## 🔍 Preflight Verification Script
+
+Before deploying to production, execute the automated preflight checker:
+
+```bash
+python scripts/preflight_check.py
+```
+
+Output checks:
+```
+=================================================================
+  SCAMGUARD AI — PRODUCTION PREFLIGHT CHECK
+=================================================================
+  [✓] Configuration & Environment Variables
+  [✓] MongoDB Connection & Required Indexes
+  [✓] Ollama Engine & Model (llama3.2:3b)
+  [✓] OCR & Document Pipeline (pypdfium2: OK, PyPDF2: OK, Pillow: OK)
+  [✓] Node.js Mail Service (Simulator / SMTP)
+  [✓] Domain Intelligence & SSRF Protection Filters
+  [✓] Upload Directory Storage Permissions
+  [✓] Security Configuration (Debug disabled)
+=================================================================
+  RESULT: READY FOR DEPLOYMENT
+=================================================================
+```
 
 ---
 
 ## 🧪 Automated Testing
 
-### 1. End-to-End Forensic Analysis Suite
-Runs all 10 forensic test scenarios (A through J) with real local GPU/CPU inference, verifying extraction, score clamping, evidence quotes, MongoDB persistence, and CaseAI context:
+Execute the complete production test suite:
+
 ```bash
-python tests/test_scam_detection_suite.py
+pytest tests/test_production_readiness_suite.py -v
 ```
 
-**Test Coverage:**
-- **A. Legitimate Offer**: Low risk (0/100), full salary/benefits, 0 scam deductions.
-- **B. Traditional Scam**: High risk (100/100), task VIP deposit, Telegram contact.
-- **C. AI-Generated Professional Scam**: High risk (85/100), polished language with hidden ₹4,999 deposit.
-- **D. Blurry Document**: Low confidence warning with graceful handling.
-- **E. OCR-Heavy Document**: Image-based scanned offer processed via Tesseract OCR.
-- **F. Financial Scam**: Fake cashier check overpayment and refund fraud.
-- **G. Credential Harvesting Scam**: Premature demands for SSN, driver's license, and bank login.
-- **H. Suspicious Recruiter Identity**: Microsoft imposter using a `@gmail.com` address.
-- **I. Long Document**: Multi-page Master Employment Agreement contextual analysis.
-- **J. Prompt Injection Defense**: Evaluates resistance against adversarial prompt override directives.
-
-### 2. CaseAI HTTP & SSE Streaming Test
-Verifies CaseAI live chat, Server-Sent Events (SSE) streaming, checklist generation, and conversation history:
+Execute forensic and certificate tests:
 ```bash
-python -m backend.test_case_ai_http
+python tests/test_forensic_console_suite.py
+python tests/test_certificate_scam_suite.py
 ```
 
 ---
 
-## 📡 API Reference
+## 📡 API Reference Overview
 
-### Health & Diagnostics
-- `GET /api/ai/status` — Returns local Ollama availability, active provider, base URL, and installed models.
-
-### Authentication
-- `POST /api/auth/signup` — Register new user
-- `POST /api/auth/login` — Authenticate and receive JWT token
-- `GET /api/auth/verify` — Validate session token
-
-### Scam Analysis
-- `POST /api/analysis/analyze` (or `POST /api/analyze`) — Multipart file upload or JSON payload analysis.
-- `GET /api/analysis/result/<id>` — Retrieve full forensic report by case ID.
-
-### CaseAI Interactive Assistant
-- `GET /api/cases/<id>/chat/context` — Retrieve case-grounded forensic context.
-- `POST /api/cases/<id>/chat` — Synchronous chat.
-- `POST /api/cases/<id>/chat/stream` — Real-time Server-Sent Events (SSE) streaming response.
-- `POST /api/cases/<id>/chat/action` — Trigger specialist actions (`generate_checklist`, `draft_inquiry_email`, etc.).
-- `GET /api/cases/<id>/chat/export` — Export case conversation transcript.
-
----
-
-## 🛡️ Security & Privacy
-- **Untrusted Input Isolation**: All documents are treated as untrusted forensic evidence. Explicit prompt boundaries defend against prompt injection.
-- **Path Traversal Protection**: Uploaded filenames are sanitized with UUID prefixes and secured against path traversal attacks.
-- **Zero Cloud Leakage**: Inference occurs on `localhost` without transmitting documents to third-party AI APIs.
-- **Owner-Scoped Data**: Case histories and CaseAI sessions are strictly scoped to the authenticated user ID.
-
----
-
-## 📄 License
-This project is open-source and intended for educational, research, and consumer protection purposes.
+- **Auth**: `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/verify-email`, `POST /api/auth/resend-verification`, `POST /api/auth/forgot-password`, `POST /api/auth/reset-password`, `GET /api/auth/sessions`, `POST /api/auth/sessions/revoke-others`, `PUT /api/auth/notification-preferences`
+- **Analysis**: `POST /api/analyze`, `POST /api/analyze/job`, `GET /api/analyze/job/<id>`, `GET /api/analysis/result/<id>`
+- **Reports**: `POST /api/saved-reports/<id>/share`, `GET /api/saved-reports/shared/<token>`, `GET /api/saved-reports/verify/<public_id>`
+- **Admin**: `GET /api/admin/metrics`, `GET /api/admin/users`, `GET /api/admin/audit-logs`, `GET /api/admin/system-health`
+- **Health**: `GET /api/health`, `GET /api/ready`, `GET /api/ai/status`

@@ -21,6 +21,14 @@ from backend.forensic_utils import (
     build_ai_opinion,
     build_document_intelligence
 )
+from backend.rate_limiter import apply_rate_limit
+from backend.audit_logger import log_audit_event
+from backend.analysis_job_manager import (
+    create_analysis_job,
+    get_job_status,
+    start_analysis_job_async,
+    _dispatch_analysis_notifications
+)
 
 analysis_bp = Blueprint('analysis', __name__)
 
@@ -82,8 +90,12 @@ def analyze():
         ↓
     PERSISTENCE & RETURN
     """
+    user_id = request.user_id
+    limit_ok, limit_msg = apply_rate_limit(f"analyze:{user_id}", limit=20, window_seconds=300)
+    if not limit_ok:
+        return jsonify({'error': limit_msg}), 429
+
     try:
-        user_id = request.user_id
         text = ""
         company_name = ""
         job_title = ""
@@ -327,11 +339,124 @@ def analyze():
             link=f"result.html?id={analysis_id}"
         )
 
+        log_audit_event("AI_ANALYSIS_COMPLETED", user_id, {
+            "analysis_id": analysis_id,
+            "risk_score": risk_score,
+            "classification": classification,
+            "document_type": document_type
+        })
+
+        # Phase 6 & 7: Check preferences and dispatch email
+        _dispatch_analysis_notifications(user_id, analysis_id, analysis_result)
+
         return jsonify({'result': analysis_result}), 200
 
     except Exception as e:
         print(f"[ERROR] Analysis pipeline error: {e}")
         return jsonify({'error': str(e)}), 500
+
+
+@analysis_bp.route('/job', methods=['POST'])
+@require_auth
+def create_job():
+    """
+    Phase 18: Analysis Job System.
+    Submits an analysis job asynchronously and returns job_id immediately with status QUEUED.
+    """
+    user_id = request.user_id
+    limit_ok, limit_msg = apply_rate_limit(f"job:{user_id}", limit=20, window_seconds=300)
+    if not limit_ok:
+        return jsonify({'error': limit_msg}), 429
+
+    try:
+        text = ""
+        company_name = ""
+        job_title = ""
+        company_email = ""
+        company_website = ""
+        company_phone = ""
+        job_location = ""
+        file_path = None
+        file_extension = None
+        file_info = None
+
+        if request.form:
+            text = (request.form.get('text') or '').strip()
+            company_name = (request.form.get('company_name') or '').strip()
+            job_title = (request.form.get('job_title') or '').strip()
+            company_email = (request.form.get('company_email') or '').strip()
+            company_website = (request.form.get('company_website') or '').strip()
+            company_phone = (request.form.get('company_phone') or '').strip()
+            job_location = (request.form.get('job_location') or '').strip()
+
+        if 'file' in request.files:
+            file = request.files['file']
+            if file and file.filename and allowed_file(file.filename):
+                file_path, filename = save_uploaded_file(file, user_id)
+                file_extension = filename.rsplit('.', 1)[1].lower()
+                file_info = {
+                    'user_id': user_id,
+                    'filename': filename,
+                    'file_path': file_path,
+                    'file_type': file_extension,
+                    'uploaded_at': datetime.utcnow()
+                }
+
+        if not text and request.is_json:
+            data = request.get_json() or {}
+            text = (data.get('text') or '').strip()
+            company_name = (data.get('company_name') or '').strip()
+            job_title = (data.get('job_title') or '').strip()
+            company_email = (data.get('company_email') or '').strip()
+            company_website = (data.get('company_website') or '').strip()
+            company_phone = (data.get('company_phone') or '').strip()
+            job_location = (data.get('job_location') or '').strip()
+
+        if not text and not file_path:
+            return jsonify({'error': 'Job description text or valid document upload is required.'}), 400
+
+        payload = {
+            "text": text,
+            "metadata": {
+                "company_name": company_name,
+                "job_title": job_title,
+                "company_email": company_email,
+                "company_website": company_website,
+                "company_phone": company_phone,
+                "job_location": job_location
+            },
+            "file_path": file_path,
+            "file_extension": file_extension,
+            "file_info": file_info
+        }
+
+        job_id = create_analysis_job(user_id=user_id, input_payload=payload)
+        start_analysis_job_async(job_id)
+
+        return jsonify({
+            "job_id": job_id,
+            "status": "QUEUED",
+            "progress": 5,
+            "stage": "UPLOAD"
+        }), 202
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@analysis_bp.route('/job/<job_id>', methods=['GET'])
+@require_auth
+def get_job(job_id):
+    """
+    Phase 19: Real-time Analysis Status.
+    Pollable status endpoint reporting actual backend stages:
+    VALIDATION -> OCR -> ENTITY_EXTRACTION -> DOMAIN_INTELLIGENCE -> AI_ANALYSIS -> REPORT_GENERATION -> COMPLETED
+    """
+    job_info = get_job_status(job_id)
+    if not job_info:
+        return jsonify({'error': 'Job not found'}), 404
+
+    return jsonify({"job": job_info}), 200
 
 
 def _sanitize_doc_for_json(d):

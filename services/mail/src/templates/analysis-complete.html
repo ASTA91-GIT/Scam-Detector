@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Forensic Analysis Complete - ScamGuard AI</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0B0F17; color: #E2E8F0; margin: 0; padding: 20px; }
+    .container { max-width: 600px; margin: 0 auto; background: #111827; border: 1px solid #1E293B; border-radius: 8px; overflow: hidden; }
+    .header { background: #0B1120; border-bottom: 2px solid {{severity_color}}; padding: 24px; text-align: center; }
+    .brand { font-size: 22px; font-weight: 800; letter-spacing: 0.08em; color: #FFFFFF; }
+    .brand span { color: {{severity_color}}; }
+    .subtitle { font-size: 11px; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.12em; margin-top: 4px; }
+    .content { padding: 32px 28px; line-height: 1.6; font-size: 14px; }
+    .h1 { font-size: 18px; font-weight: 700; color: #FFFFFF; margin-top: 0; margin-bottom: 16px; }
+    .score-badge { display: inline-block; background: {{severity_bg}}; border: 1px solid {{severity_color}}; color: {{severity_color}}; padding: 8px 16px; border-radius: 4px; font-weight: 800; font-size: 16px; font-family: monospace; margin-bottom: 16px; }
+    .card { background: #1E293B; border: 1px solid #334155; border-radius: 6px; padding: 16px 20px; margin: 20px 0; }
+    .table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+    .table td { padding: 6px 4px; border-bottom: 1px solid #2D3748; }
+    .table td.label { color: #94A3B8; width: 40%; font-family: monospace; }
+    .table td.val { color: #FFFFFF; font-weight: 600; }
+    .btn { display: inline-block; background: #00F0FF; color: #000000; font-weight: 700; font-size: 13px; text-decoration: none; padding: 12px 28px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; margin: 16px 0; }
+    .footer { background: #0B1120; border-top: 1px solid #1E293B; padding: 20px; text-align: center; font-size: 11px; color: #64748B; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand">SCAMGUARD <span>AI</span></div>
+      <div class="subtitle">Forensic Threat Assessment &bull; Case #{{case_id}}</div>
+    </div>
+    <div class="content">
+      <div class="h1">Forensic Analysis Complete</div>
+      <p>The automated offline AI forensic examination for your uploaded document (<strong>{{document_title}}</strong>) has finished execution.</p>
+      
+      <div style="text-align: center; margin: 12px 0;">
+        <div class="score-badge">
+          RISK SCORE: {{risk_score}} / 100 &bull; {{risk_level}}
+        </div>
+      </div>
+
+      <div class="card">
+        <strong style="color: #38BDF8;">Assessment Telemetry:</strong>
+        <table class="table">
+          <tr>
+            <td class="label">CLASSIFICATION</td>
+            <td class="val" style="color: {{severity_color}};">{{risk_level}}</td>
+          </tr>
+          <tr>
+            <td class="label">CONFIDENCE</td>
+            <td class="val">{{confidence}}%</td>
+          </tr>
+          <tr>
+            <td class="label">DOCUMENT TYPE</td>
+            <td class="val">{{document_type}}</td>
+          </tr>
+          <tr>
+            <td class="label">CLAIMED ENTITY</td>
+            <td class="val">{{claimed_company}}</td>
+          </tr>
+          <tr>
+            <td class="label">ANALYZED AT</td>
+            <td class="val">{{analyzed_at}}</td>
+          </tr>
+        </table>
+      </div>
+
+      {{#if primary_indicators}}
+      <div class="card" style="border-left: 3px solid {{severity_color}};">
+        <strong>Primary Forensic Indicators:</strong>
+        <ul style="margin: 8px 0 0 0; padding-left: 20px; color: #CBD5E1;">
+          {{#each primary_indicators}}
+          <li>{{this}}</li>
+          {{/each}}
+        </ul>
+      </div>
+      {{/if}}
+
+      <div style="text-align: center;">
+        <a href="{{report_url}}" class="btn">View Forensic Dossier</a>
+      </div>
+
+      <p style="font-size: 11px; color: #64748B; text-align: center; margin-top: 20px;">
+        To protect your confidentiality, raw document excerpts are not embedded directly in email transmissions. Access your authenticated dashboard to examine verbatim quotes and reasoning traces.
+      </p>
+    </div>
+    <div class="footer">
+      SCAMGUARD AI &bull; CONFIDENTIAL FORENSIC AUDIT<br>
+      Automated Threat Telemetry Dispatch
+    </div>
+  </div>
+</body>
+</html>

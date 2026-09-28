@@ -26,10 +26,17 @@ def init_db():
         client.admin.command("ping")
         print(f"[OK] Connected to MongoDB: {database_name}")
 
-        # Indexes
+        # Indexes (Phase 34: Database Indexes)
         db.users.create_index("email", unique=True)
+        db.users.create_index("created_at")
         db.analyses.create_index([("user_id", 1), ("created_at", -1)])
+        db.analyses.create_index("status")
         db.analyses.create_index("risk_level")
+        db.shared_reports.create_index("token_hash", unique=True)
+        db.shared_reports.create_index("public_id")
+        db.audit_logs.create_index([("user_id", 1), ("timestamp", -1)])
+        db.audit_logs.create_index("event_type")
+        db.sessions.create_index([("user_id", 1), ("session_id", 1)])
         db.saved_reports.create_index([("user_id", 1), ("created_at", -1)])
         db.notifications.create_index([("user_id", 1), ("read", 1), ("created_at", -1)])
         db.activity_logs.create_index([("user_id", 1), ("created_at", -1)])
@@ -44,6 +51,9 @@ def init_db():
 
 
 def get_db():
+    return db
+
+def get_database():
     return db
 
 def get_users_collection():
@@ -66,6 +76,9 @@ def get_notifications_collection():
 
 def get_activity_logs_collection():
     return db.activity_logs
+
+def get_audit_logs_collection():
+    return db.audit_logs
 
 def get_preferences_collection():
     return db.user_preferences

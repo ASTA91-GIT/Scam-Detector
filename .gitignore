@@ -15,6 +15,13 @@ instance/
 
 # Environment
 .env
+.env.*
+!.env.example
+
+# Logs and temporary files
+*.log
+logs/
+temporary/
 
 # Uploads
 uploads/*

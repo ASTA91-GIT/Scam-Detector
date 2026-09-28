@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Forensic Report Shared - ScamGuard AI</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0B0F17; color: #E2E8F0; margin: 0; padding: 20px; }
+    .container { max-width: 600px; margin: 0 auto; background: #111827; border: 1px solid #1E293B; border-radius: 8px; overflow: hidden; }
+    .header { background: #0B1120; border-bottom: 2px solid #00F0FF; padding: 24px; text-align: center; }
+    .brand { font-size: 22px; font-weight: 800; letter-spacing: 0.08em; color: #FFFFFF; }
+    .brand span { color: #00F0FF; }
+    .subtitle { font-size: 11px; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.12em; margin-top: 4px; }
+    .content { padding: 32px 28px; line-height: 1.6; font-size: 14px; }
+    .h1 { font-size: 18px; font-weight: 700; color: #FFFFFF; margin-top: 0; margin-bottom: 16px; }
+    .card { background: #1E293B; border: 1px solid #334155; border-radius: 6px; padding: 16px 20px; margin: 20px 0; }
+    .btn { display: inline-block; background: #00F0FF; color: #000000; font-weight: 700; font-size: 13px; text-decoration: none; padding: 12px 28px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; margin: 16px 0; }
+    .footer { background: #0B1120; border-top: 1px solid #1E293B; padding: 20px; text-align: center; font-size: 11px; color: #64748B; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand">SCAMGUARD <span>AI</span></div>
+      <div class="subtitle">Secure Forensic Report Sharing</div>
+    </div>
+    <div class="content">
+      <div class="h1">A Forensic Dossier Has Been Shared With You</div>
+      <p>A ScamGuard AI forensic investigator (<strong>{{shared_by}}</strong>) has provided you with access to a sanitized threat assessment.</p>
+      
+      <div class="card">
+        <strong>Report Summary:</strong>
+        <p style="margin: 8px 0 0 0; color: #CBD5E1;">
+          Document: <strong>{{document_title}}</strong><br>
+          Risk Classification: <strong style="color: {{severity_color}};">{{risk_level}} ({{risk_score}}/100)</strong><br>
+          Shared Token: <code style="color: #38BDF8;">{{share_token}}</code>
+        </p>
+      </div>
+
+      <div style="text-align: center;">
+        <a href="{{share_url}}" class="btn">Access Shared Report</a>
+      </div>
+
+      <p style="font-size: 11px; color: #64748B; text-align: center; margin-top: 20px;">
+        This shared dossier is read-only and cryptographically verified. Personal account details have been sanitized.
+      </p>
+    </div>
+    <div class="footer">
+      SCAMGUARD AI &bull; CONFIDENTIAL CYBERSECURITY REPORT<br>
+      Automated Threat Telemetry Dispatch
+    </div>
+  </div>
+</body>
+</html>
