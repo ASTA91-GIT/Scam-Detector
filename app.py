@@ -10,6 +10,7 @@ from backend.dashboard import dashboard_bp
 from backend.saved_reports import saved_reports_bp
 from backend.notifications import notifications_bp
 from backend.case_chat import case_chat_bp
+from backend.ai.provider_factory import get_ai_status
 
 load_dotenv()
 
@@ -28,6 +29,18 @@ app.register_blueprint(dashboard_bp, url_prefix='/api/dashboard')
 app.register_blueprint(saved_reports_bp, url_prefix='/api/saved-reports')
 app.register_blueprint(notifications_bp, url_prefix='/api/notifications')
 app.register_blueprint(case_chat_bp, url_prefix='/api')
+
+# Direct compatibility endpoints
+@app.route('/api/analyze', methods=['POST'])
+def analyze_alias():
+    """Alias for /api/analysis/analyze supporting legacy and standardized callers"""
+    from backend.analysis import analyze
+    return analyze()
+
+@app.route('/api/ai/status', methods=['GET'])
+def ai_status_alias():
+    """Health check for local offline AI inference engine"""
+    return jsonify(get_ai_status()), 200
 
 @app.route('/')
 def index():
@@ -57,4 +70,4 @@ if __name__ == '__main__':
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], 'avatars'), exist_ok=True)
     port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, use_reloader=False)

@@ -3,30 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forensic Risk Assessment Dossier - ScamGuard AI</title>
+    <title>AI Forensic Investigation Console - ScamGuard AI</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="forensic_console.css">
     <script>
         (function() {
             const saved = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', saved);
         })();
     </script>
-    <style>
-        @media print {
-            .app-sidebar, .app-topbar, .app-mobile-nav, .result-actions-bar, #saveReportBtn, #shareReportBtn {
-                display: none !important;
-            }
-            .app-main { margin-left: 0 !important; }
-            .app-content { padding: 0 !important; }
-            body { background: #fff !important; color: #000 !important; }
-            .cyber-card, .result-header-panel, .breakdown-card {
-                background: #fff !important;
-                border: 1px solid #ccc !important;
-                box-shadow: none !important;
-                color: #000 !important;
-            }
-        }
-    </style>
 </head>
 <body>
 
@@ -38,184 +23,459 @@
 
             <main class="app-content">
                 <!-- Loading State Container -->
-                <div id="resultLoadingState" style="text-align: center; padding: 4rem 1rem;">
-                    <div class="spinner" style="width: 44px; height: 44px; border-width: 3px; border-top-color: var(--accent-cyan);"></div>
-                    <p style="color: var(--text-secondary); margin-top: 1rem; font-size: 1.05rem;">Loading Forensic Risk Assessment...</p>
+                <div id="resultLoadingState" style="text-align: center; padding: 5rem 1rem;">
+                    <div class="spinner" style="width: 44px; height: 44px; border-width: 3px; border-top-color: var(--console-cyan);"></div>
+                    <p style="color: var(--console-text-secondary); margin-top: 1.25rem; font-family: var(--font-mono); font-size: 0.95rem; letter-spacing: 0.05em;">
+                        INITIALIZING FORENSIC INVESTIGATION CONSOLE...
+                    </p>
                 </div>
 
                 <!-- Error State Container -->
-                <div id="resultErrorState" style="display:none; text-align:center; padding: 4rem 1rem;">
+                <div id="resultErrorState" style="display:none; text-align:center; padding: 5rem 1rem;">
                     <div class="empty-state">
-                        <div class="empty-icon" style="color: var(--risk-danger);">⚠️</div>
-                        <div class="empty-title" id="resultErrorTitle">Report Not Found</div>
-                        <p class="empty-desc" id="resultErrorDesc">The requested forensic audit record could not be loaded or authorization expired.</p>
-                        <a href="dashboard.html" class="btn btn-primary btn-sm">Return to Dashboard</a>
+                        <div class="empty-icon" style="color: var(--console-risk-critical); font-size: 2.5rem;">⚠️</div>
+                        <div class="empty-title" id="resultErrorTitle" style="font-family: var(--font-syne); font-size: 1.4rem; margin-top: 0.5rem;">Dossier Not Found</div>
+                        <p class="empty-desc" id="resultErrorDesc" style="color: var(--console-text-secondary); max-width: 500px; margin: 0.5rem auto 1.5rem auto;">
+                            The requested forensic audit record could not be loaded or authorization expired.
+                        </p>
+                        <a href="dashboard.html" class="btn-forensic-primary">Return to Dashboard</a>
                     </div>
                 </div>
 
                 <!-- Main Result Container -->
-                <div id="resultMainContainer" style="display: none;">
-                    <!-- Top Risk Assessment Panel -->
-                    <div class="result-header-panel">
-                        <div class="result-main-gauge-box">
-                            <div class="radial-gauge" style="width: 140px; height: 140px;">
-                                <svg class="radial-svg" viewBox="0 0 160 160">
-                                    <circle class="radial-bg" cx="80" cy="80" r="70" />
-                                    <circle class="radial-fill" id="resultRadialFill" cx="80" cy="80" r="70" style="stroke: #10b981; stroke-dashoffset: 440;" />
-                                </svg>
-                                <div class="radial-content">
-                                    <div class="radial-number" id="resultTrustScore">--</div>
-                                    <div class="radial-label">Trust Score</div>
+                <div id="resultMainContainer" class="forensic-console" style="display: none;">
+                    
+                    <!-- 1. Top Result Header -->
+                    <div class="forensic-header">
+                        <div class="forensic-header-top">
+                            <!-- Left: Forensic Assessment Info -->
+                            <div class="forensic-header-left">
+                                <div class="forensic-breadcrumbs">
+                                    <span>AI FORENSIC INVESTIGATION CONSOLE</span>
+                                    <span class="dot"></span>
+                                    <span>CASE DOSSIER</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.25rem;">
+                                    <span class="badge-forensic badge-forensic-danger" id="resultRiskBadge">ANALYZING</span>
+                                    <span class="badge-forensic badge-forensic-cyan" id="resultDocTypeBadge">DOCUMENT</span>
+                                    <span class="badge-forensic badge-forensic-muted" id="headerRiskScoreBadge">RISK: <span id="headerRiskScore">--</span>/100</span>
+                                </div>
+                                <h1 class="forensic-job-title" id="resultJobTitle">Document Risk Assessment</h1>
+                                
+                                <div class="forensic-meta-strip">
+                                    <div class="forensic-meta-item">
+                                        <span class="meta-label">CASE ID:</span>
+                                        <span class="meta-val mono-text" id="resultAuditId">#--</span>
+                                    </div>
+                                    <div class="forensic-meta-item">
+                                        <span class="meta-label">CLAIMED ENTITY:</span>
+                                        <strong class="meta-val" id="resultCompanyName">--</strong>
+                                    </div>
+                                    <div class="forensic-meta-item">
+                                        <span class="meta-label">ANALYZED:</span>
+                                        <span class="meta-val mono-text" id="resultTimestamp">--</span>
+                                    </div>
+                                    <div class="forensic-meta-item">
+                                        <span class="meta-label">TYPE:</span>
+                                        <span class="meta-val" id="headerDocType">--</span>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="result-meta-info">
-                                <div style="display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.25rem;">
-                                    <span class="badge" id="resultRiskBadge">ANALYZING</span>
-                                    <span style="font-size: 0.8rem; color: var(--text-muted);" id="resultAuditId">ID: #--</span>
+                            <!-- Right: Technical Radial Risk Gauge -->
+                            <div class="forensic-gauge-box">
+                                <div class="forensic-radial-wrap">
+                                    <svg class="forensic-radial-svg" viewBox="0 0 160 160">
+                                        <circle class="forensic-radial-bg" cx="80" cy="80" r="70" />
+                                        <circle class="forensic-radial-fill" id="resultRadialFill" cx="80" cy="80" r="70" style="stroke: #ef4444; stroke-dashoffset: 440;" />
+                                    </svg>
+                                    <div class="forensic-radial-center">
+                                        <div class="forensic-radial-score" id="resultRiskScoreNum">--</div>
+                                        <div class="forensic-radial-label">RISK SCORE</div>
+                                        <div class="forensic-radial-sub" id="resultGaugeSeverity">--</div>
+                                    </div>
                                 </div>
-                                <h2 id="resultJobTitle">Software Engineer Offer</h2>
-                                <p style="color: var(--text-secondary); font-size: 0.92rem;" id="resultCompanyDate">
-                                    Claimed: <strong id="resultCompanyName" style="color:var(--text-primary);">Acme Corp</strong> &bull; <span id="resultTimestamp">Date</span>
-                                </p>
+                                <div class="forensic-gauge-meta">
+                                    <span>CONFIDENCE: <strong id="resultConfidenceVal">--%</strong></span>
+                                    <span>ENGINE: <strong id="resultModelVal">llama3.2:3b</strong></span>
+                                </div>
                             </div>
                         </div>
 
                         <!-- Action Toolbar -->
-                        <div class="result-actions-bar">
-                            <button class="btn btn-outline btn-sm" id="askCaseAiBtn" style="border-color: var(--accent-cyan); color: var(--accent-cyan); background: rgba(0, 229, 255, 0.08); font-weight: 600;" title="Investigate this case with CaseAI">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
-                                Ask CaseAI
-                            </button>
-                            <button class="btn btn-outline btn-sm" id="saveReportBtn">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
-                                <span id="saveBtnText">Save Report</span>
-                            </button>
-                            <button class="btn btn-outline btn-sm" id="downloadPdfBtn" title="Print / Export Dossier">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                                Download Report
-                            </button>
-                            <button class="btn btn-outline btn-sm" id="shareReportBtn">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                                Share Link
-                            </button>
-                            <a href="analyze.html" class="btn btn-primary btn-sm">Analyze Another</a>
+                        <div class="forensic-actions-bar">
+                            <div class="forensic-actions-left">
+                                <button class="btn-forensic-primary" id="askCaseAiBtn" title="Launch conversational investigation with CaseAI">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+                                    Ask CaseAI
+                                </button>
+                                <button class="btn-forensic-secondary" id="saveReportBtn" title="Bookmark dossier to saved repository">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+                                    <span id="saveBtnText">Save Report</span>
+                                </button>
+                                <button class="btn-forensic-secondary" id="downloadPdfBtn" title="Export or print forensic dossier">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    Download Dossier
+                                </button>
+                                <button class="btn-forensic-secondary" id="shareReportBtn" title="Generate sanitized shareable link">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                                    Share Link
+                                </button>
+                            </div>
+                            <div class="forensic-actions-right">
+                                <a href="analyze.html" class="btn-forensic-secondary">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                    Analyze Another
+                                </a>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Executive Summary Card -->
-                    <div class="cyber-card" style="margin-bottom: 2rem;">
-                        <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Executive Security Summary</h3>
-                        <p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.95rem;" id="resultAiExplanation">
-                            Detailed AI summary examining recruiter intent, urgency pressure, and manipulation tactics.
-                        </p>
-                    </div>
-
-                    <!-- Risk Breakdown Matrix (6 Pillars) -->
-                    <div class="dash-card-header">
-                        <h3>Risk Breakdown Vectors</h3>
-                        <small style="color: var(--text-muted);">Scores out of 100 (Higher = Safer)</small>
-                    </div>
-                    <div class="breakdown-grid" id="riskBreakdownGrid">
-                        <div class="breakdown-card">
-                            <div class="breakdown-card-head">
-                                <span>PAYMENT RISK</span>
-                                <span>💳</span>
+                    <!-- Extraction Warning Notice (Quality Check) -->
+                    <div id="extractionWarningBanner" class="forensic-panel" style="display:none; border-left: 3px solid var(--console-risk-medium); background: rgba(245, 158, 11, 0.05); padding: 1rem 1.25rem;">
+                        <div style="display:flex; align-items:flex-start; gap:0.75rem;">
+                            <span style="font-size:1.25rem; color:var(--console-risk-medium);">⚠️</span>
+                            <div>
+                                <strong style="color:var(--console-text-primary); font-size:0.92rem;">Document Extraction Degradation Notice</strong>
+                                <p style="color:var(--console-text-secondary); font-size:0.85rem; margin-top:2px;" id="extractionWarningText">
+                                    Analysis confidence may be reduced because the extracted document text is incomplete or unclear.
+                                </p>
                             </div>
-                            <div class="breakdown-score" id="scorePayment">--</div>
-                            <small style="color: var(--text-muted); font-size: 0.75rem;">Advance fee analysis</small>
-                        </div>
-                        <div class="breakdown-card">
-                            <div class="breakdown-card-head">
-                                <span>IDENTITY RISK</span>
-                                <span>🪪</span>
-                            </div>
-                            <div class="breakdown-score" id="scoreIdentity">--</div>
-                            <small style="color: var(--text-muted); font-size: 0.75rem;">Personal info safety</small>
-                        </div>
-                        <div class="breakdown-card">
-                            <div class="breakdown-card-head">
-                                <span>URGENCY RISK</span>
-                                <span>⏱️</span>
-                            </div>
-                            <div class="breakdown-score" id="scoreUrgency">--</div>
-                            <small style="color: var(--text-muted); font-size: 0.75rem;">Pressure tactics</small>
-                        </div>
-                        <div class="breakdown-card">
-                            <div class="breakdown-card-head">
-                                <span>CONTACT RISK</span>
-                                <span>📧</span>
-                            </div>
-                            <div class="breakdown-score" id="scoreContact">--</div>
-                            <small style="color: var(--text-muted); font-size: 0.75rem;">Recruiter email domain</small>
-                        </div>
-                        <div class="breakdown-card">
-                            <div class="breakdown-card-head">
-                                <span>COMPANY RISK</span>
-                                <span>🌐</span>
-                            </div>
-                            <div class="breakdown-score" id="scoreCompany">--</div>
-                            <small style="color: var(--text-muted); font-size: 0.75rem;">DNS & web presence</small>
-                        </div>
-                        <div class="breakdown-card">
-                            <div class="breakdown-card-head">
-                                <span>LANGUAGE RISK</span>
-                                <span>📝</span>
-                            </div>
-                            <div class="breakdown-score" id="scoreLanguage">--</div>
-                            <small style="color: var(--text-muted); font-size: 0.75rem;">Grammar & scam patterns</small>
                         </div>
                     </div>
 
-                    <!-- Split: Left Red Flags, Right Recommendations & Company Info -->
-                    <div class="dash-main-grid">
-                        <!-- Detected Red Flags with Exact Evidence Snippets -->
-                        <div>
-                            <div class="dash-card-header">
-                                <h3>Detected Red Flags & Evidence</h3>
+                    <!-- Row 1: Executive Assessment & Document Intelligence -->
+                    <div class="forensic-grid-2">
+                        <!-- Executive Security Summary -->
+                        <div class="forensic-panel">
+                            <div class="forensic-panel-header">
+                                <div class="forensic-panel-title">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--console-cyan)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                    Executive Assessment
+                                </div>
+                                <span class="badge-forensic badge-forensic-cyan" id="resultConfidenceBadge">CONFIDENCE: --%</span>
                             </div>
-                            <div id="redFlagsContainer">
+                            <div style="display:flex; gap:0.6rem; flex-wrap:wrap; margin-bottom:0.85rem;">
+                                <div class="badge-forensic badge-forensic-muted">LEVEL: <strong id="execRiskLevel" style="color:var(--console-text-primary); margin-left:3px;">--</strong></div>
+                                <div class="badge-forensic badge-forensic-muted">CONFIDENCE: <strong id="execConfidence" style="color:var(--console-text-primary); margin-left:3px;">--</strong></div>
+                                <div class="badge-forensic badge-forensic-muted">DRIVERS: <strong id="execDrivers" style="color:var(--console-text-primary); margin-left:3px;">--</strong></div>
+                            </div>
+                            <p style="color: var(--console-text-secondary); line-height: 1.65; font-size: 0.92rem;" id="resultAiExplanation">
+                                Forensic evaluation summary examining semantic intent, communication authenticity, and manipulation signals.
+                            </p>
+                        </div>
+
+                        <!-- Document Intelligence -->
+                        <div class="forensic-panel">
+                            <div class="forensic-panel-header">
+                                <div class="forensic-panel-title">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--console-cyan)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                                    Document Intelligence
+                                </div>
+                                <span class="badge-forensic badge-forensic-muted" id="resultModelBadge">LOCAL AI</span>
+                            </div>
+                            <table class="entities-table">
+                                <tbody>
+                                    <tr>
+                                        <td class="entities-label">CLASSIFIED TYPE</td>
+                                        <td class="entities-val"><strong id="docIntelType" style="color:var(--console-cyan);">--</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="entities-label">PAGE ESTIMATE</td>
+                                        <td class="entities-val" id="docIntelPages">1 Page</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="entities-label">EXTRACTION QUALITY</td>
+                                        <td class="entities-val" id="docIntelOcrQuality">Good</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="entities-label">TEXT YIELD</td>
+                                        <td class="entities-val" id="docIntelChars">-- characters</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="entities-label">OCR FIDELITY</td>
+                                        <td class="entities-val" id="docIntelOcrConf">94%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="entities-label">SYNTHETIC ASSESS</td>
+                                        <td class="entities-val" id="docIntelSynthetic">Standard Composition</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Risk Signal Analysis Matrix -->
+                    <div class="forensic-panel">
+                        <div class="forensic-panel-header">
+                            <div class="forensic-panel-title">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--console-cyan)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                                Risk Signal Analysis
+                            </div>
+                            <span class="forensic-panel-subtitle">HIGHER SCORE = HIGHER DETECTED RISK</span>
+                        </div>
+                        <div class="signal-matrix-grid" id="signalMatrixGrid">
+                            <!-- Populated dynamically via renderRiskSignals -->
+                            <div class="signal-matrix-cell" id="sigCellPayment">
+                                <div class="signal-cell-top">
+                                    <span class="signal-cell-name">PAYMENT RISK</span>
+                                    <span class="signal-cell-score mono-text" id="scorePayment">--</span>
+                                </div>
+                                <div class="signal-bar-track">
+                                    <div class="signal-bar-fill" id="barPayment" style="width: 0%; background: var(--console-risk-safe);"></div>
+                                </div>
+                                <div class="signal-cell-desc" id="descPayment">Advance fee / security payment evaluation</div>
+                            </div>
+
+                            <div class="signal-matrix-cell" id="sigCellIdentity">
+                                <div class="signal-cell-top">
+                                    <span class="signal-cell-name">IDENTITY RISK</span>
+                                    <span class="signal-cell-score mono-text" id="scoreIdentity">--</span>
+                                </div>
+                                <div class="signal-bar-track">
+                                    <div class="signal-bar-fill" id="barIdentity" style="width: 0%; background: var(--console-risk-safe);"></div>
+                                </div>
+                                <div class="signal-cell-desc" id="descIdentity">Sensitive credential & banking requests</div>
+                            </div>
+
+                            <div class="signal-matrix-cell" id="sigCellUrgency">
+                                <div class="signal-cell-top">
+                                    <span class="signal-cell-name">URGENCY RISK</span>
+                                    <span class="signal-cell-score mono-text" id="scoreUrgency">--</span>
+                                </div>
+                                <div class="signal-bar-track">
+                                    <div class="signal-bar-fill" id="barUrgency" style="width: 0%; background: var(--console-risk-safe);"></div>
+                                </div>
+                                <div class="signal-cell-desc" id="descUrgency">Artificial deadlines & pressure tactics</div>
+                            </div>
+
+                            <div class="signal-matrix-cell" id="sigCellContact">
+                                <div class="signal-cell-top">
+                                    <span class="signal-cell-name">CONTACT RISK</span>
+                                    <span class="signal-cell-score mono-text" id="scoreContact">--</span>
+                                </div>
+                                <div class="signal-bar-track">
+                                    <div class="signal-bar-fill" id="barContact" style="width: 0%; background: var(--console-risk-safe);"></div>
+                                </div>
+                                <div class="signal-cell-desc" id="descContact">Recruiter email & communication channels</div>
+                            </div>
+
+                            <div class="signal-matrix-cell" id="sigCellCompany">
+                                <div class="signal-cell-top">
+                                    <span class="signal-cell-name">COMPANY RISK</span>
+                                    <span class="signal-cell-score mono-text" id="scoreCompany">--</span>
+                                </div>
+                                <div class="signal-bar-track">
+                                    <div class="signal-bar-fill" id="barCompany" style="width: 0%; background: var(--console-risk-safe);"></div>
+                                </div>
+                                <div class="signal-cell-desc" id="descCompany">DNS presence & organizational footprint</div>
+                            </div>
+
+                            <div class="signal-matrix-cell" id="sigCellLanguage">
+                                <div class="signal-cell-top">
+                                    <span class="signal-cell-name">LANGUAGE RISK</span>
+                                    <span class="signal-cell-score mono-text" id="scoreLanguage">--</span>
+                                </div>
+                                <div class="signal-bar-track">
+                                    <div class="signal-bar-fill" id="barLanguage" style="width: 0%; background: var(--console-risk-safe);"></div>
+                                </div>
+                                <div class="signal-cell-desc" id="descLanguage">Manipulation patterns & linguistic anomalies</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Forensic Findings Timeline -->
+                    <div class="forensic-panel">
+                        <div class="forensic-panel-header">
+                            <div class="forensic-panel-title">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--console-cyan)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                Forensic Findings
+                            </div>
+                            <span class="forensic-panel-subtitle">EVIDENCE-LINKED INVESTIGATION LOG</span>
+                        </div>
+                        <div class="forensic-timeline" id="redFlagsContainer">
+                            <!-- Populated dynamically via renderForensicFindings -->
+                        </div>
+                    </div>
+
+                    <!-- Row 4: Extracted Entities & Company/Domain Intelligence -->
+                    <div class="forensic-grid-2">
+                        <!-- Extracted Entities Table -->
+                        <div class="forensic-panel">
+                            <div class="forensic-panel-header">
+                                <div class="forensic-panel-title">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--console-cyan)" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7.5" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                                    Extracted Entities
+                                </div>
+                                <span class="forensic-panel-subtitle">AUTOMATED PARSER</span>
+                            </div>
+                            <table class="entities-table" id="entitiesTable">
+                                <tbody>
+                                    <tr>
+                                        <td class="entities-label">COMPANY</td>
+                                        <td class="entities-val" id="entCompany">--</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="entities-label">ROLE / TITLE</td>
+                                        <td class="entities-val" id="entRole">--</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="entities-label">RECRUITER</td>
+                                        <td class="entities-val" id="entRecruiter">--</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="entities-label">EMAIL</td>
+                                        <td class="entities-val" id="entEmail">--</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="entities-label">PHONE</td>
+                                        <td class="entities-val" id="entPhone">--</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="entities-label">COMPENSATION</td>
+                                        <td class="entities-val" id="entSalary">--</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="entities-label">FEE REQUEST</td>
+                                        <td class="entities-val" id="entPayment">None Detected</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="entities-label">COMMUNICATION</td>
+                                        <td class="entities-val" id="entComm">Standard Electronic</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="entities-label">LOCATION</td>
+                                        <td class="entities-val" id="entLocation">--</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Company & Domain Intelligence -->
+                        <div class="forensic-panel">
+                            <div class="forensic-panel-header">
+                                <div class="forensic-panel-title">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--console-cyan)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                    Company & Domain Intelligence
+                                </div>
+                                <span class="forensic-panel-subtitle">CONTEXTUAL TELEMETRY</span>
+                            </div>
+                            <div class="domain-intel-grid">
+                                <div class="domain-stat-box">
+                                    <div class="domain-stat-label">CLAIMED COMPANY</div>
+                                    <div class="domain-stat-value" id="domIntelCompany">--</div>
+                                </div>
+                                <div class="domain-stat-box">
+                                    <div class="domain-stat-label">RECRUITER DOMAIN</div>
+                                    <div class="domain-stat-value" id="domIntelDomain">--</div>
+                                </div>
+                                <div class="domain-stat-box">
+                                    <div class="domain-stat-label">DOMAIN AGE CONTEXT</div>
+                                    <div class="domain-stat-value" id="domIntelAge" style="font-size:0.8rem; font-weight:normal;">--</div>
+                                </div>
+                                <div class="domain-stat-box">
+                                    <div class="domain-stat-label">DOMAIN STATUS</div>
+                                    <div class="domain-stat-value" id="verifyDnsStatus">Active</div>
+                                </div>
+                                <div class="domain-stat-box">
+                                    <div class="domain-stat-label">DNS RESOLUTION</div>
+                                    <div class="dns-pills">
+                                        <span class="dns-pill" id="dnsPillA">A: OK</span>
+                                        <span class="dns-pill" id="dnsPillMX">MX: OK</span>
+                                        <span class="dns-pill" id="dnsPillNS">NS: OK</span>
+                                    </div>
+                                </div>
+                                <div class="domain-stat-box">
+                                    <div class="domain-stat-label">EMAIL DOMAIN MATCH</div>
+                                    <div class="domain-stat-value" id="verifyDomainMatch" style="font-size:0.8rem;">--</div>
+                                </div>
+                            </div>
+                            <div id="verifyWebsiteLink" style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--console-border-muted);">
+                                <!-- Link if provided -->
+                            </div>
+                            <div style="margin-top: 0.65rem; font-size: 0.76rem; color: var(--console-text-muted); font-style: italic;">
+                                ℹ️ Note: Domain age and presence are presented as context, not standalone proof of fraud.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 5: Positive Signals & Uncertainties -->
+                    <div class="forensic-grid-2">
+                        <!-- Positive / Legitimacy Signals -->
+                        <div class="forensic-panel" id="positiveSignalsSection">
+                            <div class="forensic-panel-header">
+                                <div class="forensic-panel-title" style="color: #34D399;">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                                    Positive Signals & Legitimacy
+                                </div>
+                                <span class="forensic-panel-subtitle">CONFIRMED SAFE VECTORS</span>
+                            </div>
+                            <div id="positiveSignalsContainer">
                                 <!-- Populated dynamically -->
                             </div>
                         </div>
 
-                        <!-- Recommendations & Company Verification -->
-                        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                            <!-- Actionable Recommendations Checklist -->
-                            <div class="cyber-card">
-                                <div class="dash-card-header">
-                                    <h3>Recommended Actions</h3>
+                        <!-- What Could Not Be Verified (Uncertainties) -->
+                        <div class="forensic-panel" id="uncertaintiesSection">
+                            <div class="forensic-panel-header">
+                                <div class="forensic-panel-title" style="color: var(--console-text-secondary);">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                    What Could Not Be Verified
                                 </div>
-                                <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem;" id="recommendationsList">
-                                    <!-- Populated dynamically -->
-                                </ul>
+                                <span class="forensic-panel-subtitle">SYSTEM LIMITATIONS & UNKNOWNS</span>
                             </div>
-
-                            <!-- Company Verification Details -->
-                            <div class="cyber-card">
-                                <div class="dash-card-header">
-                                    <h3>Company Footprint Verification</h3>
-                                </div>
-                                <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.88rem;">
-                                    <div style="display: flex; justify-content: space-between;">
-                                        <span style="color: var(--text-muted);">Website DNS:</span>
-                                        <strong id="verifyDnsStatus" style="color: var(--risk-safe);">Verified</strong>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between;">
-                                        <span style="color: var(--text-muted);">Email Domain:</span>
-                                        <strong id="verifyEmailDomain">Corporate Domain</strong>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between;">
-                                        <span style="color: var(--text-muted);">Domain Match:</span>
-                                        <strong id="verifyDomainMatch">Matches Website</strong>
-                                    </div>
-                                    <div id="verifyWebsiteLink" style="padding-top: 0.5rem; border-top: 1px solid var(--border-subtle); margin-top: 0.25rem;">
-                                        <!-- Link if provided -->
-                                    </div>
-                                </div>
+                            <div id="uncertaintiesContainer">
+                                <!-- Populated dynamically -->
                             </div>
                         </div>
                     </div>
+
+                    <!-- Row 6: AI OPINION (Primary Forensic Assessment) -->
+                    <div class="ai-opinion-panel" id="aiOpinionSection">
+                        <div class="ai-opinion-header">
+                            <div class="ai-opinion-title">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--console-cyan)" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                                AI OPINION
+                            </div>
+                            <div class="ai-opinion-subtitle">Why the local AI classified this document this way</div>
+                        </div>
+
+                        <div class="ai-opinion-assessment-box">
+                            <div class="ai-opinion-assessment-quote" id="aiOpinionAssessment">
+                                Loading evidence-grounded assessment...
+                            </div>
+                        </div>
+
+                        <div style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--console-cyan); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.75rem;">
+                            EVIDENCE-FIRST REASONING TRACE (OBSERVATION → EVIDENCE → INTERPRETATION → RISK IMPACT)
+                        </div>
+
+                        <div class="ai-reasoning-flow" id="aiOpinionFlow">
+                            <!-- Populated dynamically via renderAiOpinion -->
+                        </div>
+
+                        <div class="ai-opinion-conclusion-box">
+                            <div class="ai-opinion-conclusion-title">FINAL FORENSIC DETERMINATION</div>
+                            <div class="ai-opinion-conclusion-text" id="aiOpinionConclusion">
+                                Evaluating...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 7: Recommended Actions Checklist -->
+                    <div class="forensic-panel" style="margin-top: 1.75rem;">
+                        <div class="forensic-panel-header">
+                            <div class="forensic-panel-title">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--console-cyan)" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                                Recommended Actions & Protection Steps
+                            </div>
+                            <span class="forensic-panel-subtitle">INVESTIGATIVE CHECKLIST</span>
+                        </div>
+                        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.25rem;" id="recommendationsList">
+                            <!-- Populated dynamically -->
+                        </ul>
+                    </div>
+
                 </div>
             </main>
         </div>
@@ -223,49 +483,49 @@
 
     <!-- Share Report Modal -->
     <div class="cyber-modal-overlay" id="shareReportModal">
-        <div class="cyber-modal">
-            <div class="cyber-modal-header">
-                <h3 class="cyber-modal-title">Share Forensic Dossier</h3>
+        <div class="cyber-modal" style="background: var(--console-surface); border: 1px solid var(--console-border);">
+            <div class="cyber-modal-header" style="border-bottom: 1px solid var(--console-border-muted);">
+                <h3 class="cyber-modal-title" style="font-family: var(--font-syne); color: #fff;">Share Forensic Dossier</h3>
                 <button class="cyber-modal-close" id="closeShareModal">&times;</button>
             </div>
             <div class="cyber-modal-body">
-                <p style="margin-bottom: 1rem; font-size: 0.9rem;">
+                <p style="margin-bottom: 1rem; font-size: 0.88rem; color: var(--console-text-secondary); line-height: 1.5;">
                     This sanitized link provides a clean read-only overview of this forensic threat assessment. Personal account credentials and contact details are hidden.
                 </p>
                 <div class="form-group">
-                    <label class="form-label" for="shareableLinkInput">Public Report Link</label>
+                    <label class="form-label" for="shareableLinkInput" style="font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase;">Public Report Link</label>
                     <div style="display: flex; gap: 0.5rem;">
-                        <input type="text" id="shareableLinkInput" class="form-control" readonly>
-                        <button class="btn btn-outline" id="copyShareLinkBtn">Copy</button>
+                        <input type="text" id="shareableLinkInput" class="form-control mono-text" readonly style="background: var(--console-surface-elevated); border: 1px solid var(--console-border-muted); color: var(--console-text-primary);">
+                        <button class="btn-forensic-primary" id="copyShareLinkBtn">Copy</button>
                     </div>
                 </div>
             </div>
-            <div class="cyber-modal-footer">
-                <button class="btn btn-primary" id="doneShareBtn">Done</button>
+            <div class="cyber-modal-footer" style="border-top: 1px solid var(--console-border-muted);">
+                <button class="btn-forensic-secondary" id="doneShareBtn">Done</button>
             </div>
         </div>
     </div>
 
     <!-- Save Report Notes Modal -->
     <div class="cyber-modal-overlay" id="saveReportModal">
-        <div class="cyber-modal">
-            <div class="cyber-modal-header">
-                <h3 class="cyber-modal-title">Bookmark to Saved Reports</h3>
+        <div class="cyber-modal" style="background: var(--console-surface); border: 1px solid var(--console-border);">
+            <div class="cyber-modal-header" style="border-bottom: 1px solid var(--console-border-muted);">
+                <h3 class="cyber-modal-title" style="font-family: var(--font-syne); color: #fff;">Bookmark to Saved Reports</h3>
                 <button class="cyber-modal-close" id="closeSaveModal">&times;</button>
             </div>
             <div class="cyber-modal-body">
                 <div class="form-group">
-                    <label class="form-label" for="savedReportTitle">Custom Report Title</label>
-                    <input type="text" id="savedReportTitle" class="form-control">
+                    <label class="form-label" for="savedReportTitle" style="font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase;">Custom Report Title</label>
+                    <input type="text" id="savedReportTitle" class="form-control" style="background: var(--console-surface-elevated); border: 1px solid var(--console-border-muted); color: var(--console-text-primary);">
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="savedReportNotes">Investigator Notes</label>
-                    <textarea id="savedReportNotes" class="form-control" rows="3" placeholder="Add personal notes, follow-up actions, recruiter handle, or evidence links..."></textarea>
+                    <label class="form-label" for="savedReportNotes" style="font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase;">Investigator Notes</label>
+                    <textarea id="savedReportNotes" class="form-control" rows="3" placeholder="Add personal notes, follow-up actions, recruiter handle, or evidence links..." style="background: var(--console-surface-elevated); border: 1px solid var(--console-border-muted); color: var(--console-text-primary);"></textarea>
                 </div>
             </div>
-            <div class="cyber-modal-footer">
-                <button class="btn btn-outline" id="cancelSaveModal">Cancel</button>
-                <button class="btn btn-primary" id="confirmSaveReportBtn">Save to Repository</button>
+            <div class="cyber-modal-footer" style="border-top: 1px solid var(--console-border-muted);">
+                <button class="btn-forensic-secondary" id="cancelSaveModal">Cancel</button>
+                <button class="btn-forensic-primary" id="confirmSaveReportBtn">Save to Repository</button>
             </div>
         </div>
     </div>

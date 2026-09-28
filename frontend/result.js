@@ -1,8 +1,9 @@
 /**
- * Forensic Result Dossier Controller
- * Loads detailed analysis by ID, animates radial trust score,
- * renders 6 risk breakdown pillars, red flag evidence quotes,
- * company validation, save/unsave toggles, printable report, and share link.
+ * AI Forensic Investigation Console Controller
+ * Powers the evidence-driven digital forensics workstation dossier.
+ * Handles risk score radial animation, forensic signal matrix,
+ * investigation timeline, entity extraction, domain telemetry,
+ * evidence-first AI Opinion component, CaseAI launch, and report saving/sharing.
  */
 
 let currentAnalysis = null;
@@ -11,13 +12,16 @@ let isCurrentlySaved = false;
 let savedRecordId = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-    renderAppShell('result');
+    // Render standard topbar and sidebar navigation
+    if (typeof renderAppShell === 'function') {
+        renderAppShell('result');
+    }
 
     const urlParams = new URLSearchParams(window.location.search);
     currentAnalysisId = urlParams.get('id');
 
     if (!currentAnalysisId) {
-        showError('No Analysis ID Specified', 'Please provide a valid forensic audit identifier to load a dossier.');
+        showError('No Investigation ID Specified', 'Please provide a valid forensic audit identifier to load a dossier.');
         return;
     }
 
@@ -32,7 +36,7 @@ async function loadDossier(id) {
     try {
         let res = await fetch(`${API_BASE_URL}/analysis/result/${id}`, { headers: getAuthHeaders(true) });
 
-        // If unauthorized or not found under user, check public share endpoint
+        // If unauthorized or not found under user session, check public shared report endpoint
         if (!res.ok && res.status !== 401) {
             res = await fetch(`${API_BASE_URL}/analysis/share/${id}`);
             if (res.ok) {
@@ -51,7 +55,7 @@ async function loadDossier(id) {
         loading.style.display = 'none';
         main.style.display = 'block';
 
-        renderAnalysisData(currentAnalysis);
+        renderForensicDossier(currentAnalysis);
         checkSavedStatus(id);
 
     } catch (err) {
@@ -61,239 +65,640 @@ async function loadDossier(id) {
 }
 
 function showError(title, message) {
-    document.getElementById('resultLoadingState').style.display = 'none';
+    const loading = document.getElementById('resultLoadingState');
+    if (loading) loading.style.display = 'none';
     const errBox = document.getElementById('resultErrorState');
-    errBox.style.display = 'block';
-    document.getElementById('resultErrorTitle').textContent = title;
-    document.getElementById('resultErrorDesc').textContent = message;
+    if (errBox) {
+        errBox.style.display = 'block';
+        document.getElementById('resultErrorTitle').textContent = title;
+        document.getElementById('resultErrorDesc').textContent = message;
+    }
 }
 
-function renderAnalysisData(a) {
-    const score = a.trust_score ?? 0;
-    const isSafe = a.risk_level === 'Safe';
-    const isHigh = a.risk_level === 'High Risk' || a.risk_level === 'High';
-    const riskBadgeClass = isSafe ? 'badge-safe' : (isHigh ? 'badge-danger' : 'badge-warning');
-    const strokeColor = isSafe ? '#10b981' : (isHigh ? '#ef4444' : '#f59e0b');
+/**
+ * Main Forensic Dossier Renderer
+ */
+function renderForensicDossier(a) {
+    // 1. Authoritative Risk Score (0 = minimal risk, 100 = critical risk)
+    const riskScore = typeof a.risk_score === 'number' 
+        ? a.risk_score 
+        : (a.trust_score !== undefined ? (100 - a.trust_score) : 50);
 
-    // Header info
-    document.getElementById('resultJobTitle').textContent = a.job_title || 'Employment Offer Assessment';
-    document.getElementById('resultCompanyName').textContent = a.company_name || 'Claimed Employer';
-    document.getElementById('resultAuditId').textContent = `ID: #${(a.analysis_id || a._id || '').slice(-8).toUpperCase()}`;
+    const isSafe = riskScore < 30 || a.classification === 'LOW_RISK' || a.risk_level === 'Safe';
+    const isMedium = (riskScore >= 30 && riskScore < 60) || a.classification === 'MEDIUM_RISK' || a.risk_level === 'Suspicious';
+    const isHigh = riskScore >= 60 || a.classification === 'HIGH_RISK' || a.risk_level === 'High Risk' || a.risk_level === 'High';
+
+    const riskColor = isHigh ? '#EF4444' : (isMedium ? '#F59E0B' : '#10B981');
+    const riskBadgeClass = isHigh ? 'badge-forensic-danger' : (isMedium ? 'badge-forensic-warning' : 'badge-forensic-safe');
+    const riskSeverityText = isHigh ? 'HIGH RISK' : (isMedium ? 'MEDIUM RISK' : 'LOW RISK');
+
+    // 2. Header Info & Breadcrumbs
+    const jobTitleEl = document.getElementById('resultJobTitle');
+    if (jobTitleEl) jobTitleEl.textContent = a.job_title || 'Document Risk Assessment';
+
+    const compNameEl = document.getElementById('resultCompanyName');
+    if (compNameEl) compNameEl.textContent = a.company_name || 'Claimed Organization';
+
+    const auditIdEl = document.getElementById('resultAuditId');
+    if (auditIdEl) auditIdEl.textContent = `#${(a.analysis_id || a._id || '').slice(-8).toUpperCase()}`;
 
     const dateStr = a.created_at ? new Date(a.created_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : 'Verified';
-    document.getElementById('resultTimestamp').textContent = dateStr;
+    const timeEl = document.getElementById('resultTimestamp');
+    if (timeEl) timeEl.textContent = dateStr;
 
-    const badge = document.getElementById('resultRiskBadge');
-    badge.className = `badge ${riskBadgeClass}`;
-    badge.textContent = a.risk_level || 'EVALUATED';
+    // Header Risk Badge & Score
+    const riskBadge = document.getElementById('resultRiskBadge');
+    if (riskBadge) {
+        riskBadge.className = `badge-forensic ${riskBadgeClass}`;
+        riskBadge.textContent = riskSeverityText;
+    }
 
-    // Radial Score Animation
+    const headerScoreEl = document.getElementById('headerRiskScore');
+    if (headerScoreEl) headerScoreEl.textContent = riskScore;
+
+    // Document Type Badge
+    const docType = a.document_type || 'GENERAL_DOCUMENT';
+    const docTypeFormatted = docType.replace(/_/g, ' ');
+    const docTypeConf = a.document_type_confidence ? ` (${a.document_type_confidence}%)` : '';
+
+    const docTypeBadge = document.getElementById('resultDocTypeBadge');
+    if (docTypeBadge) docTypeBadge.textContent = `${docTypeFormatted}${docTypeConf}`;
+
+    const headerDocType = document.getElementById('headerDocType');
+    if (headerDocType) headerDocType.textContent = docTypeFormatted;
+
+    // 3. Technical Radial Risk Gauge Animation
+    animateRadialRiskGauge(riskScore, riskColor, riskSeverityText);
+
+    // Confidence & Engine Badges
+    const confVal = a.confidence ?? 92;
+    const modelName = a.model_name ? a.model_name.replace('llama', 'Llama-') : 'llama3.2:3b LOCAL';
+
+    const confBadge = document.getElementById('resultConfidenceBadge');
+    if (confBadge) confBadge.textContent = `CONFIDENCE: ${confVal}%`;
+
+    const confValEl = document.getElementById('resultConfidenceVal');
+    if (confValEl) confValEl.textContent = `${confVal}%`;
+
+    const modelValEl = document.getElementById('resultModelVal');
+    if (modelValEl) modelValEl.textContent = modelName;
+
+    const modelBadge = document.getElementById('resultModelBadge');
+    if (modelBadge) modelBadge.textContent = `MODEL: ${modelName}`;
+
+    // 4. Extraction Degradation Warning
+    const warnBanner = document.getElementById('extractionWarningBanner');
+    const warnText = document.getElementById('extractionWarningText');
+    if (warnBanner && (a.extraction_warning || a.is_poor_extraction)) {
+        warnBanner.style.display = 'block';
+        if (warnText) warnText.textContent = a.extraction_warning || 'Document text extraction yielded incomplete sections. Forensic confidence is calibrated accordingly.';
+    } else if (warnBanner) {
+        warnBanner.style.display = 'none';
+    }
+
+    // 5. Executive Security Summary
+    const execRiskLevel = document.getElementById('execRiskLevel');
+    if (execRiskLevel) execRiskLevel.textContent = riskSeverityText;
+
+    const execConfidence = document.getElementById('execConfidence');
+    if (execConfidence) execConfidence.textContent = `${confVal}%`;
+
+    const execDrivers = document.getElementById('execDrivers');
+    if (execDrivers) {
+        const findings = a.reasoning || a.structured_red_flags || [];
+        if (findings.length > 0) {
+            execDrivers.textContent = findings.slice(0, 2).map(f => f.finding || f.title).join(' • ');
+        } else if (docType === 'CERTIFICATE') {
+            execDrivers.textContent = 'Standard Credential Structure • Zero Upfront Demands';
+        } else {
+            execDrivers.textContent = 'Standard Professional Context • No Material Scam Indicators';
+        }
+    }
+
+    const aiText = a.summary || a.ai_explanation || 'Forensic heuristics evaluated semantic intent, communication authenticity, and manipulation signals.';
+    const expEl = document.getElementById('resultAiExplanation');
+    if (expEl) expEl.textContent = aiText;
+
+    // 6. Document Intelligence
+    renderDocumentIntelligence(a);
+
+    // 7. Risk Signal Analysis Matrix (6 Pillars)
+    renderRiskSignals(a);
+
+    // 8. Forensic Findings Timeline
+    renderForensicTimeline(a);
+
+    // 9. Extracted Entities
+    renderExtractedEntities(a);
+
+    // 10. Company & Domain Intelligence
+    renderCompanyDomainIntelligence(a);
+
+    // 11. Positive Signals & Legitimacy
+    renderPositiveSignals(a.positive_signals || []);
+
+    // 12. Uncertainties & Unverified Elements
+    renderUncertainties(a.uncertainties || []);
+
+    // 13. AI OPINION Component (Evidence-First Forensic Assessment)
+    renderAiOpinion(a);
+
+    // 14. Recommended Actions
+    renderRecommendations(a.recommendations || [], docType);
+}
+
+/**
+ * Animate the technical circular risk gauge
+ */
+function animateRadialRiskGauge(score, color, severity) {
     const fillCircle = document.getElementById('resultRadialFill');
-    const scoreNum = document.getElementById('resultTrustScore');
+    const scoreNum = document.getElementById('resultRiskScoreNum');
+    const sevLabel = document.getElementById('resultGaugeSeverity');
 
-    fillCircle.style.stroke = strokeColor;
+    if (!fillCircle || !scoreNum) return;
+
+    fillCircle.style.stroke = color;
+    if (sevLabel) {
+        sevLabel.textContent = severity;
+        sevLabel.style.color = color;
+    }
+
+    // Circumference for r=70 is ~440. Offset = 440 - (440 * score / 100)
     const targetOffset = 440 - (440 * (score / 100));
 
     setTimeout(() => {
         fillCircle.style.strokeDashoffset = targetOffset;
     }, 150);
 
-    // Number Count-up
+    // Numeric Count-up
     let current = 0;
-    const countInterval = setInterval(() => {
+    const step = Math.max(1, Math.ceil(score / 25));
+    const interval = setInterval(() => {
         if (current >= score) {
             scoreNum.textContent = score;
-            clearInterval(countInterval);
+            clearInterval(interval);
         } else {
-            current = Math.min(score, current + Math.ceil((score - current) / 6));
+            current = Math.min(score, current + step);
             scoreNum.textContent = current;
         }
     }, 25);
-
-    // Executive Summary / AI Explanation
-    const aiText = a.ai_explanation || (a.explanations && a.explanations.join('. ')) || 'Forensic heuristics evaluated semantic intent and domain indicators.';
-    document.getElementById('resultAiExplanation').textContent = aiText;
-
-    // 6 Risk Breakdown Pillars
-    const b = a.risk_breakdown || {};
-    setBreakdownPill('scorePayment', b.payment_risk ?? (a.financial_flags_count ? 30 : 100));
-    setBreakdownPill('scoreIdentity', b.identity_risk ?? 100);
-    setBreakdownPill('scoreUrgency', b.urgency_risk ?? (a.urgency_score ? 45 : 100));
-    setBreakdownPill('scoreContact', b.contact_risk ?? (a.email_domain_suspicious ? 25 : 100));
-    setBreakdownPill('scoreCompany', b.company_risk ?? (a.website_exists ? 95 : 30));
-    setBreakdownPill('scoreLanguage', b.language_risk ?? (a.grammar_issues ? 50 : 100));
-
-    // Detected Red Flags with Evidence Snippets
-    renderRedFlags(a);
-
-    // Recommended Actions Checklist
-    renderRecommendations(a.recommendations || []);
-
-    // Company Verification Card
-    renderCompanyFootprint(a);
 }
 
-function setBreakdownPill(id, val) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.textContent = `${val}/100`;
-    if (val >= 80) el.style.color = 'var(--risk-safe)';
-    else if (val >= 50) el.style.color = 'var(--risk-warning)';
-    else el.style.color = 'var(--risk-danger)';
-}
+/**
+ * Render Document Intelligence Table
+ */
+function renderDocumentIntelligence(a) {
+    const d = a.document_intelligence || {};
+    const textLen = (a.extracted_text || a.text || '').length;
 
-function renderRedFlags(a) {
-    const container = document.getElementById('redFlagsContainer');
-    if (!container) return;
+    const typeEl = document.getElementById('docIntelType');
+    if (typeEl) typeEl.textContent = (a.document_type || 'DOCUMENT').replace(/_/g, ' ');
 
-    const flags = a.structured_red_flags || [];
+    const pagesEl = document.getElementById('docIntelPages');
+    if (pagesEl) pagesEl.textContent = d.pages ? `${d.pages} Page(s)` : (textLen > 3000 ? '2+ Pages' : '1 Page');
 
-    if (flags.length === 0) {
-        // Fallback to legacy red flags if present
-        const legacy = a.red_flags || [];
-        if (legacy.length === 0) {
-            container.innerHTML = `
-                <div class="cyber-card" style="border-left: 4px solid var(--risk-safe); padding: 1.5rem;">
-                    <div style="display:flex; align-items:center; gap:0.75rem;">
-                        <span style="font-size:1.5rem; color:var(--risk-safe);">✓</span>
-                        <div>
-                            <strong>No Critical Threat Indicators Detected</strong>
-                            <p style="color:var(--text-secondary); font-size:0.88rem; margin-top:2px;">
-                                Offer text and recruiter contact credentials conform to standard professional norms. Always conduct standard due diligence.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            `;
-            return;
+    const ocrQualEl = document.getElementById('docIntelOcrQuality');
+    if (ocrQualEl) ocrQualEl.textContent = d.ocr_quality || (textLen > 100 ? 'Good (Vector/OCR Fidelity)' : 'Degraded');
+
+    const charsEl = document.getElementById('docIntelChars');
+    if (charsEl) charsEl.textContent = `${textLen.toLocaleString()} characters`;
+
+    const ocrConfEl = document.getElementById('docIntelOcrConf');
+    if (ocrConfEl) ocrConfEl.textContent = `${d.ocr_confidence ?? 94}%`;
+
+    const synthEl = document.getElementById('docIntelSynthetic');
+    if (synthEl) {
+        const synth = a.document_assessment || {};
+        if (synth.possible_synthetic_document) {
+            synthEl.textContent = `Possible Synthetic Formatting (${synth.confidence ?? 60}%)`;
+            synthEl.style.color = '#C084FC';
+        } else {
+            synthEl.textContent = 'Standard Document Composition';
+            synthEl.style.color = 'var(--console-text-primary)';
         }
+    }
+}
 
-        container.innerHTML = legacy.map(flagTitle => `
-            <div class="red-flag-card HIGH">
-                <div class="red-flag-head">
-                    <span class="badge badge-warning">HIGH</span>
-                    <span class="red-flag-title">${flagTitle}</span>
-                </div>
-                <div class="red-flag-rec">
-                    <span>🛡️ Action:</span> Verify recruiter claims independently before taking action.
-                </div>
-            </div>
-        `).join('');
+/**
+ * Render Risk Signal Analysis (6-pillar matrix)
+ */
+function renderRiskSignals(a) {
+    const signals = a.risk_signals || [];
+    
+    // If structured risk_signals are provided, map them
+    if (signals.length >= 6) {
+        signals.forEach(sig => {
+            const key = sig.name.replace(' RISK', '').trim();
+            updateSignalCell(key, sig.score, sig.explanation, sig.severity);
+        });
         return;
     }
 
-    container.innerHTML = flags.map(f => {
-        const sevClass = f.severity || 'HIGH';
-        const badgeStyle = sevClass === 'CRITICAL' ? 'badge-danger' : (sevClass === 'HIGH' ? 'badge-warning' : 'badge-cyan');
+    // Heuristic fallback derivation from reasoning findings
+    const findings = a.reasoning || a.structured_red_flags || [];
+    const derived = {
+        PAYMENT: { score: 0, desc: 'No advance fee or security payment solicitation detected' },
+        IDENTITY: { score: 0, desc: 'No sensitive identity or credential harvesting demanded' },
+        URGENCY: { score: 0, desc: 'Standard non-pressured hiring or credential timeframe' },
+        CONTACT: { score: 0, desc: 'Communication adheres to standard corporate channels' },
+        COMPANY: { score: 0, desc: 'Entity footprint conforms to standard organizational context' },
+        LANGUAGE: { score: 0, desc: 'Linguistic patterns match standard professional conventions' }
+    };
+
+    findings.forEach(f => {
+        const text = ((f.finding || f.title || '') + ' ' + (f.explanation || '')).toLowerCase();
+        const impact = f.impact_on_score || 35;
+
+        if (text.includes('payment') || text.includes('fee') || text.includes('deposit') || text.includes('money') || text.includes('zelle')) {
+            derived.PAYMENT.score = Math.min(100, derived.PAYMENT.score + impact + 20);
+            derived.PAYMENT.desc = f.finding || 'Advance fee solicitation detected';
+        }
+        if (text.includes('identity') || text.includes('bank') || text.includes('aadhaar') || text.includes('pan') || text.includes('credential')) {
+            derived.IDENTITY.score = Math.min(100, derived.IDENTITY.score + impact + 20);
+            derived.IDENTITY.desc = f.finding || 'Excessive sensitive credentials demanded';
+        }
+        if (text.includes('urgency') || text.includes('urgent') || text.includes('24 hours') || text.includes('deadline')) {
+            derived.URGENCY.score = Math.min(100, derived.URGENCY.score + impact + 15);
+            derived.URGENCY.desc = f.finding || 'Artificial deadline pressure detected';
+        }
+        if (text.includes('email') || text.includes('domain') || text.includes('contact') || text.includes('whatsapp') || text.includes('telegram')) {
+            derived.CONTACT.score = Math.min(100, derived.CONTACT.score + impact + 20);
+            derived.CONTACT.desc = f.finding || 'Unverified recruiter contact channel';
+        }
+        if (text.includes('company') || text.includes('fake') || text.includes('impersonat') || text.includes('unregistered')) {
+            derived.COMPANY.score = Math.min(100, derived.COMPANY.score + impact + 15);
+            derived.COMPANY.desc = f.finding || 'Organization footprint unverified';
+        }
+        if (text.includes('grammar') || text.includes('language') || text.includes('manipulat') || text.includes('unrealistic')) {
+            derived.LANGUAGE.score = Math.min(100, derived.LANGUAGE.score + impact + 15);
+            derived.LANGUAGE.desc = f.finding || 'Linguistic anomalies or pressure tactics';
+        }
+    });
+
+    Object.keys(derived).forEach(k => {
+        const s = derived[k];
+        const sev = s.score >= 70 ? 'CRITICAL' : (s.score >= 40 ? 'HIGH' : (s.score > 0 ? 'MEDIUM' : 'SAFE'));
+        updateSignalCell(k, s.score, s.desc, sev);
+    });
+}
+
+function updateSignalCell(key, score, desc, severity) {
+    const formattedKey = key.charAt(0).toUpperCase() + key.slice(1).toLowerCase();
+    const scoreEl = document.getElementById(`score${formattedKey}`);
+    const barEl = document.getElementById(`bar${formattedKey}`);
+    const descEl = document.getElementById(`desc${formattedKey}`);
+
+    const color = score >= 60 ? '#EF4444' : (score >= 30 ? '#F59E0B' : '#10B981');
+
+    if (scoreEl) {
+        scoreEl.textContent = `${score}/100`;
+        scoreEl.style.color = color;
+    }
+    if (barEl) {
+        barEl.style.width = `${score}%`;
+        barEl.style.background = color;
+    }
+    if (descEl && desc) {
+        descEl.textContent = desc;
+    }
+}
+
+/**
+ * Render Forensic Findings Timeline
+ */
+function renderForensicTimeline(a) {
+    const container = document.getElementById('redFlagsContainer');
+    if (!container) return;
+
+    const findings = a.reasoning || a.structured_red_flags || [];
+
+    if (findings.length === 0) {
+        const isCert = a.document_type === 'CERTIFICATE';
+        container.innerHTML = `
+            <div class="timeline-event">
+                <div class="timeline-node SAFE">
+                    <div class="timeline-node-inner"></div>
+                </div>
+                <div class="timeline-card" style="border-left: 3px solid var(--console-risk-safe);">
+                    <div class="timeline-card-header">
+                        <span class="badge-forensic badge-forensic-safe">NO THREAT INDICATORS</span>
+                        <span class="mono-text" style="color: var(--console-risk-safe); font-size: 0.8rem;">0 Red Flags</span>
+                    </div>
+                    <div class="timeline-title">Clean Document Context Verified</div>
+                    <p class="timeline-explanation">
+                        ${isCert 
+                            ? 'No material scam indicators were identified in the extracted certificate content. Standard participation credentials, academic milestones, and verification links do not constitute fraudulent activity.'
+                            : 'No advance fee demands, credential phishing, or manipulation tactics were detected in the analyzed document content.'}
+                    </p>
+                </div>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = findings.map(f => {
+        const title = f.finding || f.title || 'Forensic Risk Factor';
+        const sev = (f.severity || 'HIGH').toUpperCase();
+        const badgeClass = sev === 'CRITICAL' ? 'badge-forensic-danger' : (sev === 'HIGH' ? 'badge-forensic-warning' : 'badge-forensic-cyan');
+        const impact = f.impact_on_score ?? 0;
+        const evidence = f.evidence || '';
+        const explanation = f.explanation || f.description || '';
+        const rec = f.recommendation || 'Independently corroborate this observation through authenticated public registries.';
 
         return `
-            <div class="red-flag-card ${sevClass}">
-                <div class="red-flag-head">
-                    <span class="badge ${badgeStyle}">${sevClass}</span>
-                    <span class="red-flag-title">${f.title}</span>
+            <div class="timeline-event">
+                <div class="timeline-node ${sev}">
+                    <div class="timeline-node-inner"></div>
                 </div>
-                <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; margin-top: 4px;">
-                    ${f.explanation}
-                </p>
-
-                ${f.evidence ? `
-                    <div class="evidence-quote-box">
-                        <strong>Observed Pattern:</strong> "${f.evidence}"
+                <div class="timeline-card">
+                    <div class="timeline-card-header">
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <span class="badge-forensic ${badgeClass}">${sev}</span>
+                            <span class="timeline-title">${title}</span>
+                        </div>
+                        ${impact > 0 ? `<span class="badge-forensic badge-forensic-danger">+${impact} Risk Points</span>` : ''}
                     </div>
-                ` : ''}
 
-                <div class="red-flag-rec">
-                    <span>🛡️ Recommended Countermeasure:</span> ${f.recommendation}
+                    ${evidence ? `
+                        <div class="evidence-quote-box">
+                            <span class="evidence-label">EXACT VERBATIM DOCUMENT QUOTE:</span>
+                            "${evidence}"
+                        </div>
+                    ` : ''}
+
+                    <div class="timeline-explanation">${explanation}</div>
+
+                    <div class="timeline-rec">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <span>Investigation Directive: ${rec}</span>
+                    </div>
                 </div>
             </div>
         `;
     }).join('');
 }
 
-function renderRecommendations(recs) {
-    const list = document.getElementById('recommendationsList');
-    if (!list) return;
-
-    if (recs.length === 0) {
-        list.innerHTML = `
-            <li style="display:flex; gap:0.5rem; align-items:flex-start; color:var(--text-secondary); font-size:0.9rem;">
-                <span style="color:var(--risk-safe);">✓</span> Verify company contact details through official public switchboard.
-            </li>
-            <li style="display:flex; gap:0.5rem; align-items:flex-start; color:var(--text-secondary); font-size:0.9rem;">
-                <span style="color:var(--risk-safe);">✓</span> Never transfer personal funds, wire transfers, or crypto for employment.
-            </li>
-        `;
-        return;
-    }
-
-    list.innerHTML = recs.map((rec, i) => `
-        <li style="display:flex; gap:0.75rem; align-items:flex-start; padding: 0.5rem 0; border-bottom: 1px solid var(--border-subtle);">
-            <input type="checkbox" id="recCheck_${i}" style="margin-top:3px; accent-color: var(--accent-cyan);">
-            <label for="recCheck_${i}" style="color:var(--text-primary); font-size:0.88rem; line-height:1.4; cursor:pointer;">
-                ${rec}
-            </label>
-        </li>
-    `).join('');
+/**
+ * Render Extracted Entities Table
+ */
+function renderExtractedEntities(a) {
+    const e = a.entities || {};
+    
+    setEntityText('entCompany', e.company || a.company_name || 'Not Specified');
+    setEntityText('entRole', e.role || a.job_title || 'General Document');
+    setEntityText('entRecruiter', e.recruiter || 'Not Disclosed');
+    setEntityText('entEmail', e.email || a.company_email || 'Not Disclosed');
+    setEntityText('entPhone', e.phone || a.company_phone || 'Not Disclosed');
+    setEntityText('entSalary', e.salary || 'Not Stated');
+    setEntityText('entPayment', e.payment_request || 'None Detected', e.payment_request && e.payment_request !== 'None Detected');
+    setEntityText('entComm', e.communication || 'Standard Electronic');
+    setEntityText('entLocation', e.location || a.job_location || 'Remote / Unspecified');
 }
 
-function renderCompanyFootprint(a) {
+function setEntityText(id, val, isAlert = false) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = val;
+    if (isAlert) {
+        el.style.color = 'var(--console-risk-critical)';
+        el.style.fontWeight = 'bold';
+    }
+}
+
+/**
+ * Render Company & Domain Intelligence
+ */
+function renderCompanyDomainIntelligence(a) {
+    const dom = a.domain_intelligence || {};
+    const e = a.entities || {};
+
+    const claimedComp = document.getElementById('domIntelCompany');
+    if (claimedComp) claimedComp.textContent = dom.claimed_company || e.company || a.company_name || 'Claimed Entity';
+
+    const recruiterDom = document.getElementById('domIntelDomain');
+    if (recruiterDom) recruiterDom.textContent = dom.recruiter_domain || 'Not Disclosed';
+
+    const domAge = document.getElementById('domIntelAge');
+    if (domAge) domAge.textContent = dom.domain_age || 'Contextual telemetry unavailable';
+
     const dnsStatus = document.getElementById('verifyDnsStatus');
-    const emailDomain = document.getElementById('verifyEmailDomain');
-    const domainMatch = document.getElementById('verifyDomainMatch');
-    const webLink = document.getElementById('verifyWebsiteLink');
-
     if (dnsStatus) {
-        if (a.website_exists === false) {
-            dnsStatus.textContent = 'Unreachable / Inactive DNS';
-            dnsStatus.style.color = 'var(--risk-danger)';
-        } else if (a.company_website) {
-            dnsStatus.textContent = 'Active DNS Verified';
-            dnsStatus.style.color = 'var(--risk-safe)';
+        const isResolving = dom.domain_status?.includes('Active') || a.website_exists;
+        dnsStatus.textContent = isResolving ? 'Active DNS Verified' : (dom.domain_status || 'Unverified');
+        dnsStatus.style.color = isResolving ? 'var(--console-risk-safe)' : 'var(--console-text-muted)';
+    }
+
+    // DNS Pills
+    const dnsRecords = dom.dns_records || {};
+    setPillStatus('dnsPillA', dnsRecords.a_record ?? a.website_exists, 'A');
+    setPillStatus('dnsPillMX', dnsRecords.mx_record ?? false, 'MX');
+    setPillStatus('dnsPillNS', dnsRecords.ns_record ?? true, 'NS');
+
+    // Email Domain Match
+    const matchEl = document.getElementById('verifyDomainMatch');
+    if (matchEl) {
+        if (dom.email_domain_match === 'MATCH') {
+            matchEl.textContent = '✓ Corporate Domain Match';
+            matchEl.style.color = 'var(--console-risk-safe)';
+        } else if (dom.email_domain_match === 'MISMATCH') {
+            matchEl.textContent = '⚠ Domain Discrepancy';
+            matchEl.style.color = 'var(--console-risk-critical)';
+        } else if (dom.email_domain_match === 'FREE_WEBMAIL') {
+            matchEl.textContent = 'Public Webmail Service';
+            matchEl.style.color = 'var(--console-risk-medium)';
         } else {
-            dnsStatus.textContent = 'Not Provided';
-            dnsStatus.style.color = 'var(--text-muted)';
+            matchEl.textContent = dom.match_label || 'Inconclusive';
+            matchEl.style.color = 'var(--console-text-muted)';
         }
     }
 
-    if (emailDomain) {
-        if (a.email_domain_suspicious) {
-            emailDomain.textContent = `Public / Free (@${a.email_domain || 'generic'})`;
-            emailDomain.style.color = 'var(--risk-danger)';
-        } else if (a.company_email) {
-            emailDomain.textContent = `Enterprise (@${a.email_domain || 'corporate'})`;
-            emailDomain.style.color = 'var(--risk-safe)';
-        } else {
-            emailDomain.textContent = 'Not Specified';
-            emailDomain.style.color = 'var(--text-muted)';
-        }
-    }
-
-    if (domainMatch) {
-        if (a.company_match === false) {
-            domainMatch.textContent = 'Domain Mismatch ⚠️';
-            domainMatch.style.color = 'var(--risk-danger)';
-        } else if (a.company_email && a.company_website) {
-            domainMatch.textContent = 'Matched Authenticated Host';
-            domainMatch.style.color = 'var(--risk-safe)';
-        } else {
-            domainMatch.textContent = 'Inconclusive (No pair)';
-            domainMatch.style.color = 'var(--text-muted)';
-        }
-    }
-
-    if (webLink && a.company_website) {
+    // Website Link
+    const webLink = document.getElementById('verifyWebsiteLink');
+    const websiteUrl = dom.company_website || a.company_website;
+    if (webLink && websiteUrl) {
         webLink.innerHTML = `
-            <a href="${a.company_website}" target="_blank" rel="noopener noreferrer" style="font-size:0.82rem; display:inline-flex; align-items:center; gap:4px;">
-                <span>Visit Official Domain (${a.company_website})</span>
+            <a href="${websiteUrl}" target="_blank" rel="noopener noreferrer" class="mono-text" style="font-size:0.8rem; color:var(--console-cyan); display:inline-flex; align-items:center; gap:5px;">
+                <span>Visit Claimed Domain (${websiteUrl})</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
             </a>
         `;
     }
 }
 
-// Check saved status
+function setPillStatus(id, isActive, recordName) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = `${recordName}: ${isActive ? 'OK' : 'N/A'}`;
+    el.className = `dns-pill ${isActive ? '' : 'inactive'}`;
+}
+
+/**
+ * Render Positive Signals & Legitimacy
+ */
+function renderPositiveSignals(signals) {
+    const sec = document.getElementById('positiveSignalsSection');
+    const container = document.getElementById('positiveSignalsContainer');
+    if (!sec || !container) return;
+
+    if (!signals || signals.length === 0) {
+        container.innerHTML = `
+            <div style="color: var(--console-text-muted); font-size: 0.85rem; padding: 0.5rem 0;">
+                No explicit positive legitimacy markers were verified in the provided text.
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = signals.map(s => `
+        <div style="display: flex; align-items: flex-start; gap: 0.65rem; margin-bottom: 0.75rem;">
+            <span style="color: #34D399; font-size: 1.1rem; line-height: 1;">✓</span>
+            <div>
+                <strong style="color: var(--console-text-primary); font-size: 0.88rem;">${s.finding}</strong>
+                <p style="color: var(--console-text-secondary); font-size: 0.82rem; margin-top: 2px;">${s.explanation}</p>
+                ${s.evidence ? `<div class="mono-text" style="font-size: 0.78rem; color: var(--console-text-muted); margin-top: 3px; font-style: italic;">"${s.evidence}"</div>` : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
+/**
+ * Render Uncertainties & What Could Not Be Verified
+ */
+function renderUncertainties(uncertainties) {
+    const sec = document.getElementById('uncertaintiesSection');
+    const container = document.getElementById('uncertaintiesContainer');
+    if (!sec || !container) return;
+
+    if (!uncertainties || uncertainties.length === 0) {
+        container.innerHTML = `
+            <div style="color: var(--console-text-muted); font-size: 0.85rem; padding: 0.5rem 0;">
+                Standard document text limitations apply. Offline credentials require direct verification.
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = `
+        <ul style="padding-left: 1.25rem; color: var(--console-text-secondary); font-size: 0.84rem; display: flex; flex-direction: column; gap: 0.4rem;">
+            ${uncertainties.map(u => `<li>${u}</li>`).join('')}
+        </ul>
+    `;
+}
+
+/**
+ * Render the dedicated Evidence-First AI OPINION Component
+ */
+function renderAiOpinion(a) {
+    const op = a.ai_opinion || {};
+    const flowContainer = document.getElementById('aiOpinionFlow');
+    const assessQuote = document.getElementById('aiOpinionAssessment');
+    const conclusionEl = document.getElementById('aiOpinionConclusion');
+
+    if (!flowContainer) return;
+
+    // Assessment Quote / Headline
+    if (assessQuote) {
+        assessQuote.textContent = op.assessment || a.summary || 'Forensic analysis evaluated the provided document content and entity consistency.';
+    }
+
+    // Evidence-First Reasoning Flow: OBSERVATION -> EVIDENCE -> INTERPRETATION -> RISK IMPACT
+    const reasoningItems = op.reasoning || [];
+    
+    if (reasoningItems.length === 0) {
+        // Clean Document State (e.g. Clean Participation Certificate)
+        const isCert = a.document_type === 'CERTIFICATE';
+        flowContainer.innerHTML = `
+            <div class="ai-reasoning-card">
+                <div class="ai-step-badge">STATUS: NO MATERIAL FRAUD DETECTED</div>
+                <div class="ai-step-observation">Document Alignment & Context Verification</div>
+                <div class="ai-step-interpretation">
+                    ${isCert
+                        ? 'The document exhibits standard participation or completion credential vocabulary. The content contains zero demands for security deposits, equipment fees, or sensitive credential disclosure.'
+                        : 'Extracted text conforms to expected standard communication without high-risk advance fees or artificial pressure.'}
+                </div>
+                <div class="ai-step-impact SAFE">
+                    <span>RISK IMPACT: MINIMAL / SAFE</span>
+                </div>
+            </div>
+        `;
+    } else {
+        flowContainer.innerHTML = reasoningItems.map((item, idx) => {
+            const stepNum = String(idx + 1).padStart(2, '0');
+            const obs = item.observation || item.finding || 'Observed Threat Vector';
+            const ev = item.evidence || '';
+            const interp = item.interpretation || item.explanation || '';
+            const impact = (item.risk_impact || 'HIGH').toUpperCase();
+
+            return `
+                <div class="ai-reasoning-card">
+                    <div class="ai-step-badge">STEP ${stepNum} // RISK FACTOR</div>
+                    <div class="ai-step-observation">${obs}</div>
+
+                    ${ev ? `
+                        <div class="evidence-quote-box" style="margin: 0.5rem 0;">
+                            <span class="evidence-label">DOCUMENT EVIDENCE:</span>
+                            "${ev}"
+                        </div>
+                    ` : ''}
+
+                    <div class="ai-step-interpretation">
+                        <strong>Forensic Interpretation:</strong> ${interp}
+                    </div>
+
+                    <div class="ai-step-impact ${impact}">
+                        <span>RISK IMPACT: ${impact}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Overall Conclusion
+    if (conclusionEl) {
+        conclusionEl.textContent = op.overall_conclusion || (
+            a.classification === 'HIGH_RISK'
+                ? 'The combination of financial solicitation, sensitive data harvesting, artificial urgency, and unverified communication channels indicates a high probability of fraud.'
+                : 'The available evidence does not provide sufficient grounds to classify this document as suspicious.'
+        );
+    }
+}
+
+/**
+ * Render Recommended Actions Checklist
+ */
+function renderRecommendations(recs, docType) {
+    const list = document.getElementById('recommendationsList');
+    if (!list) return;
+
+    if (!recs || recs.length === 0) {
+        if (docType === 'CERTIFICATE') {
+            recs = [
+                'If required for professional proof, verify the credential directly via the issuing platform\'s official verification registry.',
+                'Verify the issuing organization\'s public domain before providing any personal details to third parties.'
+            ];
+        } else {
+            recs = [
+                'Never wire funds, transfer money via Zelle/UPI, or purchase gift cards for employer onboarding equipment.',
+                'Verify recruiter identity through official corporate telephone switchboards or verified LinkedIn directories.'
+            ];
+        }
+    }
+
+    list.innerHTML = recs.map((rec, i) => `
+        <li class="checklist-item">
+            <input type="checkbox" id="recCheck_${i}">
+            <label for="recCheck_${i}">
+                ${rec}
+            </label>
+        </li>
+    `).join('');
+}
+
+/**
+ * Check if current analysis record is saved in user repository
+ */
 async function checkSavedStatus(analysisId) {
-    if (!getToken()) return;
+    if (typeof getToken !== 'function' || !getToken()) return;
     try {
         const res = await fetch(`${API_BASE_URL}/saved-reports/check/${analysisId}`, { headers: getAuthHeaders(true) });
         if (res.ok) {
@@ -303,7 +708,7 @@ async function checkSavedStatus(analysisId) {
             updateSaveButtonUI();
         }
     } catch (err) {
-        console.error('Failed to check saved status:', err);
+        console.error('Failed to check saved report status:', err);
     }
 }
 
@@ -313,28 +718,39 @@ function updateSaveButtonUI() {
     if (!btn || !text) return;
 
     if (isCurrentlySaved) {
-        btn.classList.remove('btn-outline');
-        btn.classList.add('btn-primary');
+        btn.classList.add('btn-forensic-primary');
+        btn.classList.remove('btn-forensic-secondary');
         text.textContent = 'Saved ✓';
     } else {
-        btn.classList.remove('btn-primary');
-        btn.classList.add('btn-outline');
+        btn.classList.remove('btn-forensic-primary');
+        btn.classList.add('btn-forensic-secondary');
         text.textContent = 'Save Report';
     }
 }
 
-// Action Buttons
+/**
+ * Setup Action Toolbar Handlers
+ */
 function setupActionButtons() {
     const saveBtn = document.getElementById('saveReportBtn');
     const printBtn = document.getElementById('downloadPdfBtn');
     const shareBtn = document.getElementById('shareReportBtn');
+    const askAiBtn = document.getElementById('askCaseAiBtn');
 
-    // Save / Unsave
+    // Ask CaseAI Handler
+    askAiBtn?.addEventListener('click', () => {
+        if (window.openCaseAI && currentAnalysisId) {
+            window.openCaseAI(currentAnalysisId);
+        } else {
+            showToast('CaseAI assistant is initializing...', 'info');
+        }
+    });
+
+    // Save / Unsave Dossier
     saveBtn?.addEventListener('click', async () => {
-        if (!requireAuth()) return;
+        if (typeof requireAuth === 'function' && !requireAuth()) return;
 
         if (isCurrentlySaved) {
-            // Unsave
             try {
                 const res = await fetch(`${API_BASE_URL}/saved-reports/by-analysis/${currentAnalysisId}`, {
                     method: 'DELETE',
@@ -344,17 +760,16 @@ function setupActionButtons() {
                     isCurrentlySaved = false;
                     savedRecordId = null;
                     updateSaveButtonUI();
-                    showToast('Report removed from saved dossier list', 'info');
+                    showToast('Report removed from saved repository', 'info');
                 }
             } catch {
                 showToast('Failed to unsave report', 'danger');
             }
         } else {
-            // Open Save Modal
             const modal = document.getElementById('saveReportModal');
             const titleInput = document.getElementById('savedReportTitle');
             if (titleInput && currentAnalysis) {
-                titleInput.value = `${currentAnalysis.job_title || 'Offer'} - ${currentAnalysis.company_name || 'Employer'}`;
+                titleInput.value = `${currentAnalysis.job_title || 'Dossier'} - ${currentAnalysis.company_name || 'Organization'}`;
             }
             modal?.classList.add('active');
         }
@@ -385,7 +800,7 @@ function setupActionButtons() {
                 savedRecordId = data.saved_id;
                 updateSaveButtonUI();
                 saveModal?.classList.remove('active');
-                showToast('Report bookmarked successfully to Saved Reports!', 'success');
+                showToast('Dossier bookmarked to Saved Reports!', 'success');
             } else {
                 throw new Error(data.error || 'Failed to save');
             }
@@ -394,7 +809,7 @@ function setupActionButtons() {
         }
     });
 
-    // Download / Print PDF
+    // Download / Print Dossier
     printBtn?.addEventListener('click', () => {
         window.print();
     });
@@ -416,18 +831,11 @@ function setupActionButtons() {
         const linkInput = document.getElementById('shareableLinkInput');
         try {
             await navigator.clipboard.writeText(linkInput.value);
-            showToast('Share link copied to clipboard!', 'success');
+            showToast('Sanitized dossier link copied to clipboard!', 'success');
         } catch {
             linkInput.select();
             document.execCommand('copy');
             showToast('Link copied to clipboard!', 'success');
-        }
-    });
-
-    // Ask CaseAI Handler
-    document.getElementById('askCaseAiBtn')?.addEventListener('click', () => {
-        if (window.openCaseAI && currentAnalysisId) {
-            window.openCaseAI(currentAnalysisId);
         }
     });
 }

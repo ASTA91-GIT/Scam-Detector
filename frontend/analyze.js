@@ -184,6 +184,38 @@ Kindly revert back immediately with your bank account number and routing number 
         showToast('Loaded advance training fee scam sample', 'info');
     });
 
+    // AI-Generated Professional Scam Sample (Realistic Selection Letter with ₹4,999 registration fee & urgency)
+    document.getElementById('sampleAiScam')?.addEventListener('click', () => {
+        document.getElementById('tabModeText')?.click();
+        if (textarea) {
+            textarea.value = `FORMAL LETTER OF INTENT AND SELECTION NOTIFICATION
+Reference Number: NXR-2026-9041B
+
+Dear Candidate,
+
+On behalf of the Executive Selection Committee at Nexora Global Innovations, we are delighted to convey your formal selection for the appointment of Regional Strategic Communications Consultant.
+
+Our comprehensive talent intelligence assessment evaluated your distinguished credentials and identified exceptional alignment with our international strategic objectives.
+
+Remuneration & Perquisites:
+Your agreed baseline remuneration is fixed at £78,500 annualized, accompanied by comprehensive health insurance and executive discretionary performance incentives.
+
+Mandatory Onboarding Provisioning:
+In accordance with our strict enterprise cybersecurity protocol, all newly appointed consultants are provisioned with an encrypted high-performance workstation and secure hardware authentication token. Prior to courier dispatch, candidates are required to remit a refundable security deposit and asset logistics registration fee of ₹4,999 to our authorized regional logistics custodian within 24 hours of receiving this notification.
+
+Please be advised that failure to complete this logistical verification deposit before 5:00 PM GMT tomorrow will result in immediate forfeiture of this employment offer to alternate shortlisted candidates.
+
+Warmest regards,
+Dr. Alistair Finch
+Chief Talent Officer, Nexora Global Innovations`;
+        }
+        if (compName) compName.value = 'Nexora Global Innovations';
+        if (jobTitle) jobTitle.value = 'Regional Strategic Communications Consultant';
+        if (compEmail) compEmail.value = 'hr-team@nexora-careers-portal.biz';
+        if (compWeb) compWeb.value = 'https://nexora-innovations.net';
+        showToast('Loaded AI-generated professional scam sample', 'info');
+    });
+
     // Legitimate Offer Sample
     document.getElementById('sampleLegit')?.addEventListener('click', () => {
         document.getElementById('tabModeText')?.click();
@@ -284,11 +316,28 @@ function setupFormSubmission() {
         progressModal?.classList.add('active');
         submitBtn.disabled = true;
 
-        // Step animation timers
-        updateStep(1, 20);
-        const timer1 = setTimeout(() => updateStep(2, 40), 500);
-        const timer2 = setTimeout(() => updateStep(3, 65), 1100);
-        const timer3 = setTimeout(() => updateStep(4, 85), 1700);
+        const subtitle = document.getElementById('scanStatusSubtitle');
+        const stateLabels = [
+            "Uploading...",
+            "Extracting text...",
+            "Reading document...",
+            "Analyzing context...",
+            "Evaluating risk...",
+            "Generating explanation...",
+            "Finalizing report..."
+        ];
+
+        let stateIdx = 0;
+        if (subtitle) subtitle.textContent = stateLabels[0];
+        updateStep(1, 15);
+
+        const stateInterval = setInterval(() => {
+            stateIdx = (stateIdx + 1) % stateLabels.length;
+            if (subtitle) subtitle.textContent = stateLabels[stateIdx];
+            const pct = Math.min(90, 15 + stateIdx * 12);
+            const stepNum = Math.min(5, Math.floor(1 + (stateIdx * 5 / stateLabels.length)));
+            updateStep(stepNum, pct);
+        }, 1200);
 
         try {
             let res;
@@ -325,16 +374,13 @@ function setupFormSubmission() {
             }
 
             const data = await res.json();
+            clearInterval(stateInterval);
 
             if (!res.ok) {
                 throw new Error(data.error || 'Forensic analysis failed.');
             }
 
-            // Complete animation
-            clearTimeout(timer1);
-            clearTimeout(timer2);
-            clearTimeout(timer3);
-
+            if (subtitle) subtitle.textContent = "Finalizing report...";
             updateStep(5, 100);
 
             const result = data.result || {};
@@ -346,6 +392,7 @@ function setupFormSubmission() {
             }, 600);
 
         } catch (err) {
+            clearInterval(stateInterval);
             progressModal?.classList.remove('active');
             submitBtn.disabled = false;
             showToast(err.message, 'danger');

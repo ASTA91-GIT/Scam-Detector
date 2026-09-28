@@ -1,123 +1,45 @@
-import os
-import requests
-
-# -----------------------------
-# Hugging Face Configuration
-# -----------------------------
-
-HF_API_TOKEN = os.getenv("HF_API_TOKEN")
-
-HF_MODEL_URL = (
-    "https://api-inference.huggingface.co/models/"
-    "mistralai/Mistral-7B-Instruct-v0.2"
-)
-
-HEADERS = {
-    "Authorization": f"Bearer {HF_API_TOKEN}",
-    "Content-Type": "application/json"
-}
-
-
-# -----------------------------
-# Main AI Function
-# -----------------------------
-
-def ai_scam_analysis(text: str, rule_result: dict) -> str:
-    """
-    Generates a human-style AI explanation focusing on intent,
-    desperation, pressure, and manipulation tactics.
-    """
-
-    # If token missing, fallback immediately
-    if not HF_API_TOKEN:
-        return _fallback_explanation(rule_result)
-
-    prompt = f"""
-You are a cybersecurity expert analyzing job scam messages.
-
-Explain the INTENT and PSYCHOLOGICAL TACTICS used in the message.
-Focus on:
-- desperation
-- urgency or pressure
-- manipulation
-- removal of normal hiring steps
-- emotional exploitation
-
-Do NOT list keywords.
-Do NOT repeat the message.
-Explain like you are warning a real person.
-
-Job message:
-{text}
-
-Detected risk level: {rule_result.get("risk_level")}
-Trust score: {rule_result.get("trust_score")}
-
-Write a short, clear paragraph.
+"""
+AI Semantic Scam Analysis Engine
+Uses local offline Ollama model (llama3.1:8b / llama3.2:3b) as the primary intelligence engine.
+Performs semantic & contextual scam analysis with evidence-linked reasoning.
+Zero cloud API keys, zero external network dependency.
 """
 
-    try:
-        response = requests.post(
-            HF_MODEL_URL,
-            headers=HEADERS,
-            json={
-                "inputs": prompt,
-                "parameters": {
-                    "max_new_tokens": 160,
-                    "temperature": 0.35,
-                    "top_p": 0.9,
-                    "return_full_text": False
-                }
-            },
-            timeout=15
-        )
+from typing import Dict, Any, Optional
+from backend.ai.provider_factory import get_primary_ai_provider
 
-        if response.status_code == 200:
-            data = response.json()
-
-            # HF text-generation models return a list
-            if isinstance(data, list) and len(data) > 0:
-                generated_text = data[0].get("generated_text", "").strip()
-
-                if len(generated_text) > 40:
-                    return generated_text
-
-    except Exception as e:
-        print("❌ Hugging Face AI error:", e)
-
-    # Safe fallback if anything fails
-    return _fallback_explanation(rule_result)
+def run_semantic_scam_analysis(text: str, metadata: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """
+    Executes primary semantic and contextual scam analysis via local offline LLM.
+    Strictly returns validated forensic analysis dict:
+    - risk_score (0-100)
+    - confidence (0-100)
+    - classification (LOW_RISK | MEDIUM_RISK | HIGH_RISK)
+    - summary
+    - reasoning (list of findings with evidence, explanation, impact_on_score)
+    - positive_signals
+    - uncertainties
+    - document_assessment (possible_synthetic_document, confidence, explanation)
+    - recommendations
+    - model_name
+    """
+    provider = get_primary_ai_provider()
+    return provider.analyze_document(document_text=text, metadata=metadata)
 
 
-# -----------------------------
-# Fallback Explanation
-# -----------------------------
-
-def _fallback_explanation(rule_result: dict) -> str:
-    explanation = []
-
-    if rule_result.get("risk_level") == "High Risk":
-        explanation.append(
-            "The message appears intentionally written to pressure the reader into quick action."
-        )
-
-    if rule_result.get("urgency_score", 0) > 0:
-        explanation.append(
-            "Urgent language creates desperation and discourages independent verification."
-        )
-
-    if rule_result.get("financial_flags_count", 0) > 0:
-        explanation.append(
-            "Early requests for money suggest manipulative intent rather than legitimate hiring."
-        )
-
-    if not rule_result.get("website_exists", True):
-        explanation.append(
-            "The absence of verifiable company information increases the likelihood of deception."
-        )
-
-    explanation.append(
-        "Overall, the tone and structure resemble common employment scam techniques."
-    )
-
-    return " ".join(explanation)
+def ai_scam_analysis(text: str, rule_result: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """
+    Backward-compatible entry point for the analysis pipeline.
+    Invokes the local offline LLM.
+    """
+    metadata = {}
+    if rule_result:
+        metadata = {
+            "company_name": rule_result.get("company_name", ""),
+            "job_title": rule_result.get("job_title", ""),
+            "company_email": rule_result.get("company_email", ""),
+            "company_website": rule_result.get("company_website", ""),
+            "company_phone": rule_result.get("company_phone", ""),
+            "job_location": rule_result.get("job_location", "")
+        }
+    return run_semantic_scam_analysis(text=text, metadata=metadata)
