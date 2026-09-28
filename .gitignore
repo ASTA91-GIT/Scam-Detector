@@ -38,3 +38,6 @@ package.json
 # Local database data
 backend/mongodb-data/
 backend/mongodb-data
+
+# Test outputs
+tests/output/

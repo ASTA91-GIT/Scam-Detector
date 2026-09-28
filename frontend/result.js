@@ -37,7 +37,7 @@ async function loadDossier(id) {
         let res = await fetch(`${API_BASE_URL}/analysis/result/${id}`, { headers: getAuthHeaders(true) });
 
         // If unauthorized or not found under user session, check public shared report endpoint
-        if (!res.ok && res.status !== 401) {
+        if (!res.ok) {
             res = await fetch(`${API_BASE_URL}/analysis/share/${id}`);
             if (res.ok) {
                 const shareData = await res.json();
@@ -105,6 +105,12 @@ function renderForensicDossier(a) {
     const dateStr = a.created_at ? new Date(a.created_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : 'Verified';
     const timeEl = document.getElementById('resultTimestamp');
     if (timeEl) timeEl.textContent = dateStr;
+
+    // Dedicated Print Header Binding
+    const printCaseIdEl = document.getElementById('printCaseId');
+    if (printCaseIdEl) printCaseIdEl.textContent = `CASE #${(a.analysis_id || a._id || '').slice(-8).toUpperCase()}`;
+    const printDateEl = document.getElementById('printDate');
+    if (printDateEl) printDateEl.textContent = dateStr;
 
     // Header Risk Badge & Score
     const riskBadge = document.getElementById('resultRiskBadge');
@@ -809,9 +815,29 @@ function setupActionButtons() {
         }
     });
 
-    // Download / Print Dossier
+    // Download / Print Dossier with Dedicated PDF Mode
     printBtn?.addEventListener('click', () => {
-        window.print();
+        // Dismiss any open modals
+        document.querySelectorAll('.cyber-modal-overlay').forEach(m => m.classList.remove('active'));
+
+        // Dismiss any active toast notifications
+        document.querySelectorAll('.toast').forEach(t => t.remove());
+
+        // Activate PDF Mode
+        document.body.classList.add('pdf-mode');
+
+        const exitPdfMode = () => {
+            document.body.classList.remove('pdf-mode');
+            window.removeEventListener('afterprint', exitPdfMode);
+        };
+
+        window.addEventListener('afterprint', exitPdfMode);
+
+        // Allow micro-reflow before invoking browser print engine
+        setTimeout(() => {
+            window.print();
+            setTimeout(exitPdfMode, 1500);
+        }, 60);
     });
 
     // Share Modal Handlers

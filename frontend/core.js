@@ -434,7 +434,7 @@ function renderAppShell(activePage) {
     const token = getToken();
 
     // Check if on protected page without auth
-    if (!token && activePage !== 'landing' && activePage !== 'login' && activePage !== 'signup' && activePage !== 'intelligence') {
+    if (!token && activePage !== 'landing' && activePage !== 'login' && activePage !== 'signup' && activePage !== 'intelligence' && activePage !== 'result') {
         window.location.href = 'login.html';
         return;
     }

@@ -866,28 +866,4 @@
   color: var(--console-text-primary);
 }
 
-/* Print Styles */
-@media print {
-  body {
-    background: #FFFFFF !important;
-    color: #000000 !important;
-  }
-  .app-sidebar, .app-topbar, .forensic-actions-bar, .cyber-modal-overlay {
-    display: none !important;
-  }
-  .forensic-console {
-    max-width: 100% !important;
-    padding: 0 !important;
-  }
-  .forensic-header, .forensic-panel, .ai-opinion-panel, .signal-matrix-cell, .timeline-card {
-    background: #FFFFFF !important;
-    border: 1px solid #CCCCCC !important;
-    color: #000000 !important;
-    box-shadow: none !important;
-  }
-  .evidence-quote-box {
-    background: #F4F4F4 !important;
-    color: #000000 !important;
-    border-color: #999999 !important;
-  }
-}
+

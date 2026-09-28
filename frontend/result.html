@@ -6,6 +6,7 @@
     <title>AI Forensic Investigation Console - ScamGuard AI</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="forensic_console.css">
+    <link rel="stylesheet" href="print_dossier.css">
     <script>
         (function() {
             const saved = localStorage.getItem('theme') || 'dark';
@@ -45,6 +46,18 @@
                 <!-- Main Result Container -->
                 <div id="resultMainContainer" class="forensic-console" style="display: none;">
                     
+                    <!-- Dedicated Print/PDF Document Header -->
+                    <div class="print-doc-header">
+                        <div class="print-header-brand">
+                            <span class="brand-title">SCAMGUARD AI</span>
+                            <span class="brand-subtitle">AI FORENSIC INVESTIGATION REPORT</span>
+                        </div>
+                        <div class="print-header-meta">
+                            <div id="printCaseId">CASE #--</div>
+                            <div id="printDate">--</div>
+                        </div>
+                    </div>
+
                     <!-- 1. Top Result Header -->
                     <div class="forensic-header">
                         <div class="forensic-header-top">
@@ -285,7 +298,7 @@
                     </div>
 
                     <!-- Row 3: Forensic Findings Timeline -->
-                    <div class="forensic-panel">
+                    <div class="forensic-panel" id="forensicFindingsPanel">
                         <div class="forensic-panel-header">
                             <div class="forensic-panel-title">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--console-cyan)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -299,7 +312,7 @@
                     </div>
 
                     <!-- Row 4: Extracted Entities & Company/Domain Intelligence -->
-                    <div class="forensic-grid-2">
+                    <div class="forensic-grid-2" id="entitiesDomainRow">
                         <!-- Extracted Entities Table -->
                         <div class="forensic-panel">
                             <div class="forensic-panel-header">
@@ -400,7 +413,7 @@
                     </div>
 
                     <!-- Row 5: Positive Signals & Uncertainties -->
-                    <div class="forensic-grid-2">
+                    <div class="forensic-grid-2" id="positiveUncertaintiesRow">
                         <!-- Positive / Legitimacy Signals -->
                         <div class="forensic-panel" id="positiveSignalsSection">
                             <div class="forensic-panel-header">
@@ -474,6 +487,12 @@
                         <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.25rem;" id="recommendationsList">
                             <!-- Populated dynamically -->
                         </ul>
+                    </div>
+
+                    <!-- Dedicated Print/PDF Document Footer -->
+                    <div class="print-doc-footer">
+                        <span>SCAMGUARD AI &bull; AI FORENSIC INVESTIGATION REPORT</span>
+                        <span>CONFIDENTIAL CYBERSECURITY AUDIT &bull; STRICTLY FOR AUTHORIZED RECIPIENT USE</span>
                     </div>
 
                 </div>

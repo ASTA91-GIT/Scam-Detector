@@ -1,0 +1,862 @@
+/* ==========================================================================
+   SCAMGUARD AI - DEDICATED FORENSIC PRINT & PDF STYLESHEET
+   Professional Cybersecurity Forensic Report Layout (A4 Portrait)
+   Strict 16mm margins, 178mm content grid, zero UI leakage, high-contrast,
+   controlled pagination, unbreakable evidence/finding blocks.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   SCREEN-ONLY: HIDE PRINT-SPECIFIC REPORT ARTIFACTS
+   -------------------------------------------------------------------------- */
+.print-doc-header,
+.print-doc-footer {
+  display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   A4 PRINT & PDF-MODE STYLES
+   -------------------------------------------------------------------------- */
+@media print {
+
+  @page {
+    size: A4 portrait;
+    margin: 16mm;
+  }
+
+  /* 1. Global Reset & Width Lockdown */
+  *, *::before, *::after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+
+  html, body {
+    width: 210mm !important;
+    min-width: 210mm !important;
+    max-width: 210mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #FFFFFF !important;
+    color: #0F172A !important;
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    font-size: 9.5pt !important;
+    line-height: 1.4 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* 2. Absolute Removal of Application Shell & UI Controls */
+  .app-sidebar,
+  .app-topbar,
+  .app-mobile-nav,
+  #appMobileNav,
+  .mobile-bottom-nav,
+  .app-bottom-nav,
+  .bottom-navigation,
+  .toast-container,
+  #toastContainer,
+  .toast,
+  .cyber-modal-overlay,
+  .forensic-actions-bar,
+  .case-ai-floating,
+  #caseAiDrawer,
+  #caseAiBackdrop,
+  .sidebar-backdrop,
+  .interactive-controls,
+  .btn-forensic-primary,
+  .btn-forensic-secondary,
+  button,
+  a.btn,
+  #sidebarCollapseBtn,
+  #mobileDrawerToggle,
+  #topbarSearchTrigger,
+  #notifBellBtn,
+  #themeToggleBtn,
+  .topbar-kbd,
+  .notif-dropdown,
+  #extractionWarningBanner:empty {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* 3. Layout Normalization: Zero Margin-Left on Main Container */
+  .app-shell,
+  .app-main,
+  .app-content {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    background: transparent !important;
+  }
+
+  /* 4. Exact 178mm Content Grid (210mm A4 - 32mm total margins) */
+  .forensic-console {
+    width: 100% !important;
+    max-width: 178mm !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 5. Running Report Header & Footer */
+  .print-doc-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-end !important;
+    border-bottom: 2px solid #0F172A !important;
+    padding-bottom: 6px !important;
+    margin-bottom: 14px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .print-header-brand {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .print-header-brand .brand-title {
+    font-family: 'Syne', sans-serif !important;
+    font-size: 13pt !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.05em !important;
+    color: #0F172A !important;
+    line-height: 1 !important;
+  }
+
+  .print-header-brand .brand-subtitle {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 7.5pt !important;
+    font-weight: 600 !important;
+    color: #0284C7 !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+    margin-top: 3px !important;
+  }
+
+  .print-header-meta {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 7.5pt !important;
+    color: #475569 !important;
+    text-align: right !important;
+    line-height: 1.3 !important;
+  }
+
+  .print-doc-footer {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    border-top: 1px solid #CBD5E1 !important;
+    padding-top: 4px !important;
+    margin-top: 8px !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 7pt !important;
+    color: #64748B !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* 6. Professional Report Cover / Header Panel */
+  .forensic-header {
+    background: #F8FAFC !important;
+    border: 1px solid #CBD5E1 !important;
+    border-radius: 4px !important;
+    padding: 14px 16px !important;
+    margin-bottom: 16px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .forensic-header::before {
+    display: none !important;
+  }
+
+  .forensic-header-top {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    gap: 16px !important;
+    width: 100% !important;
+  }
+
+  .forensic-header-left {
+    flex: 1 !important;
+  }
+
+  .forensic-breadcrumbs {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 7.5pt !important;
+    color: #64748B !important;
+    letter-spacing: 0.05em !important;
+    margin-bottom: 4px !important;
+  }
+
+  .forensic-breadcrumbs .dot {
+    background: #0284C7 !important;
+  }
+
+  .forensic-job-title {
+    font-family: 'Syne', sans-serif !important;
+    font-size: 16pt !important;
+    font-weight: 800 !important;
+    color: #0F172A !important;
+    margin: 4px 0 8px 0 !important;
+    line-height: 1.2 !important;
+  }
+
+  .forensic-meta-strip {
+    display: flex !important;
+    gap: 12px !important;
+    flex-wrap: wrap !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 8pt !important;
+    color: #334155 !important;
+  }
+
+  .forensic-meta-item .meta-label {
+    color: #64748B !important;
+    font-size: 7pt !important;
+  }
+
+  .forensic-meta-item .meta-val {
+    color: #0F172A !important;
+    font-weight: 600 !important;
+  }
+
+  /* Compact Print Radial Score Box */
+  .forensic-gauge-box {
+    background: #FFFFFF !important;
+    border: 1px solid #CBD5E1 !important;
+    border-radius: 4px !important;
+    padding: 8px 12px !important;
+    min-width: 120px !important;
+    max-width: 130px !important;
+    text-align: center !important;
+    break-inside: avoid !important;
+  }
+
+  .forensic-radial-wrap {
+    width: 76px !important;
+    height: 76px !important;
+    margin: 0 auto !important;
+  }
+
+  .forensic-radial-bg {
+    stroke: #E2E8F0 !important;
+    stroke-width: 6 !important;
+  }
+
+  .forensic-radial-fill {
+    stroke-width: 6 !important;
+  }
+
+  .forensic-radial-score {
+    font-family: 'Syne', sans-serif !important;
+    font-size: 16pt !important;
+    font-weight: 800 !important;
+    color: #0F172A !important;
+  }
+
+  .forensic-radial-label {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 6pt !important;
+    color: #64748B !important;
+  }
+
+  .forensic-radial-sub {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 7pt !important;
+    font-weight: 700 !important;
+    margin-top: 2px !important;
+  }
+
+  .forensic-gauge-meta {
+    font-size: 6.5pt !important;
+    color: #64748B !important;
+    border-top: 1px solid #E2E8F0 !important;
+    padding-top: 4px !important;
+    margin-top: 4px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+  }
+
+  .forensic-gauge-meta span strong {
+    color: #0F172A !important;
+  }
+
+  /* 7. Section Panels */
+  .forensic-panel {
+    background: #FFFFFF !important;
+    border: 1px solid #CBD5E1 !important;
+    border-radius: 4px !important;
+    padding: 12px 14px !important;
+    margin-bottom: 14px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .forensic-panel-header {
+    border-bottom: 1px solid #E2E8F0 !important;
+    padding-bottom: 6px !important;
+    margin-bottom: 10px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  .forensic-panel-title {
+    font-family: 'Syne', sans-serif !important;
+    font-size: 11pt !important;
+    font-weight: 700 !important;
+    color: #0F172A !important;
+  }
+
+  .forensic-panel-title svg {
+    display: none !important;
+  }
+
+  .forensic-panel-subtitle {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 7pt !important;
+    color: #64748B !important;
+  }
+
+  /* 8. 2-Column Balanced Grids */
+  .forensic-grid-2 {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+    width: 100% !important;
+    margin-bottom: 14px !important;
+    box-sizing: border-box !important;
+  }
+
+  .forensic-grid-2 > .forensic-panel {
+    margin-bottom: 0 !important;
+    height: 100% !important;
+  }
+
+  /* 9. Risk Signal Analysis: Exact 2-Column Matrix (Section 13) */
+  .signal-matrix-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .signal-matrix-cell {
+    background: #F8FAFC !important;
+    border: 1px solid #CBD5E1 !important;
+    border-radius: 4px !important;
+    padding: 8px 10px !important;
+    box-sizing: border-box !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .signal-cell-top {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+  }
+
+  .signal-cell-name {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 7.5pt !important;
+    font-weight: 700 !important;
+    color: #0F172A !important;
+  }
+
+  .signal-cell-score {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 9.5pt !important;
+    font-weight: 700 !important;
+  }
+
+  .signal-bar-track {
+    background: #E2E8F0 !important;
+    height: 4px !important;
+    margin: 4px 0 !important;
+    border-radius: 2px !important;
+  }
+
+  .signal-cell-desc {
+    font-size: 7.5pt !important;
+    color: #475569 !important;
+    line-height: 1.35 !important;
+  }
+
+  /* 10. Forensic Findings Timeline (Section 16) */
+  .forensic-timeline {
+    padding-left: 0 !important;
+    margin-top: 6px !important;
+  }
+
+  .forensic-timeline::before {
+    display: none !important;
+  }
+
+  .timeline-event {
+    margin-bottom: 10px !important;
+    position: static !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .timeline-node {
+    display: none !important;
+  }
+
+  .timeline-card {
+    background: #F8FAFC !important;
+    border: 1px solid #CBD5E1 !important;
+    border-radius: 4px !important;
+    padding: 10px 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .timeline-card-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 4px !important;
+  }
+
+  .timeline-title {
+    font-family: 'Syne', sans-serif !important;
+    font-size: 9.5pt !important;
+    font-weight: 700 !important;
+    color: #0F172A !important;
+  }
+
+  .evidence-quote-box {
+    background: #FEF9C3 !important;
+    border: 1px solid #FDE047 !important;
+    border-left: 3px solid #CA8A04 !important;
+    border-radius: 3px !important;
+    color: #713F12 !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 8pt !important;
+    line-height: 1.4 !important;
+    padding: 6px 8px !important;
+    margin: 6px 0 !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    word-break: break-word !important;
+  }
+
+  .evidence-label {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 6.5pt !important;
+    font-weight: 700 !important;
+    color: #854D0E !important;
+    margin-bottom: 2px !important;
+  }
+
+  .timeline-explanation {
+    font-size: 8.5pt !important;
+    color: #334155 !important;
+    line-height: 1.4 !important;
+    margin-top: 4px !important;
+  }
+
+  .timeline-rec {
+    font-size: 7.5pt !important;
+    color: #047857 !important;
+    border-top: 1px solid #E2E8F0 !important;
+    padding-top: 4px !important;
+    margin-top: 6px !important;
+  }
+
+  .timeline-rec svg {
+    display: none !important;
+  }
+
+  /* 11. Extracted Entities: Clean Tabular Grid (Section 14) */
+  .entities-table {
+    width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+  }
+
+  .entities-table tr {
+    border-bottom: 1px solid #E2E8F0 !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .entities-table td.entities-label {
+    width: 32% !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 7.5pt !important;
+    font-weight: 700 !important;
+    color: #475569 !important;
+    padding: 5px 4px !important;
+    vertical-align: top !important;
+    text-transform: uppercase !important;
+  }
+
+  .entities-table td.entities-val {
+    width: 68% !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 8pt !important;
+    color: #0F172A !important;
+    padding: 5px 4px !important;
+    vertical-align: top !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  /* 12. Company & Domain Telemetry: Clean 2-Column Grid (Section 15) */
+  .domain-intel-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  .domain-stat-box {
+    background: #F8FAFC !important;
+    border: 1px solid #CBD5E1 !important;
+    border-radius: 4px !important;
+    padding: 6px 8px !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .domain-stat-label {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 6.5pt !important;
+    color: #64748B !important;
+  }
+
+  .domain-stat-value {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 8pt !important;
+    font-weight: 700 !important;
+    color: #0F172A !important;
+    margin-top: 2px !important;
+    word-break: break-word !important;
+  }
+
+  .dns-pill {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 6.5pt !important;
+    padding: 1px 4px !important;
+    background: #ECFDF5 !important;
+    color: #065F46 !important;
+    border: 1px solid #A7F3D0 !important;
+  }
+
+  .dns-pill.inactive {
+    background: #FEF2F2 !important;
+    color: #991B1B !important;
+    border-color: #FECACA !important;
+  }
+
+  /* 13. AI Opinion Panel (Section 17) */
+  .ai-opinion-panel {
+    background: #FFFFFF !important;
+    border: 1.5px solid #0284C7 !important;
+    border-radius: 4px !important;
+    padding: 8px 12px !important;
+    margin-top: 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+  }
+
+  .ai-opinion-panel::before {
+    display: none !important;
+  }
+
+  .ai-opinion-title {
+    font-family: 'Syne', sans-serif !important;
+    font-size: 11pt !important;
+    font-weight: 800 !important;
+    color: #0F172A !important;
+  }
+
+  .ai-opinion-title svg {
+    display: none !important;
+  }
+
+  .ai-opinion-subtitle {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 7pt !important;
+    color: #0284C7 !important;
+    text-transform: uppercase !important;
+  }
+
+  .ai-opinion-assessment-box {
+    background: #F0F9FF !important;
+    border: 1px solid #BAE6FD !important;
+    border-left: 3px solid #0284C7 !important;
+    border-radius: 4px !important;
+    padding: 6px 10px !important;
+    margin-bottom: 8px !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .ai-opinion-assessment-quote {
+    font-size: 8.5pt !important;
+    color: #0369A1 !important;
+    font-weight: 600 !important;
+    line-height: 1.35 !important;
+  }
+
+  .ai-reasoning-flow {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .ai-reasoning-card {
+    background: #F8FAFC !important;
+    border: 1px solid #CBD5E1 !important;
+    border-radius: 4px !important;
+    padding: 6px 10px !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .ai-step-badge {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 6.5pt !important;
+    font-weight: 700 !important;
+    color: #0284C7 !important;
+  }
+
+  .ai-step-observation {
+    font-family: 'Syne', sans-serif !important;
+    font-size: 8.5pt !important;
+    font-weight: 700 !important;
+    color: #0F172A !important;
+  }
+
+  .ai-step-interpretation {
+    font-size: 7.5pt !important;
+    color: #334155 !important;
+    line-height: 1.3 !important;
+    margin-top: 2px !important;
+  }
+
+  .ai-opinion-conclusion-box {
+    border-top: 1px solid #E2E8F0 !important;
+    padding-top: 6px !important;
+    margin-top: 6px !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .ai-opinion-conclusion-title {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 6.5pt !important;
+    font-weight: 700 !important;
+    color: #475569 !important;
+  }
+
+  .ai-opinion-conclusion-text {
+    font-size: 8pt !important;
+    color: #0F172A !important;
+    line-height: 1.35 !important;
+  }
+
+  /* 14. Recommended Actions Checklist (Section 18) */
+  #recommendationsPanel,
+  .forensic-panel:has(#recommendationsList) {
+    margin-top: 6px !important;
+    padding: 6px 10px !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .checklist-item {
+    border-bottom: 1px solid #E2E8F0 !important;
+    padding: 3px 0 !important;
+    font-size: 8pt !important;
+    color: #1E293B !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .checklist-item input[type="checkbox"] {
+    accent-color: #0284C7 !important;
+    width: 11px !important;
+    height: 11px !important;
+    margin-top: 1px !important;
+  }
+
+  .checklist-item label {
+    color: #0F172A !important;
+    font-size: 8pt !important;
+  }
+
+  /* 15. Badges & High-Contrast Print Accents */
+  .badge-forensic {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 6.5pt !important;
+    font-weight: 700 !important;
+    padding: 2px 6px !important;
+    border-radius: 3px !important;
+    color: #0F172A !important;
+    background: #F1F5F9 !important;
+    border: 1px solid #CBD5E1 !important;
+  }
+
+  .badge-forensic strong,
+  .badge-forensic span {
+    color: #0F172A !important;
+    font-weight: 700 !important;
+  }
+
+  .badge-forensic-danger {
+    background: #FEF2F2 !important;
+    color: #991B1B !important;
+    border: 1.5px solid #DC2626 !important;
+  }
+  .badge-forensic-danger strong,
+  .badge-forensic-danger span {
+    color: #991B1B !important;
+  }
+
+  .badge-forensic-warning {
+    background: #FFFBEB !important;
+    color: #92400E !important;
+    border: 1.5px solid #D97706 !important;
+  }
+  .badge-forensic-warning strong,
+  .badge-forensic-warning span {
+    color: #92400E !important;
+  }
+
+  .badge-forensic-safe {
+    background: #ECFDF5 !important;
+    color: #065F46 !important;
+    border: 1.5px solid #059669 !important;
+  }
+  .badge-forensic-safe strong,
+  .badge-forensic-safe span {
+    color: #065F46 !important;
+  }
+
+  .badge-forensic-cyan {
+    background: #F0F9FF !important;
+    color: #0369A1 !important;
+    border: 1.5px solid #0284C7 !important;
+  }
+  .badge-forensic-cyan strong,
+  .badge-forensic-cyan span {
+    color: #0369A1 !important;
+  }
+
+  .badge-forensic-muted {
+    background: #F8FAFC !important;
+    color: #334155 !important;
+    border: 1px solid #94A3B8 !important;
+  }
+  .badge-forensic-muted strong,
+  .badge-forensic-muted span {
+    color: #0F172A !important;
+  }
+
+  /* High contrast colors for Positive Signals & Uncertainties */
+  #positiveSignalsSection .forensic-panel-title {
+    color: #047857 !important;
+  }
+  #positiveSignalsContainer span {
+    color: #047857 !important;
+    font-weight: 700 !important;
+  }
+  #positiveSignalsContainer strong {
+    color: #065F46 !important;
+    font-weight: 700 !important;
+    font-size: 8.5pt !important;
+  }
+  #positiveSignalsContainer p {
+    color: #1E293B !important;
+    font-size: 8pt !important;
+  }
+  #positiveSignalsContainer .mono-text,
+  #positiveSignalsContainer div[style*="font-style: italic"] {
+    color: #475569 !important;
+    font-size: 7.5pt !important;
+  }
+
+  #uncertaintiesSection .forensic-panel-title {
+    color: #334155 !important;
+  }
+  #uncertaintiesContainer ul,
+  #uncertaintiesContainer li {
+    color: #1E293B !important;
+    font-size: 8pt !important;
+    margin-bottom: 4px !important;
+  }
+
+  /* Domain link high contrast */
+  #verifyWebsiteLink a {
+    color: #0284C7 !important;
+    font-weight: 600 !important;
+    text-decoration: underline !important;
+  }
+  #verifyWebsiteLink svg {
+    stroke: #0284C7 !important;
+  }
+
+  /* 16. Smart Pagination Rules (Section 11 & 12 & 22) */
+  h1, h2, h3, h4, 
+  .forensic-panel-header,
+  .ai-opinion-header {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  /* Controlled Chapter Breaks */
+  #forensicFindingsPanel {
+    break-before: page !important;
+    page-break-before: always !important;
+  }
+
+  #positiveUncertaintiesRow {
+    break-before: page !important;
+    page-break-before: always !important;
+  }
+
+  /* Natural page breaks inside large containers */
+  .forensic-panel,
+  .ai-opinion-panel {
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+  }
+
+  /* Prevent orphaned elements */
+  p, li, tr {
+    orphans: 3 !important;
+    widows: 3 !important;
+  }
+}
