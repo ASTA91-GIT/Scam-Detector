@@ -627,3 +627,342 @@ def ai_status():
     """Diagnostics endpoint for local AI and Ollama readiness"""
     status = get_ai_status()
     return jsonify(status), 200
+
+
+# ==============================================================================
+# SECTION 31: ANALYSIS COMPARISON
+# ==============================================================================
+def _find_analysis_doc(col, doc_id):
+    """Safely retrieves analysis document whether stored by ObjectId or string UUID."""
+    if not doc_id:
+        return None
+    try:
+        if ObjectId.is_valid(str(doc_id)):
+            doc = col.find_one({'_id': ObjectId(str(doc_id))})
+            if doc:
+                return doc
+    except Exception:
+        pass
+    return col.find_one({'_id': str(doc_id)})
+
+
+def _extract_finding_str(item):
+    """Safely extracts text representation of a finding or red flag."""
+    if isinstance(item, str):
+        return item
+    if isinstance(item, dict):
+        return item.get('title') or item.get('finding') or item.get('indicator') or str(item)
+    return str(item)
+
+
+@analysis_bp.route('/compare', methods=['GET'])
+@require_auth
+def compare_analyses():
+    """
+    Compares two forensic analyses side-by-side.
+    Returns delta in risk score, classification shift, entity changes,
+    added/removed findings, and critical signal shifts.
+    """
+    try:
+        id1 = request.args.get('id1', '').strip()
+        id2 = request.args.get('id2', '').strip()
+
+        if not id1 or not id2:
+            return jsonify({'error': {'code': 'MISSING_PARAMS', 'message': 'Both id1 and id2 parameters are required.'}}), 400
+
+        user_id = request.user_id
+        col = get_analyses_collection()
+
+        doc1 = _find_analysis_doc(col, id1)
+        doc2 = _find_analysis_doc(col, id2)
+
+        if not doc1 or not doc2:
+            return jsonify({'error': {'code': 'NOT_FOUND', 'message': 'One or both analyses could not be found.'}}), 404
+
+        role = getattr(request, 'user_role', 'USER')
+        if role != 'ADMIN':
+            if str(doc1.get('user_id')) != user_id or str(doc2.get('user_id')) != user_id:
+                return jsonify({'error': {'code': 'FORBIDDEN', 'message': 'You are not authorized to compare these analyses.'}}), 403
+
+        score1 = int(doc1.get('risk_score', 0))
+        score2 = int(doc2.get('risk_score', 0))
+        score_diff = score2 - score1
+
+        class1 = doc1.get('risk_level', doc1.get('classification', 'LOW_RISK'))
+        class2 = doc2.get('risk_level', doc2.get('classification', 'LOW_RISK'))
+
+        entities1 = doc1.get('entities') or doc1.get('extracted_entities') or {}
+        entities2 = doc2.get('entities') or doc2.get('extracted_entities') or {}
+
+        entity_diffs = []
+        changed_entities = {}
+        for key in ['company_name', 'company', 'job_title', 'role', 'salary', 'recruiter_email', 'company_website', 'payment', 'phone', 'location']:
+            val1 = entities1.get(key) or doc1.get(key)
+            val2 = entities2.get(key) or doc2.get(key)
+            if val1 or val2:
+                v1_str = str(val1) if val1 else 'Not Specified'
+                v2_str = str(val2) if val2 else 'Not Specified'
+                if v1_str != v2_str:
+                    clean_field = key.replace('_', ' ').title()
+                    entity_diffs.append({
+                        'field': clean_field,
+                        'from': v1_str,
+                        'to': v2_str
+                    })
+                    changed_entities[key] = {'doc1': v1_str, 'doc2': v2_str}
+
+        raw_f1 = (doc1.get('structured_red_flags') or []) + (doc1.get('findings') or []) + (doc1.get('red_flags') or [])
+        raw_f2 = (doc2.get('structured_red_flags') or []) + (doc2.get('findings') or []) + (doc2.get('red_flags') or [])
+
+        findings1 = {_extract_finding_str(f) for f in raw_f1 if f}
+        findings2 = {_extract_finding_str(f) for f in raw_f2 if f}
+
+        added_findings = list(findings2 - findings1)
+        removed_findings = list(findings1 - findings2)
+
+        return jsonify({
+            'id1': id1,
+            'id2': id2,
+            'doc1_title': doc1.get('filename') or doc1.get('job_title') or doc1.get('company_name') or 'Document 1',
+            'doc2_title': doc2.get('filename') or doc2.get('job_title') or doc2.get('company_name') or 'Document 2',
+            'score1': score1,
+            'score2': score2,
+            'score_diff': score_diff,
+            'classification1': class1,
+            'classification2': class2,
+            'classification_changed': class1 != class2,
+            'changed_entities': changed_entities,
+            'entity_diffs': entity_diffs,
+            'added_findings': added_findings,
+            'removed_findings': removed_findings,
+            'comparison': {
+                'analysis_1': {
+                    'id': id1,
+                    'title': doc1.get('job_title') or doc1.get('company_name') or 'Document 1',
+                    'risk_score': score1,
+                    'classification': class1,
+                    'created_at': doc1.get('created_at').isoformat() if hasattr(doc1.get('created_at'), 'isoformat') else str(doc1.get('created_at'))
+                },
+                'analysis_2': {
+                    'id': id2,
+                    'title': doc2.get('job_title') or doc2.get('company_name') or 'Document 2',
+                    'risk_score': score2,
+                    'classification': class2,
+                    'created_at': doc2.get('created_at').isoformat() if hasattr(doc2.get('created_at'), 'isoformat') else str(doc2.get('created_at'))
+                },
+                'risk_score_delta': score_diff,
+                'classification_shifted': class1 != class2,
+                'entity_diffs': entity_diffs,
+                'added_findings': added_findings,
+                'removed_findings': removed_findings
+            }
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': {'code': 'COMPARE_ERROR', 'message': str(e)}}), 500
+
+
+# ==============================================================================
+# SECTION 36: WHAT-IF RISK SIMULATION
+# ==============================================================================
+@analysis_bp.route('/<analysis_id>/simulate', methods=['POST'])
+@require_auth
+def simulate_risk(analysis_id):
+    """
+    Performs 'What-If' forensic risk modeling on a case.
+    Computes simulated risk score without altering the stored analysis record.
+    """
+    try:
+        col = get_analyses_collection()
+        doc = _find_analysis_doc(col, analysis_id)
+        if not doc:
+            return jsonify({'error': {'code': 'NOT_FOUND', 'message': 'Analysis not found.'}}), 404
+
+        role = getattr(request, 'user_role', 'USER')
+        if role != 'ADMIN' and str(doc.get('user_id')) != request.user_id:
+            return jsonify({'error': {'code': 'FORBIDDEN', 'message': 'Unauthorized.'}}), 403
+
+        data = request.get_json() or {}
+        base_score = int(doc.get('risk_score', 0))
+        simulated_score = base_score
+        active_factors = []
+
+        # Handle list format: 'scenarios': [{'type': 'advance_fee', ...}, ...]
+        scenarios = data.get('scenarios', [])
+        for sc in scenarios:
+            stype = sc.get('type')
+            if stype in ['advance_fee', 'fee', 'payment']:
+                fee_val = sc.get('fee_amount', '₹5,000')
+                simulated_score += 45
+                active_factors.append(f"Hypothetical Upfront Advance Fee Demanded ({fee_val})")
+            elif stype in ['crypto', 'crypto_payment']:
+                simulated_score += 30
+                active_factors.append("Hypothetical Payment Solicited via Cryptocurrency / Telegram")
+            elif stype in ['urgency']:
+                simulated_score += 15
+                active_factors.append("Hypothetical Artificial Urgency (< 24hr Deadline to sign/pay)")
+            elif stype in ['domain_mismatch']:
+                simulated_score += 25
+                active_factors.append("Hypothetical Free Public Recruiter Email (@gmail.com)")
+            elif stype in ['sensitive_docs']:
+                simulated_score += 20
+                active_factors.append("Hypothetical Premature Sensitive Credential / Bank Account Demand")
+
+        # Handle direct boolean flags
+        if data.get('add_fee_request'):
+            fee_val = data.get('fee_amount', '₹5,000')
+            simulated_score += 45
+            active_factors.append(f"Hypothetical Upfront Advance Fee Demanded ({fee_val})")
+
+        if data.get('add_crypto_payment'):
+            simulated_score += 30
+            active_factors.append("Hypothetical Payment Solicited via Cryptocurrency / Telegram")
+
+        if data.get('add_urgency'):
+            simulated_score += 15
+            active_factors.append("Hypothetical Artificial Urgency (< 24hr Deadline to sign/pay)")
+
+        if data.get('add_domain_mismatch'):
+            simulated_score += 25
+            active_factors.append("Hypothetical Free Public Recruiter Email (@gmail.com)")
+
+        if data.get('add_sensitive_docs'):
+            simulated_score += 20
+            active_factors.append("Hypothetical Premature Sensitive Credential / Bank Account Demand")
+
+        if data.get('remove_fee_request') and base_score > 30:
+            simulated_score -= 40
+            active_factors.append("Hypothetical Verified Zero-Fee Corporate Policy")
+
+        simulated_score = max(0, min(100, simulated_score))
+
+        if simulated_score >= 70:
+            sim_class = "HIGH RISK"
+        elif simulated_score >= 40:
+            sim_class = "MEDIUM RISK"
+        else:
+            sim_class = "LOW RISK"
+
+        return jsonify({
+            'simulation': True,
+            'simulated_score': simulated_score,
+            'hypothetical_findings': active_factors,
+            'original_score': base_score,
+            'simulated_classification': sim_class,
+            'simulation_details': {
+                'case_id': str(analysis_id),
+                'is_simulation': True,
+                'disclaimer': 'SIMULATION ONLY: Hypothetical risk modeling for investigative analysis. Original case remains untouched.',
+                'original_risk_score': base_score,
+                'simulated_risk_score': simulated_score,
+                'delta': simulated_score - base_score,
+                'original_classification': doc.get('risk_level', 'LOW_RISK'),
+                'simulated_classification': sim_class,
+                'triggered_factors': active_factors
+            }
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': {'code': 'SIMULATION_ERROR', 'message': str(e)}}), 500
+
+
+# ==============================================================================
+# SECTION 34: RECOMMENDED ACTIONS CHECKLIST PERSISTENCE
+# ==============================================================================
+@analysis_bp.route('/<analysis_id>/checklist', methods=['GET', 'PATCH'])
+@require_auth
+def manage_checklist(analysis_id):
+    """
+    Persists and retrieves user's completed verification checklist items for an analysis.
+    """
+    try:
+        col = get_analyses_collection()
+        doc = _find_analysis_doc(col, analysis_id)
+        if not doc:
+            return jsonify({'error': {'code': 'NOT_FOUND', 'message': 'Analysis not found.'}}), 404
+
+        role = getattr(request, 'user_role', 'USER')
+        if role != 'ADMIN' and str(doc.get('user_id')) != request.user_id:
+            return jsonify({'error': {'code': 'FORBIDDEN', 'message': 'Unauthorized.'}}), 403
+
+        saved_state = doc.get('checklist_state', {
+            'checked_indices': [],
+            'completed_count': 0,
+            'total_items': 0
+        })
+
+        rec_actions = doc.get('recommended_actions') or [
+            'Verify company registration through official corporate registry',
+            'Confirm offer with company HR using official domain email',
+            'Do not pay any upfront processing or equipment deposit fees',
+            'Do not share PAN, Aadhaar, or bank details before formal onboarding',
+            'Check company website domain registration age and authenticity'
+        ]
+
+        if request.method == 'GET':
+            saved_indices = set(saved_state.get('checked_indices', []))
+            checklist_items = []
+            for idx, act in enumerate(rec_actions):
+                checklist_items.append({
+                    'index': idx,
+                    'action': act,
+                    'completed': idx in saved_indices
+                })
+
+            return jsonify({
+                'case_id': str(analysis_id),
+                'checklist': checklist_items,
+                'completed_count': len(saved_indices),
+                'total_items': len(rec_actions),
+                'checklist_state': saved_state
+            }), 200
+
+        # PATCH
+        data = request.get_json() or {}
+        checked_indices = list(saved_state.get('checked_indices', []))
+
+        # Check if single item toggled: {'index': 0, 'completed': True}
+        if 'index' in data:
+            item_idx = int(data['index'])
+            is_completed = bool(data.get('completed', True))
+            if is_completed:
+                if item_idx not in checked_indices:
+                    checked_indices.append(item_idx)
+            else:
+                if item_idx in checked_indices:
+                    checked_indices.remove(item_idx)
+        elif 'checked_indices' in data:
+            checked_indices = [int(i) for i in data['checked_indices']]
+
+        total_items = data.get('total_items', len(rec_actions))
+        state = {
+            'checked_indices': checked_indices,
+            'completed_count': len(checked_indices),
+            'total_items': total_items,
+            'updated_at': datetime.utcnow().isoformat()
+        }
+
+        # Update in database
+        doc_filter = {'_id': ObjectId(str(analysis_id))} if ObjectId.is_valid(str(analysis_id)) else {'_id': str(analysis_id)}
+        col.update_one(doc_filter, {'$set': {'checklist_state': state}})
+
+        saved_indices = set(checked_indices)
+        checklist_items = []
+        for idx, act in enumerate(rec_actions):
+            checklist_items.append({
+                'index': idx,
+                'action': act,
+                'completed': idx in saved_indices
+            })
+
+        return jsonify({
+            'message': 'Checklist progress saved.',
+            'checklist': checklist_items,
+            'completed_count': len(checked_indices),
+            'total_items': total_items,
+            'checklist_state': state
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': {'code': 'CHECKLIST_ERROR', 'message': str(e)}}), 500
+

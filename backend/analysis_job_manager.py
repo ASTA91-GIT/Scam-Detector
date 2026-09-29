@@ -441,5 +441,22 @@ def _dispatch_analysis_notifications(user_id: str, analysis_id: str, analysis_re
             )
             logger.info(f"Dispatched analysis email notification for user {user['email']} (Risk: {risk_score})")
 
+        # Section 50: Outbound Webhook dispatch
+        try:
+            from backend.webhook_dispatcher import dispatch_webhook_event
+            webhook_payload = {
+                'analysis_id': analysis_id,
+                'risk_score': risk_score,
+                'risk_level': analysis_result.get("risk_level", analysis_result.get("classification", "UNKNOWN")),
+                'company_name': analysis_result.get("company_name", "Not Specified"),
+                'job_title': analysis_result.get("job_title", "Document Analysis"),
+                'created_at': datetime.utcnow().isoformat()
+            }
+            dispatch_webhook_event(user_id, 'analysis.completed', webhook_payload)
+            if risk_score >= high_risk_threshold:
+                dispatch_webhook_event(user_id, 'analysis.high_risk', webhook_payload)
+        except Exception as we:
+            logger.warning(f"Webhook event dispatch error: {we}")
+
     except Exception as e:
         logger.warning(f"Failed to dispatch analysis email notification: {e}")

@@ -39,6 +39,8 @@ def verify_token(token: str):
     except jwt.InvalidTokenError:
         return None
 
+decode_token = verify_token
+
 
 def extract_token_from_request() -> str:
     """Extracts bearer token from Authorization header or fallback header."""

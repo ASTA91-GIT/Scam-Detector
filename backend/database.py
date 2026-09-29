@@ -44,6 +44,11 @@ def init_db():
         # CaseAI Collections
         db.case_chat_messages.create_index([("case_id", 1), ("user_id", 1), ("created_at", 1)])
         db.case_memory.create_index([("case_id", 1), ("user_id", 1)], unique=True)
+        # API Keys & Webhooks Collections
+        db.api_keys.create_index([("user_id", 1), ("revoked", 1)])
+        db.api_keys.create_index("key_hash", unique=True)
+        db.webhooks.create_index([("user_id", 1), ("created_at", -1)])
+        db.webhook_deliveries.create_index([("webhook_id", 1), ("created_at", -1)])
 
     except Exception as e:
         print(f"[ERROR] MongoDB connection error: {e}")
@@ -88,3 +93,12 @@ def get_case_chat_messages_collection():
 
 def get_case_memory_collection():
     return db.case_memory
+
+def get_api_keys_collection():
+    return db.api_keys
+
+def get_webhooks_collection():
+    return db.webhooks
+
+def get_webhook_deliveries_collection():
+    return db.webhook_deliveries

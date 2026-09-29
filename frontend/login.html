@@ -53,6 +53,41 @@
                 </button>
             </form>
 
+            <!-- 2FA Challenge Box (Section 12) -->
+            <div id="twoFaChallengeBox" style="display: none;">
+                <div style="text-align: center; margin-bottom: 1.25rem;">
+                    <div style="display: inline-flex; padding: 0.75rem; border-radius: 50%; background: rgba(0, 240, 255, 0.1); color: var(--accent-cyan); margin-bottom: 0.5rem;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    </div>
+                    <h3 style="font-size: 1.15rem;">Two-Factor Verification</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 2px;">Enter the 6-digit code from your authenticator app</p>
+                </div>
+
+                <form id="twoFaChallengeForm">
+                    <input type="hidden" id="twoFaTempToken">
+                    
+                    <div class="form-group" id="totpCodeGroup">
+                        <input type="text" id="twoFaCodeInput" class="form-control" placeholder="000000" maxlength="6" pattern="[0-9]{6}" autocomplete="one-time-code" style="text-align: center; font-family: monospace; font-size: 1.4rem; letter-spacing: 6px; padding: 0.75rem;">
+                    </div>
+
+                    <div class="form-group" id="recoveryCodeGroup" style="display: none;">
+                        <label class="form-label" for="twoFaRecoveryInput">Backup Recovery Code</label>
+                        <input type="text" id="twoFaRecoveryInput" class="form-control" placeholder="e.g. A1B2C3D4" style="text-align: center; font-family: monospace; font-size: 1rem; text-transform: uppercase;">
+                    </div>
+
+                    <div id="twoFaErrorMsg" class="badge-danger" style="display:none; padding:0.65rem 1rem; border-radius:var(--radius-md); font-size:0.85rem; margin-bottom:1.25rem; width:100%; text-transform:none; font-weight:500;"></div>
+
+                    <button type="submit" class="btn btn-primary btn-block" style="padding: 0.85rem; margin-bottom: 0.75rem;">
+                        Verify & Authenticate
+                    </button>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; margin-top: 0.5rem;">
+                        <button type="button" id="toggleRecoveryModeBtn" class="btn btn-link" style="color: var(--accent-cyan); padding: 0; font-size: 0.8rem; background: none; border: none; cursor: pointer;">Use Backup Recovery Code</button>
+                        <a href="login.html" style="color: var(--text-muted);">Back to sign in</a>
+                    </div>
+                </form>
+            </div>
+
             <div style="text-align: center; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border-subtle); font-size: 0.88rem; color: var(--text-secondary);">
                 Don't have an analyst account? <a href="signup.html" style="font-weight: 600;">Create Account</a>
             </div>
@@ -118,6 +153,16 @@
                         throw new Error(data.error || 'Authentication failed. Please check credentials.');
                     }
 
+                    if (data.require_2fa) {
+                        // Switch form to 2FA challenge
+                        form.style.display = 'none';
+                        const twoFaBox = document.getElementById('twoFaChallengeBox');
+                        twoFaBox.style.display = 'block';
+                        document.getElementById('twoFaTempToken').value = data.temp_token;
+                        document.getElementById('twoFaCodeInput').focus();
+                        return;
+                    }
+
                     setToken(data.token);
                     setUser(data.user);
                     showToast('Authentication verified. Welcome back!', 'success');
@@ -135,6 +180,49 @@
                     spinner.style.display = 'none';
                     submitBtn.disabled = false;
                 }
+            });
+
+            // 2FA Challenge Submission
+            const twoFaForm = document.getElementById('twoFaChallengeForm');
+            const twoFaError = document.getElementById('twoFaErrorMsg');
+            twoFaForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                twoFaError.style.display = 'none';
+
+                const temp_token = document.getElementById('twoFaTempToken').value;
+                const code = document.getElementById('twoFaCodeInput').value.trim();
+                const recovery_code = document.getElementById('twoFaRecoveryInput').value.trim();
+
+                try {
+                    const res = await fetch(`${API_BASE_URL}/auth/login/2fa`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ temp_token, code, recovery_code })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) {
+                        throw new Error(data.error?.message || data.error || 'Invalid 2FA code.');
+                    }
+
+                    setToken(data.token);
+                    setUser(data.user);
+                    showToast('2FA verification successful. Welcome back!', 'success');
+                    const params = new URLSearchParams(window.location.search);
+                    const target = params.get('redirect') || 'dashboard.html';
+                    setTimeout(() => { window.location.href = target; }, 400);
+                } catch (err) {
+                    twoFaError.textContent = err.message;
+                    twoFaError.style.display = 'block';
+                }
+            });
+
+            document.getElementById('toggleRecoveryModeBtn')?.addEventListener('click', () => {
+                const recGroup = document.getElementById('recoveryCodeGroup');
+                const totpGroup = document.getElementById('totpCodeGroup');
+                const isRec = recGroup.style.display === 'block';
+                recGroup.style.display = isRec ? 'none' : 'block';
+                totpGroup.style.display = isRec ? 'block' : 'none';
+                document.getElementById('toggleRecoveryModeBtn').textContent = isRec ? 'Use Backup Recovery Code' : 'Use Authenticator Code';
             });
         });
     </script>

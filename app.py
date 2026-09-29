@@ -14,6 +14,7 @@ from backend.saved_reports import saved_reports_bp
 from backend.notifications import notifications_bp
 from backend.case_chat import case_chat_bp
 from backend.admin import admin_bp
+from backend.api_v1 import api_v1_bp
 from backend.ai.provider_factory import get_ai_status
 from backend.mail_client import check_mail_health
 
@@ -49,6 +50,7 @@ app.register_blueprint(saved_reports_bp, url_prefix='/api/saved-reports')
 app.register_blueprint(notifications_bp, url_prefix='/api/notifications')
 app.register_blueprint(case_chat_bp, url_prefix='/api')
 app.register_blueprint(admin_bp, url_prefix='/api/admin')
+app.register_blueprint(api_v1_bp, url_prefix='/api/v1')
 
 
 # ============================================================

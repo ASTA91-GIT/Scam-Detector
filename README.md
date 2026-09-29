@@ -66,16 +66,43 @@ Built with a hardened Python/Flask core, local offline AI via Ollama, a dedicate
    - Immediate token invalidation via `token_version` incrementing upon password reset or remote logout.
    - "Sign Out Other Sessions" capabilities.
 
-6. **Rate Limiting & Immutable Audit Logging**
-   - Sliding-window in-memory rate limiting across sensitive endpoints (`/login`, `/register`, `/forgot-password`, `/analyze`).
-   - Immutable audit logging in `audit_logs` collection for all key security events.
+6. **Token Revocation & Active Session Management**
+   - Active device sessions tracking (User-Agent parsing, IP metadata, last seen).
+   - Immediate token invalidation via `token_version` incrementing upon password reset or remote logout.
+   - "Sign Out Other Sessions" capabilities.
 
-7. **Automatic File Retention Cleanup**
-   - Automated pruning of temporary uploaded files exceeding retention policy (`FILE_RETENTION_HOURS=24`).
+7. **Two-Factor Authentication (TOTP 2FA & Recovery Codes)**
+   - RFC 6238 compliant TOTP using `pyotp` with QR code / otpauth URI provisioning.
+   - Cryptographically hashed, single-use emergency recovery codes.
+   - Zero plaintext recovery code persistence.
 
-8. **Secure Report Sharing & Public Verification**
-   - High-entropy cryptographic share tokens (`/shared/report/<token>`) with optional expiration and owner revocation.
-   - Public report verification registry (`/verify/report/<public_id>`) proving analysis authenticity without exposing private documents.
+8. **Developer API v1 & Key Management**
+   - Programmatic API authentication using `X-API-Key` headers.
+   - Secure hashed key storage (only key prefix returned on retrieval).
+   - Endpoints for document analysis, domain intelligence, and report retrieval.
+
+9. **Cryptographically Signed Webhooks**
+   - Real-time outbound HTTP POST webhooks for `analysis.completed`, `analysis.high_risk`, and `test.ping`.
+   - HMAC-SHA256 signature verification via `X-ScamGuard-Signature` header.
+   - Webhook test ping and automated delivery audit logging.
+
+10. **Forensic Analysis Comparison & What-If Simulation**
+    - Side-by-side case comparison computing exact risk deltas, classification shifts, and added/removed red flags.
+    - Non-destructive hypothetical risk modeling ("What if an upfront fee was demanded?").
+
+11. **Actionable Checklist Persistence**
+    - Dynamic verification checklist mapped to detected forensic indicators with real-time database progress sync.
+
+12. **Rate Limiting & Immutable Audit Logging**
+    - Sliding-window in-memory rate limiting across sensitive endpoints (`/login`, `/register`, `/forgot-password`, `/analyze`).
+    - Immutable audit logging in `audit_logs` collection for all key security events.
+
+13. **Automatic File Retention Cleanup**
+    - Automated pruning of temporary uploaded files exceeding retention policy (`FILE_RETENTION_HOURS=24`).
+
+14. **Secure Report Sharing & Public Verification**
+    - High-entropy cryptographic share tokens (`/shared/report/<token>`) with optional expiration and owner revocation.
+    - Public report verification registry (`/verify/report/<public_id>`) proving analysis authenticity without exposing private documents.
 
 ---
 
@@ -93,7 +120,7 @@ Key environment variables:
 | :--- | :--- | :--- |
 | `FLASK_ENV` | Application environment (`development` or `production`) | `production` |
 | `SECRET_KEY` | Flask cryptographic session key | Secure random string |
-| `JWT_SECRET` | Secret key for signing authentication JWTs | Secure random string |
+| `JWT_SECRET_KEY` | Secret key for signing authentication JWTs | Secure random string |
 | `MONGODB_URI` | MongoDB connection URI | `mongodb://127.0.0.1:27017/job_scam_detector` |
 | `OLLAMA_BASE_URL`| Local Ollama API host | `http://127.0.0.1:11434` |
 | `OLLAMA_MODEL` | Authoritative forensic model | `llama3.2:3b` |
@@ -146,7 +173,11 @@ node services/mail/server.js
 
 **Terminal 3: Flask Backend & Web Application**
 ```bash
+# Development
 python app.py
+
+# Production WSGI
+gunicorn -w 4 -b 0.0.0.0:5000 app:app
 ```
 
 Open your browser at `http://localhost:5000`.
@@ -198,24 +229,35 @@ Output checks:
 
 ## 🧪 Automated Testing
 
-Execute the complete production test suite:
+Execute the comprehensive production test suites:
 
 ```bash
+# Run production upgrade suite (2FA, API keys, Webhooks, Compare, Simulate, Checklist)
+pytest tests/test_production_upgrade_suite.py -v
+
+# Run production readiness suite (SSRF, Upload validation, Lookalike, Rate limits, Headers)
 pytest tests/test_production_readiness_suite.py -v
-```
 
-Execute forensic and certificate tests:
-```bash
-python tests/test_forensic_console_suite.py
-python tests/test_certificate_scam_suite.py
+# Run mail microservice tests
+node services/mail/test.js
 ```
 
 ---
 
 ## 📡 API Reference Overview
 
-- **Auth**: `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/verify-email`, `POST /api/auth/resend-verification`, `POST /api/auth/forgot-password`, `POST /api/auth/reset-password`, `GET /api/auth/sessions`, `POST /api/auth/sessions/revoke-others`, `PUT /api/auth/notification-preferences`
-- **Analysis**: `POST /api/analyze`, `POST /api/analyze/job`, `GET /api/analyze/job/<id>`, `GET /api/analysis/result/<id>`
+- **Auth**: `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/login/2fa`, `POST /api/auth/2fa/setup`, `POST /api/auth/2fa/verify`, `POST /api/auth/2fa/disable`, `GET /api/auth/verify-email`, `POST /api/auth/resend-verification`, `POST /api/auth/forgot-password`, `POST /api/auth/reset-password`, `GET /api/auth/sessions`, `POST /api/auth/sessions/revoke-others`, `PUT /api/auth/notification-preferences`
+- **Analysis**: `POST /api/analyze`, `POST /api/analyze/job`, `GET /api/analyze/job/<id>`, `GET /api/analysis/result/<id>`, `GET /api/analysis/compare`, `POST /api/analysis/<id>/simulate`, `GET /api/analysis/<id>/checklist`, `PATCH /api/analysis/<id>/checklist`
+- **Developer API v1**:
+  - `POST /api/v1/keys`: Generate scoped API key
+  - `GET /api/v1/keys`: List active API keys
+  - `DELETE /api/v1/keys/<id>`: Revoke API key
+  - `POST /api/v1/analyze`: Programmatic analysis with `X-API-Key`
+  - `GET /api/v1/analysis/<id>`: Programmatic report retrieval
+  - `GET /api/v1/domain/<domain>`: Domain intelligence and DNS records
+  - `POST /api/v1/webhooks`: Register webhook
+  - `GET /api/v1/webhooks`: List webhooks
+  - `POST /api/v1/webhooks/<id>/test`: Test webhook ping
 - **Reports**: `POST /api/saved-reports/<id>/share`, `GET /api/saved-reports/shared/<token>`, `GET /api/saved-reports/verify/<public_id>`
 - **Admin**: `GET /api/admin/metrics`, `GET /api/admin/users`, `GET /api/admin/audit-logs`, `GET /api/admin/system-health`
 - **Health**: `GET /api/health`, `GET /api/ready`, `GET /api/ai/status`

@@ -19,6 +19,7 @@ from flask import Blueprint, request, jsonify, send_from_directory, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from bson import ObjectId
+import pyotp
 
 from backend.database import (
     get_users_collection, get_analyses_collection, get_files_collection,
@@ -51,11 +52,12 @@ def hash_token(raw_token: str) -> str:
 # SIGNUP & REGISTRATION
 # ==============================================================================
 @auth_bp.route('/signup', methods=['POST'])
-@rate_limit(limit=5, window_seconds=3600, bucket='register')
+@auth_bp.route('/register', methods=['POST'])
+@rate_limit(limit=10, window_seconds=3600, bucket='register')
 def signup():
     try:
         data = request.get_json() or {}
-        username = data.get('username', '').strip()
+        username = (data.get('username') or data.get('name') or '').strip()
         email = data.get('email', '').strip().lower()
         password = data.get('password', '').strip()
 
@@ -312,6 +314,24 @@ def login():
 
         user_id = str(user['_id'])
         now = datetime.utcnow()
+
+        # Check if Two-Factor Authentication is enabled
+        if user.get('two_factor_enabled', False):
+            temp_token = secrets.token_urlsafe(32)
+            temp_hash = hash_token(temp_token)
+            users_collection.update_one(
+                {'_id': user['_id']},
+                {'$set': {
+                    'two_factor_login_hash': temp_hash,
+                    'two_factor_login_expires': now + timedelta(minutes=5)
+                }}
+            )
+            return jsonify({
+                'require_2fa': True,
+                'temp_token': temp_token,
+                'message': 'Two-factor authentication code required.'
+            }), 200
+
         users_collection.update_one({'_id': user['_id']}, {'$set': {'last_login': now}})
 
         # Record active session
@@ -363,6 +383,238 @@ def login():
         }), 200
     except Exception as e:
         return jsonify({'error': {'code': 'LOGIN_FAILED', 'message': f'Login failed: {str(e)}'}}), 500
+
+
+# ==============================================================================
+# TWO-FACTOR AUTHENTICATION (2FA / TOTP)
+# ==============================================================================
+@auth_bp.route('/login/2fa', methods=['POST'])
+@rate_limit(limit=5, window_seconds=300, bucket='login_2fa')
+def login_2fa():
+    """Validates TOTP 2FA code or single-use recovery code to complete login."""
+    try:
+        data = request.get_json() or {}
+        temp_token = data.get('temp_token', '').strip()
+        code = data.get('code', '').strip()
+        recovery_code = data.get('recovery_code', '').strip().upper()
+
+        if not temp_token or (not code and not recovery_code):
+            return jsonify({'error': {'code': 'MISSING_FIELDS', 'message': 'Temporary token and 2FA code or recovery code required.'}}), 400
+
+        token_hash = hash_token(temp_token)
+        now = datetime.utcnow()
+        users_col = get_users_collection()
+        user = users_col.find_one({
+            'two_factor_login_hash': token_hash,
+            'two_factor_login_expires': {'$gt': now}
+        })
+
+        if not user:
+            return jsonify({'error': {'code': 'EXPIRED_SESSION', 'message': '2FA verification session has expired. Please sign in again.'}}), 401
+
+        secret = user.get('two_factor_secret')
+        code_valid = False
+        used_recovery = False
+
+        if code and secret:
+            totp = pyotp.TOTP(secret)
+            if totp.verify(code, valid_window=1):
+                code_valid = True
+
+        if not code_valid and recovery_code:
+            rec_hash = hash_token(recovery_code)
+            hashes = user.get('two_factor_recovery_hashes', [])
+            if rec_hash in hashes:
+                code_valid = True
+                used_recovery = True
+                users_col.update_one(
+                    {'_id': user['_id']},
+                    {'$pull': {'two_factor_recovery_hashes': rec_hash}}
+                )
+
+        if not code_valid:
+            log_audit_event("LOGIN_2FA_FAILED", user_id=str(user['_id']), email=user.get('email'))
+            return jsonify({'error': {'code': 'INVALID_2FA_CODE', 'message': 'Invalid two-factor authentication code.'}}), 401
+
+        # Clear temporary 2FA login challenge
+        users_col.update_one(
+            {'_id': user['_id']},
+            {'$set': {'two_factor_login_hash': None, 'two_factor_login_expires': None, 'last_login': now}}
+        )
+
+        user_id = str(user['_id'])
+        session_rec = create_session_record(user_id)
+        db = get_db()
+        if db is not None:
+            db.sessions.insert_one(session_rec)
+
+        token_version = user.get('token_version', 1)
+        role = user.get('role', 'USER')
+        token = generate_token(user_id, user['email'], session_id=session_rec['session_id'], role=role, token_version=token_version)
+
+        log_audit_event("LOGIN_SUCCESS", user_id=user_id, email=user['email'], metadata={
+            "device": session_rec['device'],
+            "ip": session_rec['ip_address'],
+            "2fa_verified": True,
+            "used_recovery_code": used_recovery
+        })
+
+        return jsonify({
+            'message': 'Two-factor authentication verified.',
+            'token': token,
+            'user': {
+                'id': user_id,
+                'username': user.get('username'),
+                'email': user.get('email'),
+                'role': role,
+                'email_verified': user.get('email_verified', False),
+                'avatar_url': user.get('avatar_url'),
+                'two_factor_enabled': True
+            }
+        }), 200
+    except Exception as e:
+        return jsonify({'error': {'code': '2FA_VERIFY_ERROR', 'message': str(e)}}), 500
+
+
+@auth_bp.route('/2fa/setup', methods=['POST'])
+@require_auth
+def setup_2fa():
+    """Generates a fresh TOTP secret, provisioning URI, and single-use recovery codes."""
+    try:
+        user_id = request.user_id
+        users_col = get_users_collection()
+        user = users_col.find_one({'_id': ObjectId(user_id)})
+        if not user:
+            return jsonify({'error': {'code': 'USER_NOT_FOUND', 'message': 'User not found.'}}), 404
+
+        secret = pyotp.random_base32()
+        recovery_codes = [secrets.token_hex(4).upper() for _ in range(6)]
+        recovery_hashes = [hash_token(code) for code in recovery_codes]
+
+        totp = pyotp.TOTP(secret)
+        provisioning_uri = totp.provisioning_uri(name=user.get('email', 'analyst'), issuer_name='ScamGuard AI')
+
+        users_col.update_one(
+            {'_id': ObjectId(user_id)},
+            {'$set': {
+                'two_factor_temp_secret': secret,
+                'two_factor_temp_recovery_hashes': recovery_hashes
+            }}
+        )
+
+        return jsonify({
+            'secret': secret,
+            'otpauth_url': provisioning_uri,
+            'recovery_codes': recovery_codes
+        }), 200
+    except Exception as e:
+        return jsonify({'error': {'code': '2FA_SETUP_ERROR', 'message': str(e)}}), 500
+
+
+@auth_bp.route('/2fa/verify', methods=['POST'])
+@require_auth
+def verify_2fa_setup():
+    """Verifies standard 6-digit TOTP code to finalize enabling 2FA."""
+    try:
+        user_id = request.user_id
+        data = request.get_json() or {}
+        code = data.get('code', '').strip()
+
+        if not code:
+            return jsonify({'error': {'code': 'MISSING_CODE', 'message': '6-digit authentication code is required.'}}), 400
+
+        users_col = get_users_collection()
+        user = users_col.find_one({'_id': ObjectId(user_id)})
+        if not user:
+            return jsonify({'error': {'code': 'USER_NOT_FOUND', 'message': 'User not found.'}}), 404
+
+        temp_secret = user.get('two_factor_temp_secret')
+        if not temp_secret:
+            return jsonify({'error': {'code': 'SETUP_NOT_INITIATED', 'message': '2FA setup was not initiated. Please initiate setup first.'}}), 400
+
+        totp = pyotp.TOTP(temp_secret)
+        if not totp.verify(code, valid_window=1):
+            return jsonify({'error': {'code': 'INVALID_CODE', 'message': 'Invalid verification code. Please check your authenticator app.'}}), 400
+
+        users_col.update_one(
+            {'_id': ObjectId(user_id)},
+            {
+                '$set': {
+                    'two_factor_enabled': True,
+                    'two_factor_secret': temp_secret,
+                    'two_factor_recovery_hashes': user.get('two_factor_temp_recovery_hashes', []),
+                    'two_factor_temp_secret': None,
+                    'two_factor_temp_recovery_hashes': None,
+                    'updated_at': datetime.utcnow()
+                }
+            }
+        )
+
+        log_audit_event("TWO_FACTOR_ENABLED", user_id=user_id, email=user.get('email'))
+        create_notification(
+            user_id=user_id,
+            title="2FA Enabled",
+            message="Two-factor authentication has been successfully activated on your cybersecurity account.",
+            notif_type="security"
+        )
+
+        return jsonify({
+            'message': 'Two-factor authentication successfully activated.',
+            'two_factor_enabled': True
+        }), 200
+    except Exception as e:
+        return jsonify({'error': {'code': '2FA_VERIFY_ERROR', 'message': str(e)}}), 500
+
+
+@auth_bp.route('/2fa/disable', methods=['POST'])
+@require_auth
+def disable_2fa():
+    """Disables 2FA after password and/or TOTP confirmation."""
+    try:
+        user_id = request.user_id
+        data = request.get_json() or {}
+        password = data.get('password', '').strip()
+        code = data.get('code', '').strip()
+
+        users_col = get_users_collection()
+        user = users_col.find_one({'_id': ObjectId(user_id)})
+        if not user:
+            return jsonify({'error': {'code': 'USER_NOT_FOUND', 'message': 'User not found.'}}), 404
+
+        if not check_password_hash(user['password'], password):
+            return jsonify({'error': {'code': 'INVALID_PASSWORD', 'message': 'Current password verification failed.'}}), 401
+
+        if code and user.get('two_factor_secret'):
+            totp = pyotp.TOTP(user['two_factor_secret'])
+            if not totp.verify(code, valid_window=1):
+                return jsonify({'error': {'code': 'INVALID_CODE', 'message': 'Invalid 2FA verification code.'}}), 400
+
+        users_col.update_one(
+            {'_id': ObjectId(user_id)},
+            {
+                '$set': {
+                    'two_factor_enabled': False,
+                    'two_factor_secret': None,
+                    'two_factor_recovery_hashes': [],
+                    'updated_at': datetime.utcnow()
+                }
+            }
+        )
+
+        log_audit_event("TWO_FACTOR_DISABLED", user_id=user_id, email=user.get('email'))
+        create_notification(
+            user_id=user_id,
+            title="2FA Disabled",
+            message="Two-factor authentication has been deactivated on your account.",
+            notif_type="security"
+        )
+
+        return jsonify({
+            'message': 'Two-factor authentication has been disabled.',
+            'two_factor_enabled': False
+        }), 200
+    except Exception as e:
+        return jsonify({'error': {'code': '2FA_DISABLE_ERROR', 'message': str(e)}}), 500
 
 
 # ==============================================================================
@@ -626,6 +878,7 @@ def get_profile():
             'email': user.get('email'),
             'role': user.get('role', 'USER'),
             'email_verified': user.get('email_verified', False),
+            'two_factor_enabled': user.get('two_factor_enabled', False),
             'avatar_url': user.get('avatar_url'),
             'created_at': user.get('created_at').isoformat() if user.get('created_at') else None,
             'last_login': user.get('last_login').isoformat() if user.get('last_login') else None,

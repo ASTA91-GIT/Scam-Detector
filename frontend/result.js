@@ -209,8 +209,11 @@ function renderForensicDossier(a) {
     // 13. AI OPINION Component (Evidence-First Forensic Assessment)
     renderAiOpinion(a);
 
-    // 14. Recommended Actions
-    renderRecommendations(a.recommendations || [], docType);
+    // 14. Recommended Actions (Checklist with persistence)
+    renderRecommendations(a.recommendations || [], docType, a.id || a._id, a.checklist_state || {});
+
+    // 15. What-If Forensic Risk Simulation
+    setupWhatIfSimulation(a.id || a._id);
 }
 
 /**
@@ -670,34 +673,129 @@ function renderAiOpinion(a) {
 }
 
 /**
- * Render Recommended Actions Checklist
+ * Render Recommended Actions Checklist with Persistence & Progress Tracking (Section 34)
  */
-function renderRecommendations(recs, docType) {
+function renderRecommendations(recs, docType, analysisId, persistedState = {}) {
     const list = document.getElementById('recommendationsList');
+    const counter = document.getElementById('checklistCounterBadge');
+    const bar = document.getElementById('checklistProgressBarFill');
     if (!list) return;
 
     if (!recs || recs.length === 0) {
         if (docType === 'CERTIFICATE') {
             recs = [
-                'If required for professional proof, verify the credential directly via the issuing platform\'s official verification registry.',
-                'Verify the issuing organization\'s public domain before providing any personal details to third parties.'
+                'Verify credential authenticity directly via the issuing platform\'s official registry.',
+                'Verify the issuing organization\'s public domain before providing any personal details.',
+                'Ensure no upfront processing or administrative fees are solicited to release the certificate.'
             ];
         } else {
             recs = [
-                'Never wire funds, transfer money via Zelle/UPI, or purchase gift cards for employer onboarding equipment.',
-                'Verify recruiter identity through official corporate telephone switchboards or verified LinkedIn directories.'
+                'Never wire funds, transfer money via Zelle/UPI, or purchase gift cards for onboarding equipment.',
+                'Verify recruiter identity through official corporate telephone switchboards or verified LinkedIn directories.',
+                'Confirm the vacancy exists on the official corporate careers website before continuing interviews.',
+                'Do not provide bank account, Aadhaar/SSN, or ID photos until employment is independently confirmed.',
+                'Reject communication redirection to unmonitored messaging apps like Telegram or WhatsApp.'
             ];
         }
     }
 
+    const checkedIndices = new Set(persistedState.checked_indices || []);
+
+    function updateChecklistProgress() {
+        const total = recs.length;
+        const currentChecked = list.querySelectorAll('input[type="checkbox"]:checked').length;
+        if (counter) counter.textContent = `${currentChecked} / ${total} COMPLETED`;
+        if (bar) bar.style.width = `${total > 0 ? (currentChecked / total) * 100 : 0}%`;
+    }
+
     list.innerHTML = recs.map((rec, i) => `
         <li class="checklist-item">
-            <input type="checkbox" id="recCheck_${i}">
+            <input type="checkbox" id="recCheck_${i}" data-index="${i}" ${checkedIndices.has(i) ? 'checked' : ''}>
             <label for="recCheck_${i}">
                 ${rec}
             </label>
         </li>
     `).join('');
+
+    updateChecklistProgress();
+
+    list.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.addEventListener('change', async () => {
+            updateChecklistProgress();
+            if (!analysisId) return;
+
+            const indices = Array.from(list.querySelectorAll('input[type="checkbox"]:checked')).map(el => parseInt(el.dataset.index));
+            try {
+                await fetch(`${API_BASE_URL}/analysis/${analysisId}/checklist`, {
+                    method: 'PATCH',
+                    headers: getAuthHeaders(true),
+                    body: JSON.stringify({
+                        checked_indices: indices,
+                        total_items: recs.length
+                    })
+                });
+            } catch (err) {}
+        });
+    });
+}
+
+/**
+ * Setup What-If Forensic Risk Simulation (Section 36)
+ */
+function setupWhatIfSimulation(analysisId) {
+    const simBox = document.getElementById('whatIfSimulationPanel');
+    const resBox = document.getElementById('simResultBox');
+    const scoreText = document.getElementById('simRiskScoreText');
+    const deltaBadge = document.getElementById('simRiskDeltaBadge');
+    const classBadge = document.getElementById('simRiskClassBadge');
+    const factorsList = document.getElementById('simFactorsList');
+    if (!simBox || !analysisId) return;
+
+    const checkboxes = simBox.querySelectorAll('input[type="checkbox"]');
+
+    async function runSimulation() {
+        const payload = {
+            add_fee_request: document.getElementById('simFeeRequest')?.checked || false,
+            add_crypto_payment: document.getElementById('simCryptoPayment')?.checked || false,
+            add_urgency: document.getElementById('simUrgency')?.checked || false,
+            add_domain_mismatch: document.getElementById('simDomainMismatch')?.checked || false,
+            add_sensitive_docs: document.getElementById('simSensitiveDocs')?.checked || false
+        };
+
+        const hasAnyActive = Object.values(payload).some(v => v);
+        if (!hasAnyActive) {
+            if (resBox) resBox.style.display = 'none';
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/analysis/${analysisId}/simulate`, {
+                method: 'POST',
+                headers: getAuthHeaders(true),
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const sim = data.simulation || {};
+                if (resBox) resBox.style.display = 'block';
+                if (scoreText) scoreText.textContent = `${sim.simulated_risk_score} / 100`;
+                if (deltaBadge) {
+                    const delta = sim.delta || 0;
+                    deltaBadge.textContent = delta >= 0 ? `+${delta}` : `${delta}`;
+                    deltaBadge.className = delta > 0 ? 'badge badge-danger' : 'badge badge-success';
+                }
+                if (classBadge) {
+                    classBadge.textContent = sim.simulated_classification;
+                    classBadge.className = sim.simulated_risk_score >= 70 ? 'badge badge-danger' : (sim.simulated_risk_score >= 40 ? 'badge badge-warning' : 'badge badge-success');
+                }
+                if (factorsList) {
+                    factorsList.innerHTML = (sim.triggered_factors || []).map(f => `<li>${f}</li>`).join('');
+                }
+            }
+        } catch (e) {}
+    }
+
+    checkboxes.forEach(cb => cb.addEventListener('change', runSimulation));
 }
 
 /**

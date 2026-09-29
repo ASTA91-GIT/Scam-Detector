@@ -104,6 +104,105 @@
                                 </div>
                             </form>
                         </div>
+
+                        <!-- Two-Factor Authentication (2FA) -->
+                        <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border-subtle);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <div>
+                                    <strong style="font-size: 0.95rem;">Two-Factor Authentication (TOTP)</strong>
+                                    <p style="color: var(--text-muted); font-size: 0.82rem; margin-top: 2px;">
+                                        Protect your account with Google Authenticator, Authy, or 1Password.
+                                    </p>
+                                </div>
+                                <span id="twoFactorBadge" class="badge badge-warning" style="font-size: 0.75rem;">DISABLED</span>
+                            </div>
+                            <div id="twoFactorActions" style="margin-top: 0.75rem;">
+                                <button id="setup2faBtn" class="btn btn-outline btn-sm">Enable Two-Factor Authentication</button>
+                                <button id="disable2faBtn" class="btn btn-outline btn-sm" style="display: none; color: var(--risk-danger); border-color: var(--border-subtle);">Disable 2FA</button>
+                            </div>
+
+                            <!-- 2FA Setup Flow Container -->
+                            <div id="twoFactorSetupBox" style="display: none; margin-top: 1rem; padding: 1rem; background: var(--bg-surface); border: 1px solid var(--accent-cyan); border-radius: var(--radius-md);">
+                                <h4 style="font-size: 0.92rem; margin-bottom: 0.5rem; color: var(--accent-cyan);">Step 1: Save Key in Authenticator</h4>
+                                <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                                    Copy the secret key below into your authenticator app (Google Authenticator, Microsoft Authenticator):
+                                </p>
+                                <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem;">
+                                    <code id="twoFactorSecretCode" style="font-family: monospace; font-size: 1rem; letter-spacing: 2px; background: rgba(0,0,0,0.3); padding: 0.5rem 1rem; border-radius: var(--radius-sm); color: var(--accent-cyan);"></code>
+                                    <button type="button" id="copy2faSecretBtn" class="btn btn-outline btn-sm">Copy</button>
+                                </div>
+
+                                <div style="margin-bottom: 1rem;">
+                                    <h4 style="font-size: 0.92rem; margin-bottom: 0.25rem;">Recovery Backup Codes</h4>
+                                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Save these single-use recovery codes in a secure location:</p>
+                                    <div id="twoFactorRecoveryCodes" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; font-family: monospace; font-size: 0.82rem; background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: var(--radius-sm);"></div>
+                                </div>
+
+                                <h4 style="font-size: 0.92rem; margin-bottom: 0.5rem;">Step 2: Enter Verification Code</h4>
+                                <form id="verify2faForm" style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <input type="text" id="verify2faInput" class="form-control" placeholder="6-digit code" maxlength="6" pattern="[0-9]{6}" style="max-width: 140px; font-family: monospace; font-size: 1rem; text-align: center;" required>
+                                    <button type="submit" class="btn btn-primary btn-sm">Verify & Activate</button>
+                                    <button type="button" id="cancel2faBtn" class="btn btn-outline btn-sm">Cancel</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section: Developer API & Webhooks -->
+                    <div class="cyber-card" id="developerApiCard">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <h3>⚡ Developer API & Webhooks</h3>
+                            <span class="badge badge-info" style="font-size: 0.75rem;">REST API v1</span>
+                        </div>
+                        <p style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 1.25rem;">
+                            Integrate ScamGuard AI directly into your CI/CD pipelines, fraud monitoring, or SIEM with signed webhooks.
+                        </p>
+
+                        <!-- API Keys Section -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                <strong style="font-size: 0.95rem;">Active API Keys</strong>
+                                <button id="generateApiKeyBtn" class="btn btn-outline btn-sm">Generate New Key</button>
+                            </div>
+                            <div id="apiKeyDisplayAlert" style="display: none; padding: 0.75rem 1rem; background: rgba(0, 240, 255, 0.08); border: 1px solid var(--accent-cyan); border-radius: var(--radius-md); margin-bottom: 0.75rem;">
+                                <small style="display: block; color: var(--accent-cyan); font-weight: 700;">YOUR NEW API KEY (COPY NOW — WON'T BE SHOWN AGAIN):</small>
+                                <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.4rem;">
+                                    <code id="newApiKeyString" style="font-family: monospace; font-size: 0.9rem; color: #fff; word-break: break-all;"></code>
+                                    <button id="copyNewApiKeyBtn" class="btn btn-outline btn-sm" style="flex-shrink: 0;">Copy</button>
+                                </div>
+                            </div>
+                            <div id="apiKeysList" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                <div style="padding: 0.75rem 1rem; background: var(--bg-surface); border-radius: var(--radius-sm); font-size: 0.85rem; color: var(--text-muted);">
+                                    Loading API keys...
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Webhooks Section -->
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                <strong style="font-size: 0.95rem;">Outbound Webhook Subscriptions</strong>
+                                <button id="addWebhookToggleBtn" class="btn btn-outline btn-sm">Add Webhook</button>
+                            </div>
+                            <div id="addWebhookFormBox" style="display: none; padding: 1rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); margin-bottom: 0.75rem;">
+                                <form id="newWebhookForm" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                    <input type="url" id="webhookUrlInput" class="form-control" placeholder="https://your-domain.com/scamguard-webhook" required style="font-size: 0.85rem;">
+                                    <div style="display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.82rem; color: var(--text-secondary);">
+                                        <label><input type="checkbox" id="whEvtCompleted" checked> analysis.completed</label>
+                                        <label><input type="checkbox" id="whEvtHighRisk" checked> analysis.high_risk</label>
+                                    </div>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <button type="submit" class="btn btn-primary btn-sm">Save Webhook</button>
+                                        <button type="button" id="cancelWebhookBtn" class="btn btn-outline btn-sm">Cancel</button>
+                                    </div>
+                                </form>
+                            </div>
+                            <div id="webhooksList" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                <div style="padding: 0.75rem 1rem; background: var(--bg-surface); border-radius: var(--radius-sm); font-size: 0.85rem; color: var(--text-muted);">
+                                    Loading webhooks...
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Section 3: Notification Preferences -->
