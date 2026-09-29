@@ -906,7 +906,7 @@ function setupActionButtons() {
                 saveModal?.classList.remove('active');
                 showToast('Dossier bookmarked to Saved Reports!', 'success');
             } else {
-                throw new Error(data.error || 'Failed to save');
+                throw new Error(getErrorMessage(data, 'Failed to save report.'));
             }
         } catch (err) {
             showToast(err.message, 'danger');

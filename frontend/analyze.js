@@ -262,7 +262,7 @@ function setupUrlScanner() {
             });
             const data = await res.json();
 
-            if (!res.ok) throw new Error(data.error || 'Scan failed');
+            if (!res.ok) throw new Error(getErrorMessage(data, 'URL scan failed'));
 
             const scan = data.scan || {};
             const isDanger = scan.risk_level === 'High Risk';
@@ -377,7 +377,7 @@ function setupFormSubmission() {
             clearInterval(stateInterval);
 
             if (!res.ok) {
-                throw new Error(data.error || 'Forensic analysis failed.');
+                throw new Error(getErrorMessage(data, 'Forensic analysis failed.'));
             }
 
             if (subtitle) subtitle.textContent = "Finalizing report...";

@@ -193,7 +193,17 @@
                     const data = await res.json();
 
                     if (!res.ok) {
-                        throw new Error(data.error || 'Registration failed.');
+                        const errMsg = (typeof getErrorMessage === 'function') 
+                            ? getErrorMessage(data, 'Registration failed.')
+                            : (data?.error?.message || (typeof data?.error === 'string' ? data.error : 'Registration failed.'));
+                        
+                        if (data?.error?.code === 'EMAIL_EXISTS') {
+                            errorBox.innerHTML = `An account with this email already exists. <a href="login.html" style="color:var(--accent-cyan); text-decoration:underline; font-weight:600; margin-left:4px;">Sign In Here &rarr;</a>`;
+                        } else {
+                            errorBox.textContent = errMsg;
+                        }
+                        errorBox.style.display = 'block';
+                        return;
                     }
 
                     setToken(data.token);
@@ -202,7 +212,7 @@
                     setTimeout(() => { window.location.href = 'dashboard.html'; }, 500);
 
                 } catch (err) {
-                    errorBox.textContent = err.message;
+                    errorBox.textContent = err.message || 'An unexpected network error occurred.';
                     errorBox.style.display = 'block';
                 } finally {
                     btnText.style.display = 'inline';

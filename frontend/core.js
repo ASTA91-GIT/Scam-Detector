@@ -52,6 +52,18 @@ function getAuthHeaders(isJson = true) {
     return headers;
 }
 
+function getErrorMessage(data, fallback = 'An error occurred. Please try again.') {
+    if (!data) return fallback;
+    if (typeof data === 'string') return data;
+    if (data.error) {
+        if (typeof data.error === 'string') return data.error;
+        if (data.error.message && typeof data.error.message === 'string') return data.error.message;
+        if (typeof data.error === 'object') return data.error.message || JSON.stringify(data.error);
+    }
+    if (data.message && typeof data.message === 'string') return data.message;
+    return fallback;
+}
+
 function requireAuth() {
     const token = getToken();
     if (!token) {

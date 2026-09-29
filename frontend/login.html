@@ -150,7 +150,10 @@
                     const data = await res.json();
 
                     if (!res.ok) {
-                        throw new Error(data.error || 'Authentication failed. Please check credentials.');
+                        const errMsg = (typeof getErrorMessage === 'function')
+                            ? getErrorMessage(data, 'Authentication failed. Please check credentials.')
+                            : (data?.error?.message || data?.error || 'Authentication failed. Please check credentials.');
+                        throw new Error(errMsg);
                     }
 
                     if (data.require_2fa) {

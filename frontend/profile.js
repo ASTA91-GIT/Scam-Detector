@@ -137,7 +137,7 @@ function setupAvatarHandling() {
             });
             const data = await res.json();
 
-            if (!res.ok) throw new Error(data.error || 'Upload failed');
+            if (!res.ok) throw new Error(getErrorMessage(data, 'Upload failed'));
 
             showToast('Avatar updated successfully!', 'success');
             await loadProfileData();
@@ -196,7 +196,7 @@ function setupFormSubmissions() {
             });
             const data = await res.json();
 
-            if (!res.ok) throw new Error(data.error || 'Failed to update profile');
+            if (!res.ok) throw new Error(getErrorMessage(data, 'Failed to update profile'));
 
             showToast('Profile information saved successfully!', 'success');
             await loadProfileData();
@@ -245,7 +245,7 @@ function setupFormSubmissions() {
             });
             const data = await res.json();
 
-            if (!res.ok) throw new Error(data.error || 'Password update failed');
+            if (!res.ok) throw new Error(getErrorMessage(data, 'Password update failed'));
 
             showToast('Password updated successfully!', 'success');
             passForm.reset();
@@ -540,7 +540,7 @@ function setupDestructiveActions() {
             });
             const data = await res.json();
 
-            if (!res.ok) throw new Error(data.error || 'Failed to delete account');
+            if (!res.ok) throw new Error(getErrorMessage(data, 'Failed to delete account'));
 
             closeDelete();
             showToast('Account permanently deleted. Farewell.', 'info', 4000);
