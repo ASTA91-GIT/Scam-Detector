@@ -21,6 +21,7 @@ from backend.forensic_utils import (
     build_ai_opinion,
     build_document_intelligence
 )
+from backend.company_intelligence.service import CompanyIntelligenceService
 from backend.rate_limiter import apply_rate_limit
 from backend.audit_logger import log_audit_event
 from backend.analysis_job_manager import (
@@ -173,7 +174,28 @@ def analyze():
             "quality_warning": extraction_meta.get("quality_warning")
         }
 
-        # 4. PRIMARY INTELLIGENCE ENGINE: LOCAL OFFLINE LLM
+        # 4. COMPANY INTELLIGENCE & VERIFICATION PIPELINE
+        company_intelligence = CompanyIntelligenceService.build_company_intelligence(
+            text=text,
+            metadata=metadata,
+            file_info=file_info
+        )
+        metadata["company_intelligence"] = company_intelligence
+
+        # Populate unprovided metadata from verified document intelligence
+        if not company_name and company_intelligence.get("company", {}).get("identified"):
+            company_name = company_intelligence["company"]["name"]
+            metadata["company_name"] = company_name
+
+        if not company_website and company_intelligence.get("company", {}).get("website"):
+            company_website = company_intelligence["company"]["website"]
+            metadata["company_website"] = company_website
+
+        if not company_email and company_intelligence.get("email", {}).get("email") and company_intelligence["email"]["email"] != "Not disclosed":
+            company_email = company_intelligence["email"]["email"]
+            metadata["company_email"] = company_email
+
+        # 5. PRIMARY INTELLIGENCE ENGINE: LOCAL OFFLINE LLM
         try:
             ai_result = run_semantic_scam_analysis(text=text, metadata=metadata)
         except Exception as ai_err:
@@ -261,6 +283,7 @@ def analyze():
             "risk_signals": risk_signals,
             "entities": entities,
             "domain_intelligence": domain_intelligence,
+            "company_intelligence": company_intelligence,
             "ai_opinion": ai_opinion,
             "document_intelligence": document_intelligence,
             "company_name": company_name or entities.get("company", "Not Specified"),
@@ -308,6 +331,7 @@ def analyze():
             'risk_signals': risk_signals,
             'entities': entities,
             'domain_intelligence': domain_intelligence,
+            'company_intelligence': company_intelligence,
             'ai_opinion': ai_opinion,
             'document_intelligence': document_intelligence,
             'model_name': model_name,
@@ -520,6 +544,21 @@ def get_analysis_result(analysis_id):
             doc['ai_opinion'] = ai_op
             doc['document_intelligence'] = d_intel
 
+        if 'company_intelligence' not in doc:
+            doc_text = doc.get('extracted_text') or doc.get('text') or ''
+            doc_meta = {
+                'company_name': doc.get('company_name'),
+                'job_title': doc.get('job_title'),
+                'company_email': doc.get('company_email'),
+                'company_website': doc.get('company_website'),
+                'company_phone': doc.get('company_phone'),
+                'job_location': doc.get('job_location')
+            }
+            doc['company_intelligence'] = CompanyIntelligenceService.build_company_intelligence(
+                text=doc_text,
+                metadata=doc_meta
+            )
+
         clean_doc = _sanitize_doc_for_json(doc)
         return jsonify({'analysis': clean_doc}), 200
 
@@ -564,6 +603,19 @@ def get_shared_analysis(analysis_id):
             doc['ai_opinion'] = ai_op
             doc['document_intelligence'] = d_intel
 
+        if 'company_intelligence' not in doc:
+            doc_text = doc.get('extracted_text') or doc.get('text') or ''
+            doc_meta = {
+                'company_name': doc.get('company_name'),
+                'job_title': doc.get('job_title'),
+                'company_email': doc.get('company_email'),
+                'company_website': doc.get('company_website')
+            }
+            doc['company_intelligence'] = CompanyIntelligenceService.build_company_intelligence(
+                text=doc_text,
+                metadata=doc_meta
+            )
+
         # Sanitize sensitive account details
         sanitized = {
             'analysis_id': str(doc['_id']),
@@ -591,6 +643,7 @@ def get_shared_analysis(analysis_id):
             'risk_signals': doc.get('risk_signals', []),
             'entities': doc.get('entities', {}),
             'domain_intelligence': doc.get('domain_intelligence', {}),
+            'company_intelligence': doc.get('company_intelligence', {}),
             'ai_opinion': doc.get('ai_opinion', {}),
             'document_intelligence': doc.get('document_intelligence', {}),
             'model_name': doc.get('model_name', 'llama3.2:3b'),
@@ -601,6 +654,36 @@ def get_shared_analysis(analysis_id):
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@analysis_bp.route('/company-intelligence', methods=['GET'])
+def get_company_intelligence_route():
+    """
+    Direct Company Intelligence Telemetry API (Section 14).
+    Accepts query parameters:
+    - company: Claimed company or organization name
+    - domain: Claimed or associated domain
+    - email: Recruiter email address
+    """
+    try:
+        company = (request.args.get('company') or '').strip()
+        domain = (request.args.get('domain') or '').strip()
+        email = (request.args.get('email') or '').strip()
+
+        meta = {
+            "company_name": company,
+            "company_website": domain,
+            "company_email": email
+        }
+        intel = CompanyIntelligenceService.build_company_intelligence(
+            text="",
+            metadata=meta
+        )
+        response_data = dict(intel)
+        response_data["status"] = "success"
+        return jsonify(response_data), 200
+    except Exception as e:
+        return jsonify({'status': 'error', 'error': str(e)}), 500
 
 
 @analysis_bp.route('/scan-url', methods=['POST'])

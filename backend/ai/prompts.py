@@ -149,10 +149,38 @@ def build_scam_analysis_prompt(
     if quality_warning:
         warning_section = f"\nEXTRACTION NOTICE: {quality_warning}\n(Take this into account by appropriately calibrating the confidence score).\n"
 
+    comp_intel_section = ""
+    comp_intel = metadata.get("company_intelligence")
+    if comp_intel:
+        c_info = comp_intel.get("company", {})
+        d_info = comp_intel.get("domain", {})
+        w_info = comp_intel.get("website", {})
+        e_info = comp_intel.get("email", {})
+        l_info = comp_intel.get("lookalike", {})
+
+        comp_intel_lines = [
+            "COMPANY INTELLIGENCE & VERIFIED TELEMETRY:",
+            f"- Claimed company: {c_info.get('name') or company_name or 'Company not identified'}",
+            f"- Official domain: {d_info.get('domain') or 'Domain not identified'}",
+            f"- Domain age: {d_info.get('age_formatted') or 'Information unavailable'}",
+            f"- Website: {'Reachable' if w_info.get('reachable') else 'Unreachable'}",
+            f"- HTTPS: {'Enabled' if w_info.get('https') else 'Disabled'}",
+            f"- Recruiter email: {e_info.get('email') or 'Not disclosed'}",
+            f"- Email domain: {e_info.get('match_type') or 'UNKNOWN'}",
+            f"- Lookalike indicators: {'Potential lookalike detected: ' + l_info.get('explanation') if l_info.get('detected') else 'None detected'}",
+            f"- Company public information: {'Available' if c_info.get('verified_presence') else 'Information unavailable'}",
+            "\nIMPORTANT INSTRUCTION ON COMPANY INTELLIGENCE:",
+            "Distinguish company-level external evidence from document-level scam evidence.",
+            "- An established, registered domain does NOT automatically make a job offer legitimate.",
+            "- A newly registered domain does NOT automatically make an offer a scam.",
+            "- An upfront payment request, deposit fee, or credential harvesting is direct scam evidence regardless of domain age."
+        ]
+        comp_intel_section = "\n" + "\n".join(comp_intel_lines) + "\n"
+
     type_context = f"DETECTED DOCUMENT TYPE: {document_type} (Confidence: {document_type_confidence}%)\nApply forensic analysis rules appropriate for a {document_type}."
 
     return f"""{type_context}
-Analyze the following extracted document text for potential scam indicators, social engineering, and legitimacy signals.{meta_section}{warning_section}
+Analyze the following extracted document text for potential scam indicators, social engineering, and legitimacy signals.{meta_section}{comp_intel_section}{warning_section}
 <untrusted_document_content>
 {document_text}
 </untrusted_document_content>

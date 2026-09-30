@@ -29,6 +29,11 @@ class HeuristicProvider(AIProvider):
             "red_flags": [],
             "recruiter_email": "",
             "company_website": "",
+            "official_domain": "",
+            "domain_age": "",
+            "email_match": "",
+            "company_verified": False,
+            "company_profile": "",
             "evidence": []
         }
         if not system_prompt:
@@ -57,6 +62,23 @@ class HeuristicProvider(AIProvider):
         web_match = re.search(r"Website:\s*([^\n]+)", system_prompt)
         if web_match:
             info["company_website"] = web_match.group(1).strip()
+
+        dom_match = re.search(r"Official Company Domain:\s*([^\n]+)", system_prompt)
+        if dom_match:
+            info["official_domain"] = dom_match.group(1).strip()
+
+        age_match = re.search(r"Domain Registration Age:\s*([^\n]+)", system_prompt)
+        if age_match:
+            info["domain_age"] = age_match.group(1).strip()
+
+        em_match = re.search(r"Email-Domain Verification:\s*([^\n]+)", system_prompt)
+        if em_match:
+            info["email_match"] = em_match.group(1).strip()
+
+        prof_match = re.search(r"Company Profile:\s*([^\n]+)", system_prompt)
+        if prof_match:
+            info["company_profile"] = prof_match.group(1).strip()
+            info["company_verified"] = True
 
         # Extract red flags bullet points
         flags = re.findall(r"-\s*\[([^\]]+)\]\s*([^:\n]+):\s*([^\n]+)", system_prompt)
@@ -109,10 +131,44 @@ class HeuristicProvider(AIProvider):
             else:
                 resp.append("No critical red flags were triggered for this document. However, standard due diligence is always advised.")
 
+        elif any(w in query for w in ["what do you know about this company", "about this company", "company exist", "company verified", "is this company verified"]):
+            resp.append(f"**Company Intelligence Dossier for '{case['company']}'**:\n")
+            if case.get("company_profile"):
+                resp.append(f"• **Public Profile**: {case['company_profile']}\n")
+            if case.get("official_domain"):
+                resp.append(f"• **Official Domain**: `{case['official_domain']}`")
+            if case.get("domain_age"):
+                resp.append(f"• **Domain Telemetry**: {case['domain_age']}")
+            if not case.get("company_profile") and not case.get("official_domain"):
+                resp.append("I don't have verified information about that. No independent public corporate registry record could be corroborated for this employer.")
+            else:
+                resp.append("\n**Notice**: Verifying company presence does not automatically validate that the specific offer letter or recruiter is authentic.")
+
+        elif any(w in query for w in ["when was the domain registered", "domain registered", "domain age"]):
+            if case.get("domain_age"):
+                resp.append(f"**Domain Registration Telemetry**:\n• **Official Domain**: `{case.get('official_domain')}`\n• **Registration Age**: {case['domain_age']}\n")
+                resp.append("*Contextual Note: Domain registration age is contextual telemetry, not standalone proof of fraud or safety.*")
+            else:
+                resp.append("I don't have verified information about that. RDAP registration records could not be independently retrieved for this domain.")
+
+        elif any(w in query for w in ["recruiter email match", "email match", "email domain match", "email match the company website"]):
+            if case.get("email_match"):
+                resp.append(f"**Email-Domain Verification Analysis**:\n• **Result**: {case['email_match']}\n")
+            elif case.get("recruiter_email") and case.get("official_domain"):
+                resp.append(f"• **Recruiter Email**: `{case['recruiter_email']}`\n• **Company Domain**: `{case['official_domain']}`\n")
+                if case['recruiter_email'].split("@")[-1].lower() == case['official_domain'].lower():
+                    resp.append("The recruiter email domain matches the official corporate website domain.")
+                else:
+                    resp.append("The recruiter email domain differs from the official company domain.")
+            else:
+                resp.append("I don't have verified information about that. Either the recruiter email or official domain was missing from the case file.")
+
         elif any(w in query for w in ["recruiter", "email", "domain", "contact"]):
             email = case["recruiter_email"] or "Not provided in case"
             resp.append(f"**Contact Verification for {case['company']}**:\n")
             resp.append(f"• **Recruiter Email on file**: `{email}`")
+            if case.get("email_match"):
+                resp.append(f"• **Domain Corroboration**: {case['email_match']}")
             if any(dom in email.lower() for dom in ["@gmail.com", "@yahoo.com", "@outlook.com", "@hotmail.com", "@telegram"]):
                 resp.append("\n**Evidence**: The recruiter is using a generic free webmail service (@" + email.split("@")[-1] + ") rather than an official corporate domain.\n")
                 resp.append("**Inference**: Legitimate corporate talent acquisition teams rarely conduct formal hiring communications via free webmail addresses.\n")
@@ -121,9 +177,11 @@ class HeuristicProvider(AIProvider):
                 resp.append("\n**Evidence**: The email domain requires cross-referencing against the company's WHOIS and corporate MX records.")
 
         elif any(w in query for w in ["website", "domain", "match"]):
-            web = case["company_website"] or "Not provided in case"
+            web = case["company_website"] or (f"https://{case['official_domain']}" if case.get("official_domain") else "Not provided in case")
             resp.append(f"**Website Verification Analysis**:\n")
-            resp.append(f"• **Provided Website**: `{web}`\n")
+            resp.append(f"• **Official Domain / Website**: `{web}`\n")
+            if case.get("domain_age"):
+                resp.append(f"• **Domain Age**: {case['domain_age']}\n")
             resp.append("**Evidence**: Checking provided URL and domain records against established corporate registries.\n")
             resp.append("**Inference**: Scammers frequently register lookalike domains (typosquatting or alternate TLDs like .cc, .work, .biz) to impersonate genuine brands.\n")
             resp.append("**Advice**: Always look up the official company website independently via a reputable search engine, rather than clicking links inside unsolicited messages.")

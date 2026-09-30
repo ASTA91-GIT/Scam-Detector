@@ -325,6 +325,7 @@ def get_shared_report_by_token(token):
             "risk_signals": analysis.get("risk_signals", []),
             "entities": analysis.get("entities", {}),
             "domain_intelligence": analysis.get("domain_intelligence", {}),
+            "company_intelligence": analysis.get("company_intelligence", {}),
             "ai_opinion": analysis.get("ai_opinion", {}),
             "model_name": analysis.get("model_name", "llama3.2:3b"),
             "created_at": analysis.get("created_at").isoformat() if hasattr(analysis.get("created_at"), "isoformat") else str(analysis.get("created_at")),

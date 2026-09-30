@@ -311,8 +311,251 @@
                         </div>
                     </div>
 
-                    <!-- Row 4: Extracted Entities & Company/Domain Intelligence -->
-                    <div class="forensic-grid-2" id="entitiesDomainRow">
+                    <!-- ============================================================ -->
+                    <!-- COMPANY INTELLIGENCE SECTION (Section 22, 23, 24) -->
+                    <!-- ============================================================ -->
+                    <div class="forensic-section" id="companyIntelligenceSection" style="margin-top: 2rem;">
+                        <div class="company-intel-banner">
+                            <div class="company-intel-header-left">
+                                <div class="company-intel-tag">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--console-cyan)" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                    <span>PUBLIC TELEMETRY & VERIFICATION</span>
+                                </div>
+                                <h2 class="company-intel-title">COMPANY INTELLIGENCE</h2>
+                                <p class="company-intel-subtitle">
+                                    Public information and domain signals related to the company identified in this document.
+                                </p>
+                            </div>
+                            <div class="company-intel-status-pill" id="companyVerifiedBadge">
+                                <span class="status-indicator-dot"></span>
+                                <span id="companyVerifiedStatusText">CORROBORATING</span>
+                            </div>
+                        </div>
+
+                        <!-- 5 Company Intelligence Cards Grid -->
+                        <div class="company-cards-grid">
+
+                            <!-- CARD 1 — COMPANY PROFILE -->
+                            <div class="forensic-panel company-card" id="cardCompanyProfile">
+                                <div class="forensic-panel-header">
+                                    <div class="forensic-panel-title">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--console-cyan)" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                        Company Profile
+                                    </div>
+                                    <span class="badge-forensic badge-forensic-muted" id="ciProfileStatusBadge">PUBLIC RECORD</span>
+                                </div>
+                                <div class="ci-profile-top">
+                                    <div class="ci-logo-box" id="ciLogoBox" style="display: none;">
+                                        <img id="ciLogoImg" src="" alt="Company Logo" class="ci-logo-img" onerror="this.parentElement.style.display='none';">
+                                    </div>
+                                    <div class="ci-profile-headline">
+                                        <h3 class="ci-comp-name" id="ciCompanyName">Company not identified</h3>
+                                        <div class="ci-comp-industry" id="ciCompanyIndustry">Information unavailable</div>
+                                    </div>
+                                </div>
+                                <table class="entities-table" style="margin-top: 0.75rem;">
+                                    <tbody>
+                                        <tr>
+                                            <td class="entities-label">LOCATION</td>
+                                            <td class="entities-val" id="ciCompanyLocation">Information unavailable</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="entities-label">FOUNDED</td>
+                                            <td class="entities-val" id="ciCompanyFounded">Information unavailable</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="entities-label">OFFICIAL WEBSITE</td>
+                                            <td class="entities-val" id="ciCompanyWebsite">Information unavailable</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div class="ci-description-box" id="ciCompanyDesc">
+                                    Information unavailable
+                                </div>
+                            </div>
+
+                            <!-- CARD 2 — DOMAIN INTELLIGENCE -->
+                            <div class="forensic-panel company-card" id="cardDomainIntelligence">
+                                <div class="forensic-panel-header">
+                                    <div class="forensic-panel-title">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--console-cyan)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                        Domain Intelligence
+                                    </div>
+                                    <span class="badge-forensic badge-forensic-cyan" id="ciRdapBadge">RDAP TELEMETRY</span>
+                                </div>
+                                <table class="entities-table">
+                                    <tbody>
+                                        <tr>
+                                            <td class="entities-label">OFFICIAL DOMAIN</td>
+                                            <td class="entities-val mono-text" id="ciDomainName">--</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="entities-label">DOMAIN AGE</td>
+                                            <td class="entities-val" id="ciDomainAge" style="font-weight: 600; color: var(--console-cyan);">Information unavailable</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="entities-label">CREATED</td>
+                                            <td class="entities-val mono-text" id="ciDomainCreated">Information unavailable</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="entities-label">REGISTRAR</td>
+                                            <td class="entities-val" id="ciDomainRegistrar">Information unavailable</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="entities-label">DOMAIN STATUS</td>
+                                            <td class="entities-val" id="ciDomainStatus">UNAVAILABLE</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="entities-label">NAMESERVERS</td>
+                                            <td class="entities-val mono-text" id="ciDomainNameservers" style="font-size: 0.78rem;">Information unavailable</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div class="ci-card-note">
+                                    ℹ️ Domain age is evaluated as contextual telemetry, not standalone proof of legitimacy or fraud.
+                                </div>
+                            </div>
+
+                            <!-- CARD 3 — WEBSITE STATUS -->
+                            <div class="forensic-panel company-card" id="cardWebsiteStatus">
+                                <div class="forensic-panel-header">
+                                    <div class="forensic-panel-title">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--console-cyan)" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                                        Website Status
+                                    </div>
+                                    <span class="badge-forensic" id="ciWebReachableBadge">LIVE PROBE</span>
+                                </div>
+                                <div class="ci-metric-row">
+                                    <div class="ci-metric-box">
+                                        <span class="ci-metric-label">WEBSITE REACHABLE</span>
+                                        <span class="ci-metric-value" id="ciWebReachable">--</span>
+                                    </div>
+                                    <div class="ci-metric-box">
+                                        <span class="ci-metric-label">HTTPS / TLS</span>
+                                        <span class="ci-metric-value" id="ciWebHttps">--</span>
+                                    </div>
+                                </div>
+                                <table class="entities-table" style="margin-top: 0.75rem;">
+                                    <tbody>
+                                        <tr>
+                                            <td class="entities-label">HTTP STATUS</td>
+                                            <td class="entities-val mono-text" id="ciWebStatusCode">--</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="entities-label">FINAL URL</td>
+                                            <td class="entities-val mono-text" id="ciWebFinalUrl" style="word-break: break-all;">--</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="entities-label">TLS CERTIFICATE</td>
+                                            <td class="entities-val" id="ciWebTlsValid">--</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div class="ci-card-note" id="ciWebRedirectNote" style="display: none;">
+                                    Redirect target: <span class="mono-text" id="ciWebRedirectTarget">--</span>
+                                </div>
+                            </div>
+
+                            <!-- CARD 4 — RECRUITER VERIFICATION -->
+                            <div class="forensic-panel company-card" id="cardRecruiterVerification">
+                                <div class="forensic-panel-header">
+                                    <div class="forensic-panel-title">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--console-cyan)" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                        Recruiter Verification
+                                    </div>
+                                    <span class="badge-forensic" id="ciEmailMatchBadge">ANALYZED</span>
+                                </div>
+                                <table class="entities-table">
+                                    <tbody>
+                                        <tr>
+                                            <td class="entities-label">RECRUITER</td>
+                                            <td class="entities-val" id="ciRecruiterName">Not Specified</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="entities-label">EMAIL</td>
+                                            <td class="entities-val mono-text" id="ciRecruiterEmail">Not Disclosed</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="entities-label">EMAIL DOMAIN</td>
+                                            <td class="entities-val mono-text" id="ciEmailDomain">--</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="entities-label">DOMAIN MATCH</td>
+                                            <td class="entities-val" id="ciDomainMatchStatus" style="font-weight: 600;">--</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div class="ci-description-box" id="ciEmailExplanation" style="margin-top: 0.75rem;">
+                                    Comparing recruiter communication channels against discovered corporate domains.
+                                </div>
+                            </div>
+
+                            <!-- CARD 5 — DOMAIN RISK SIGNALS -->
+                            <div class="forensic-panel company-card" id="cardDomainRiskSignals">
+                                <div class="forensic-panel-header">
+                                    <div class="forensic-panel-title">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--console-cyan)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                        Domain Risk Signals
+                                    </div>
+                                    <span class="badge-forensic badge-forensic-muted">FACTUAL INDICATORS</span>
+                                </div>
+                                <div class="ci-signals-list" id="ciSignalsList">
+                                    <!-- Factual indicators populated dynamically -->
+                                </div>
+                                <div class="ci-card-note" style="margin-top: 0.75rem;">
+                                    Factual signals provide risk context. Domain indicators are never converted directly into absolute judgments.
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- AI COMPANY ASSESSMENT (Section 23) -->
+                        <div class="ai-company-assessment-box" id="aiCompanyAssessmentBox" style="margin-top: 1.25rem;">
+                            <div class="ai-company-assessment-header">
+                                <div style="display:flex; align-items:center; gap:0.5rem;">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--console-cyan)" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                                    <span class="ai-assessment-title">AI COMPANY ASSESSMENT</span>
+                                </div>
+                                <span class="badge-forensic badge-forensic-cyan">RETRIEVED FACTS ONLY</span>
+                            </div>
+                            <p class="ai-assessment-text" id="aiCompanyAssessmentText">
+                                Evaluating company signals and corroborating external domain intelligence...
+                            </p>
+                        </div>
+
+                        <!-- SOURCES TABLE (Section 24) -->
+                        <div class="forensic-panel" id="companySourcesPanel" style="margin-top: 1.25rem;">
+                            <div class="forensic-panel-header">
+                                <div class="forensic-panel-title">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--console-cyan)" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                                    Sources & Telemetry Provenance
+                                </div>
+                                <span class="badge-forensic badge-forensic-muted" id="sourcesCountBadge">0 SOURCES VERIFIED</span>
+                            </div>
+                            <div class="sources-table-wrap">
+                                <table class="sources-table" id="companySourcesTable">
+                                    <thead>
+                                        <tr>
+                                            <th>SOURCE NAME</th>
+                                            <th>RESOURCE URL</th>
+                                            <th>RETRIEVED AT</th>
+                                            <th>DATA OBTAINED</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="companySourcesTableBody">
+                                        <tr>
+                                            <td colspan="4" style="text-align: center; color: var(--console-text-muted); padding: 1.5rem;">
+                                                No external telemetry queries logged for this case.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 4: Extracted Entities & Communication Channels -->
+                    <div class="forensic-grid-2" id="entitiesDomainRow" style="margin-top: 1.75rem;">
                         <!-- Extracted Entities Table -->
                         <div class="forensic-panel">
                             <div class="forensic-panel-header">

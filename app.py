@@ -155,6 +155,12 @@ def ai_status_alias():
     """Health check for local offline AI inference engine"""
     return jsonify(get_ai_status()), 200
 
+@app.route('/api/company-intelligence', methods=['GET'])
+def company_intelligence_alias():
+    """Direct alias for Company Intelligence API (Section 14)"""
+    from backend.analysis import get_company_intelligence_route
+    return get_company_intelligence_route()
+
 
 # Frontend static routing
 @app.route('/')

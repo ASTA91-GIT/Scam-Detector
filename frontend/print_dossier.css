@@ -859,4 +859,105 @@
     orphans: 3 !important;
     widows: 3 !important;
   }
+
+  /* 17. Company Intelligence Section in Print / PDF Dossier */
+  .company-intelligence-section {
+    display: block !important;
+    margin-top: 10mm !important;
+    page-break-before: auto !important;
+  }
+
+  .company-intel-header {
+    border-bottom: 2px solid #CBD5E1 !important;
+    padding-bottom: 6px !important;
+    margin-bottom: 10px !important;
+  }
+
+  .company-intel-title {
+    color: #0F172A !important;
+    font-size: 13pt !important;
+    font-weight: 800 !important;
+  }
+
+  .company-intel-subtitle {
+    color: #475569 !important;
+    font-size: 8.5pt !important;
+  }
+
+  .company-cards-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6mm !important;
+    margin-bottom: 6mm !important;
+  }
+
+  .company-card {
+    border: 1px solid #CBD5E1 !important;
+    background: #F8FAFC !important;
+    padding: 8px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .company-card:last-child {
+    grid-column: span 2 !important;
+  }
+
+  .ci-profile-top {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  .ci-comp-name {
+    color: #0F172A !important;
+    font-size: 11pt !important;
+    font-weight: 700 !important;
+  }
+
+  .ci-description-box {
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    color: #334155 !important;
+    font-size: 8pt !important;
+    padding: 6px !important;
+  }
+
+  .ai-company-assessment-box {
+    border: 1px solid #94A3B8 !important;
+    background: #F1F5F9 !important;
+    padding: 8px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .ai-assessment-title {
+    color: #0F172A !important;
+    font-weight: 700 !important;
+    font-size: 9pt !important;
+  }
+
+  .ai-assessment-text {
+    color: #1E293B !important;
+    font-size: 8.5pt !important;
+    line-height: 1.4 !important;
+  }
+
+  .sources-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 7.5pt !important;
+  }
+
+  .sources-table th, .sources-table td {
+    border: 1px solid #CBD5E1 !important;
+    padding: 4px 6px !important;
+    color: #1E293B !important;
+  }
+
+  .sources-table th {
+    background: #E2E8F0 !important;
+    font-weight: 700 !important;
+  }
 }
+

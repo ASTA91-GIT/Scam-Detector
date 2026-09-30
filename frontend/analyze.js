@@ -318,18 +318,22 @@ function setupFormSubmission() {
 
         const subtitle = document.getElementById('scanStatusSubtitle');
         const stateLabels = [
-            "Uploading...",
-            "Extracting text...",
-            "Reading document...",
-            "Analyzing context...",
-            "Evaluating risk...",
-            "Generating explanation...",
-            "Finalizing report..."
+            "Uploading and validating document...",
+            "Extracting OCR text...",
+            "Identifying company...",
+            "Finding official domain...",
+            "Checking domain registration...",
+            "Checking website...",
+            "Comparing recruiter email...",
+            "Building company intelligence...",
+            "Local Ollama forensic analysis...",
+            "Company intelligence ready",
+            "Finalizing forensic dossier..."
         ];
 
         let stateIdx = 0;
         if (subtitle) subtitle.textContent = stateLabels[0];
-        updateStep(1, 15);
+        updateStep(1, 10);
 
         const stateInterval = setInterval(() => {
             stateIdx = (stateIdx + 1) % stateLabels.length;

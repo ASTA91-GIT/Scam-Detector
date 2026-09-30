@@ -85,6 +85,15 @@ def get_case_context(case_id: str, user_id: str) -> Dict[str, Any]:
                 "recommendation": "Independently verify before taking action."
             })
 
+    # Extract Company Intelligence dossier
+    comp_intel = analysis.get("company_intelligence") or {}
+    intel_company = comp_intel.get("company") or {}
+    intel_domain = comp_intel.get("domain") or {}
+    intel_website = comp_intel.get("website") or {}
+    intel_email = comp_intel.get("email") or {}
+    intel_lookalike = comp_intel.get("lookalike") or {}
+    intel_comparison = comp_intel.get("comparison") or {}
+
     # Build concise important facts list for long-term memory
     facts = [
         f"Company Name: {company_name}",
@@ -100,6 +109,25 @@ def get_case_context(case_id: str, user_id: str) -> Dict[str, Any]:
         facts.append(f"Recruiter Phone: {company_phone}")
     if job_location:
         facts.append(f"Job Location: {job_location}")
+
+    # Inject Company Intelligence Facts
+    if intel_domain.get("domain") and intel_domain.get("domain") != "Domain not identified":
+        facts.append(f"Official Company Domain: {intel_domain.get('domain')}")
+        if intel_domain.get("age_formatted") and intel_domain.get("age_formatted") != "Information unavailable":
+            facts.append(f"Domain Registration Age: {intel_domain.get('age_formatted')} (Created: {intel_domain.get('creation_date') or 'N/A'}, Registrar: {intel_domain.get('registrar')})")
+        if intel_website.get("reachable"):
+            facts.append(f"Official Website Status: Reachable (HTTP {intel_website.get('status_code')}, HTTPS: {intel_website.get('https')})")
+
+    if intel_email.get("match_type"):
+        facts.append(f"Email-Domain Verification: {intel_email.get('match_type')} — {intel_email.get('explanation')}")
+
+    if intel_lookalike.get("detected"):
+        facts.append(f"Lookalike Detection Warning: {intel_lookalike.get('explanation')}")
+
+    if intel_company.get("description") and intel_company.get("description") != "Information unavailable":
+        facts.append(f"Company Profile: {intel_company.get('description')[:250]}")
+    elif intel_company.get("identified"):
+        facts.append("Company Public Registry Status: No independent public company information could be verified.")
 
     for r in reasoning:
         facts.append(f"Forensic Finding [{r.get('severity', 'HIGH')}]: {r.get('finding')} — Evidence: \"{r.get('evidence', '')}\" — {r.get('explanation', '')}")
@@ -120,6 +148,7 @@ def get_case_context(case_id: str, user_id: str) -> Dict[str, Any]:
             "title": job_title,
             "location": job_location
         },
+        "company_intelligence": comp_intel,
         "risk_score": risk_score,
         "confidence": confidence,
         "classification": classification,
@@ -150,19 +179,47 @@ def retrieve_relevant_evidence(query: str, case_context: Dict[str, Any]) -> List
     query_terms = set(query.lower().split())
     evidence_hits = []
 
-    # 1. Search reasoning findings and evidence quotes
+    # 1. Search company intelligence telemetry
+    comp_intel = case_context.get("company_intelligence", {})
+    if any(k in query.lower() for k in ["company", "domain", "registered", "website", "recruiter", "email", "exist", "verified", "whois", "rdap", "lookalike"]):
+        intel_comp = comp_intel.get("company", {})
+        intel_dom = comp_intel.get("domain", {})
+        intel_email = comp_intel.get("email", {})
+        intel_web = comp_intel.get("website", {})
+        intel_look = comp_intel.get("lookalike", {})
+
+        if intel_dom.get("domain") and intel_dom.get("domain") != "Domain not identified":
+            age_info = intel_dom.get("age_formatted", "N/A")
+            reg_info = intel_dom.get("registrar", "N/A")
+            evidence_hits.append(f"Domain Registry: Official domain is '{intel_dom.get('domain')}' (Age: {age_info}, Registrar: {reg_info}, Status: {intel_dom.get('status')})")
+
+        if intel_email.get("email"):
+            evidence_hits.append(f"Recruiter Email Analysis: '{intel_email.get('email')}' — Domain Match: {intel_email.get('match_type')} ({intel_email.get('explanation')})")
+
+        if intel_web.get("reachable"):
+            evidence_hits.append(f"Website Verification: '{intel_web.get('final_url')}' is reachable (HTTP {intel_web.get('status_code')}, HTTPS: {intel_web.get('https')})")
+
+        if intel_look.get("detected"):
+            evidence_hits.append(f"Lookalike Warning: {intel_look.get('explanation')}")
+
+        if intel_comp.get("description") and intel_comp.get("description") != "Information unavailable":
+            evidence_hits.append(f"Public Company Registry: {intel_comp.get('description')[:200]}")
+        elif intel_comp.get("name") and intel_comp.get("name") != "Company not identified":
+            evidence_hits.append(f"Company Presence: '{intel_comp.get('name')}' was identified in the document, but public corporate registry records could not be verified.")
+
+    # 2. Search reasoning findings and evidence quotes
     for r in case_context.get("reasoning", []):
         r_text = f"{r.get('finding', '')} {r.get('explanation', '')} {r.get('evidence', '')}".lower()
         if any(term in r_text for term in query_terms if len(term) > 3) or "why" in query.lower() or "score" in query.lower():
             evidence_hits.append(f"Finding: [{r.get('severity')}] {r.get('finding')} | Evidence: \"{r.get('evidence')}\" | Explanation: {r.get('explanation')}")
 
-    # 2. Search structured red flags
+    # 3. Search structured red flags
     for flag in case_context.get("red_flags", []):
         flag_text = f"{flag.get('title', '')} {flag.get('description', '')} {flag.get('evidence', '')}".lower()
         if any(term in flag_text for term in query_terms if len(term) > 3):
             evidence_hits.append(f"[{flag.get('severity')}] {flag.get('title')}: \"{flag.get('evidence') or flag.get('description')}\"")
 
-    # 3. Search document paragraphs for cited keywords
+    # 4. Search document paragraphs for cited keywords
     doc_text = case_context.get("document_text", "")
     paragraphs = [p.strip() for p in doc_text.split("\n") if len(p.strip()) > 20]
     for p in paragraphs:
@@ -170,7 +227,7 @@ def retrieve_relevant_evidence(query: str, case_context: Dict[str, Any]) -> List
         matches = sum(1 for term in query_terms if term in p_lower and len(term) > 3)
         if matches >= 2 or any(k in p_lower for k in ["fee", "payment", "bank", "telegram", "whatsapp", "deposit", "crypto", "urgent"]):
             evidence_hits.append(f"Document quote: \"{p[:250]}\"")
-            if len(evidence_hits) >= 5:
+            if len(evidence_hits) >= 8:
                 break
 
-    return evidence_hits[:6]
+    return evidence_hits[:8]
