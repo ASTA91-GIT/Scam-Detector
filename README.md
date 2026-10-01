@@ -1,213 +1,209 @@
-# ScamGuard AI — Production-Ready Forensic Scam Intelligence Platform
+<a id="top"></a>
+<div align="center">
 
-ScamGuard AI is an enterprise-grade cybersecurity SaaS application that analyzes employment offers, recruitment correspondence, and onboarding documents to detect fraudulent scams, advance fee fraud, impersonation, and identity harvesting.
+<!-- HERO ANIMATED SVG BANNER -->
+<img src="assets/readme/banner.svg" alt="ScamGuard AI Cyber Banner" width="100%" />
 
-Built with a hardened Python/Flask core, local offline AI via Ollama, a dedicated Node.js Nodemailer microservice, and MongoDB.
+<br/>
+
+<!-- DYNAMIC TYPING SVG ANIMATION -->
+<a href="#-system-architecture">
+  <img src="https://readme-typing-svg.demolab.com?font=Outfit&weight=700&size=22&duration=2800&pause=1000&color=38BDF8&center=true&vCenter=true&multiline=false&width=800&height=45&lines=Enterprise+Forensic+Employment+Scam+Intelligence;100%25+Offline+Local+AI+Inference+via+Ollama;Deep+Magic-Byte+Inspection+%26+SSRF+Quarantine;Real-Time+Forensic+Dossiers+%26+Cryptographic+Webhooks;Zero+Cloud+Fallback+%E2%80%94+Total+Data+Sovereignty" alt="Typing Subtitle" />
+</a>
+
+<p align="center">
+  <b>A zero-compromise, air-gapped forensic intelligence platform detecting job scams, recruitment fraud, check advance schemes, and credential harvesting in real-time.</b>
+</p>
+
+<!-- BADGE MATRIX -->
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.10%2B-38bdf8?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.10+" />
+  <img src="https://img.shields.io/badge/Flask-3.0%2B-000000?style=for-the-badge&logo=flask&logoColor=white" alt="Flask" />
+  <img src="https://img.shields.io/badge/Ollama-llama3.2%3A3b-fbbf24?style=for-the-badge&logo=ollama&logoColor=black" alt="Ollama" />
+  <img src="https://img.shields.io/badge/MongoDB-6.0%2B-10b981?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
+  <img src="https://img.shields.io/badge/Node.js-18%2B-22c55e?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" />
+  <img src="https://img.shields.io/badge/Docker-Compose-2496ed?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
+  <img src="https://img.shields.io/badge/Security-SSRF%20%26%202FA%20Hardened-f43f5e?style=for-the-badge&logo=securityscorecard&logoColor=white" alt="Security" />
+  <img src="https://img.shields.io/badge/License-MIT-818cf8?style=for-the-badge" alt="MIT License" />
+</p>
+
+<!-- KEY METRICS ANIMATED STRIP -->
+<img src="assets/readme/metrics-bar.svg" alt="ScamGuard Key Metrics" width="100%" />
+
+<br/>
+
+<!-- QUICK ANCHOR NAVIGATION -->
+<p align="center">
+  <a href="#-live-threat-scanner--radar"><b>🎯 Threat Radar</b></a> •
+  <a href="#-pipeline-architecture"><b>⚡ Pipeline Flow</b></a> •
+  <a href="#-enterprise-security-matrix"><b>🛡️ Security Matrix</b></a> •
+  <a href="#-quickstart--local-execution"><b>🚀 Quickstart</b></a> •
+  <a href="#-docker-production-deployment"><b>🐳 Docker</b></a> •
+  <a href="#-developer-api-v1"><b>📡 Developer API</b></a> •
+  <a href="#-automated-testing-suites"><b>🧪 Testing</b></a>
+</p>
+
+</div>
 
 ---
 
-## 🏗️ System Architecture
+## 🎯 Live Threat Scanner & Radar
+
+ScamGuard AI runs multi-vector heuristic and LLM analysis against suspicious recruitment correspondence, offer letters, employment contracts, and recruiter domains.
+
+<!-- LIVE SCANNER ANIMATION CARD -->
+<p align="center">
+  <img src="assets/readme/scanner-card.svg" alt="ScamGuard Live Threat Scanner Terminal" width="100%" />
+</p>
+
+### 🚨 Core Fraud Patterns Detected
+* **Advance Fee & Equipment Fraud**: Demands for candidate payment, home-office wire transfers, or fake equipment checks.
+* **Recruiter Impersonation**: Typosquatting and newly registered lookalike domains (e.g. `@google-careers-portal.cc` mimicking genuine corporate portals).
+* **Identity Harvesting**: Premature requests for SSN, banking details, passport scans, or crypto wallet transfers before interviews.
+* **Suspicious Communication Channels**: Directing applicants to unverified Telegram, WhatsApp, or Signal handles for interviews.
+* **Counterfactual What-If Modeling**: Live sandbox to simulate how changes in offer clauses impact overall forensic threat scores.
+
+---
+
+## ⚡ Pipeline Architecture
+
+The platform processes every document through a strict, multi-layered isolation pipeline. **Data never leaves your local infrastructure.**
+
+<!-- ANIMATED PIPELINE FLOW DIAGRAM -->
+<p align="center">
+  <img src="assets/readme/pipeline-flow.svg" alt="Animated 5-Stage Pipeline Architecture" width="100%" />
+</p>
 
 ```
                           [ Client Browser ]
                                    │
-              ┌────────────────────┴────────────────────┐
-              │ HTTPS / Strict CSP / Security Headers   │
-              ▼                                         ▼
-   [ Flask API Backend (5000) ]             [ Frontend SPA ]
-      - Auth & Token Revocation                - HTML5 / CSS3 / Vanilla JS
-      - Multi-Stage Analysis Pipeline          - Forensic Investigation Console
-      - SSRF & Safe Network Filters            - Real-time Stage Progression
-      - File Upload Security Validation        - Security Center & Sessions
-      - Rate Limiting & Audit Logging          - Standalone Forensic A4 PDF
-              │                     │
-              ▼                     ▼
-     [ Local Ollama AI ]     [ MongoDB (27017) ]
-      - llama3.2:3b           - Users & Sessions
-      - 100% Offline          - Analyses & History
-      - Zero Cloud Fallback   - Audit Logs & Indexes
-              │
-              ▼
-   [ Node.js Mail Service (5001) ]
-      - Express + Nodemailer
-      - Generic SMTP / Dev Simulator
-      - Protected by Internal Secret
+               ┌───────────────────┴───────────────────┐
+               │ HTTPS / Strict CSP / Security Headers  │
+               ▼                                       ▼
+    [ Flask API Backend (5000) ]             [ Frontend SPA ]
+       - Auth & Token Revocation                - HTML5 / CSS3 / Vanilla JS
+       - Multi-Stage Analysis Pipeline          - Forensic Investigation Console
+       - SSRF & Safe Network Filters            - Real-time Stage Progression
+       - File Upload Security Validation        - Security Center & Sessions
+       - Rate Limiting & Audit Logging          - Standalone Forensic A4 PDF
+               │                     │
+               ▼                     ▼
+      [ Local Ollama AI ]     [ MongoDB (27017) ]
+       - llama3.2:3b           - Users & Sessions
+       - 100% Offline          - Analyses & History
+       - Zero Cloud Fallback   - Audit Logs & Indexes
+               │
+               ▼
+    [ Node.js Mail Service (5001) ]
+       - Express + Nodemailer
+       - Generic SMTP / Dev Simulator
+       - Protected by Internal Secret
 ```
 
 ---
 
-## 🛡️ Enterprise Security Features
+## 🛡️ Enterprise Security Matrix
 
-1. **Local Authoritative AI Analysis (Zero Cloud Fallback)**
-   - All forensic analysis is executed locally and privately using Ollama (`llama3.2:3b`).
-   - Resumes, offers, and extracted personal data never leave your infrastructure.
-   - If Ollama is offline, the API reports a transparent 503 service unavailable response rather than faking results or leaking data to third-party cloud LLMs.
-
-2. **File Upload Security & Magic Byte Validation**
-   - Filename sanitization and internal UUID randomization preventing path traversal.
-   - Deep signature verification (magic bytes) for PDF (`%PDF-`), PNG, JPEG, WEBP, and DOCX.
-   - Executable rejection (`MZ`, `ELF`, shell scripts).
-   - Decompression bomb guard via Pillow (`Image.MAX_IMAGE_PIXELS`).
-   - Page count limit enforcement (`MAX_DOCUMENT_PAGES=20`).
-
-3. **Server-Side Request Forgery (SSRF) Protection**
-   - Blocks all requests to private networks, loopback addresses (`127.0.0.1`, `localhost`), link-local IPs, and cloud metadata endpoints (`169.254.169.254`).
-   - Protocol restriction to `http://` and `https://` only.
-   - DNS resolution pre-flight validation preventing DNS rebinding.
-
-4. **Dedicated Node.js Nodemailer Microservice**
-   - Clean Express service running on port 5001.
-   - Protected with internal bearer secret (`MAIL_SERVICE_SECRET`).
-   - Supports generic production SMTP alongside an automated local development simulator.
-   - 7 responsive email templates: `welcome`, `verify-email`, `password-reset`, `security-alert`, `analysis-complete`, `report-share`, and `account-deleted`.
-
-5. **Token Revocation & Active Session Management**
-   - Active device sessions tracking (User-Agent parsing, IP metadata, last seen).
-   - Immediate token invalidation via `token_version` incrementing upon password reset or remote logout.
-   - "Sign Out Other Sessions" capabilities.
-
-6. **Token Revocation & Active Session Management**
-   - Active device sessions tracking (User-Agent parsing, IP metadata, last seen).
-   - Immediate token invalidation via `token_version` incrementing upon password reset or remote logout.
-   - "Sign Out Other Sessions" capabilities.
-
-7. **Two-Factor Authentication (TOTP 2FA & Recovery Codes)**
-   - RFC 6238 compliant TOTP using `pyotp` with QR code / otpauth URI provisioning.
-   - Cryptographically hashed, single-use emergency recovery codes.
-   - Zero plaintext recovery code persistence.
-
-8. **Developer API v1 & Key Management**
-   - Programmatic API authentication using `X-API-Key` headers.
-   - Secure hashed key storage (only key prefix returned on retrieval).
-   - Endpoints for document analysis, domain intelligence, and report retrieval.
-
-9. **Cryptographically Signed Webhooks**
-   - Real-time outbound HTTP POST webhooks for `analysis.completed`, `analysis.high_risk`, and `test.ping`.
-   - HMAC-SHA256 signature verification via `X-ScamGuard-Signature` header.
-   - Webhook test ping and automated delivery audit logging.
-
-10. **Forensic Analysis Comparison & What-If Simulation**
-    - Side-by-side case comparison computing exact risk deltas, classification shifts, and added/removed red flags.
-    - Non-destructive hypothetical risk modeling ("What if an upfront fee was demanded?").
-
-11. **Actionable Checklist Persistence**
-    - Dynamic verification checklist mapped to detected forensic indicators with real-time database progress sync.
-
-12. **Rate Limiting & Immutable Audit Logging**
-    - Sliding-window in-memory rate limiting across sensitive endpoints (`/login`, `/register`, `/forgot-password`, `/analyze`).
-    - Immutable audit logging in `audit_logs` collection for all key security events.
-
-13. **Automatic File Retention Cleanup**
-    - Automated pruning of temporary uploaded files exceeding retention policy (`FILE_RETENTION_HOURS=24`).
-
-14. **Secure Report Sharing & Public Verification**
-    - High-entropy cryptographic share tokens (`/shared/report/<token>`) with optional expiration and owner revocation.
-    - Public report verification registry (`/verify/report/<public_id>`) proving analysis authenticity without exposing private documents.
-
----
-
-## 📋 Environment Configuration
-
-Copy `.env.example` to `.env`:
-
-```bash
-cp .env.example .env
-```
-
-Key environment variables:
-
-| Variable | Description | Default / Example |
-| :--- | :--- | :--- |
-| `FLASK_ENV` | Application environment (`development` or `production`) | `production` |
-| `SECRET_KEY` | Flask cryptographic session key | Secure random string |
-| `JWT_SECRET_KEY` | Secret key for signing authentication JWTs | Secure random string |
-| `MONGODB_URI` | MongoDB connection URI | `mongodb://127.0.0.1:27017/job_scam_detector` |
-| `OLLAMA_BASE_URL`| Local Ollama API host | `http://127.0.0.1:11434` |
-| `OLLAMA_MODEL` | Authoritative forensic model | `llama3.2:3b` |
-| `MAIL_SERVICE_URL` | Internal Node.js mail service endpoint | `http://localhost:5001` |
-| `MAIL_SERVICE_SECRET` | Shared secret protecting the internal mail API | Secure random string |
-| `SMTP_HOST` | Outbound mail SMTP host | `smtp.example.com` |
-| `SMTP_PORT` | Outbound mail SMTP port | `587` |
-| `SMTP_USER` | SMTP authentication username | `apikey` |
-| `SMTP_PASSWORD` | SMTP authentication password | Secret |
-| `SMTP_FROM` | Sender email address | `no-reply@scamguard.local` |
-| `FRONTEND_URL` | Allowed origin for production CORS | `http://localhost:5000` |
-| `MAX_UPLOAD_SIZE` | Maximum upload size in bytes | `10485760` (10MB) |
-| `MAX_DOCUMENT_PAGES`| Maximum permitted pages in a PDF | `20` |
-| `FILE_RETENTION_HOURS`| Temporary document cleanup interval | `24` |
-| `RATE_LIMIT_ENABLED` | Global rate limiting toggle | `true` |
-| `HIGH_RISK_EMAIL_THRESHOLD` | Score triggering high-risk email alerts | `75` |
+| # | Defense Layer | Implementation Detail | Guarantee |
+| :-: | :--- | :--- | :--- |
+| **01** | **100% Local AI Core** | Local Ollama engine (`llama3.2:3b`) with zero cloud API reliance. | **Zero Cloud Leaks**: If Ollama is offline, returns a 503 instead of risking external leaks. |
+| **02** | **Deep Magic-Byte Validation** | Byte inspection for `%PDF-`, PNG, JPEG, WEBP, DOCX signatures. Executables rejected. | Prevents polyglot payloads, masquerading binaries (`MZ`/`ELF`), and script execution. |
+| **03** | **SSRF Quarantine** | Pre-flight DNS validation blocking private/loopback/cloud metadata (`169.254.169.254`). | Eliminates Server-Side Request Forgery and DNS rebinding attacks. |
+| **04** | **Two-Factor Auth (TOTP 2FA)** | RFC 6238 compliant TOTP with QR provisioning + single-use hashed recovery keys. | Protects administrative and investigator accounts against credential stuffing. |
+| **05** | **Active Session Revocation** | Device fingerprinting (IP, User-Agent) + cryptographic `token_version` tracking. | Instant remote sign-out across all devices upon password reset or admin revoke. |
+| **06** | **HMAC-SHA256 Webhooks** | Outbound HTTP webhooks signed with timestamped HMAC-SHA256 headers. | Prevents replay attacks and verifies payload authenticity for automated SIEM pipelines. |
+| **07** | **Scoped Developer API Keys** | API keys with hash-only storage in MongoDB and key prefix retrieval. | Safe programmatic pipeline automation with granular access revocation. |
+| **08** | **Side-by-Side Comparison** | Delta engine calculating indicator shifts, risk differentials, and flag deltas. | Precise regression testing of revised or re-issued employment contracts. |
+| **09** | **Counterfactual Simulation** | Non-destructive "What-If" sandbox testing hypotheticals without modifying raw cases. | Interactive threat exploration and investigator hypothesis validation. |
+| **10** | **Dynamic Checklist Engine** | Real-time verification checklist mapped to detected forensic indicators. | Actionable, auditable candidate remediation steps persisted in MongoDB. |
+| **11** | **Node.js Mail Microservice** | Independent microservice on port `5001` secured with an internal bearer secret. | Isolates email dispatch (7 HTML templates) with automatic local dev simulation. |
+| **12** | **Automated File Retention** | Background pruning cycle deleting temporary uploads older than `FILE_RETENTION_HOURS`. | Zero residual document retention complying with data privacy regulations. |
+| **13** | **Sliding Rate Limiter** | In-memory token bucket rate limiting on sensitive routes (`/login`, `/analyze`). | Thwarts brute force, credential cracking, and denial-of-service attempts. |
+| **14** | **Public Verification Registry** | High-entropy share tokens (`/shared/report/<token>`) & public validation (`/verify/report/<id>`). | Authentic document verification without exposing underlying applicant PII. |
 
 ---
 
 ## 🚀 Quickstart & Local Execution
 
 ### Prerequisites
-- Python 3.10+
-- Node.js 18+
-- MongoDB 6.0+ (running locally on port 27017)
-- Ollama with model `llama3.2:3b` (`ollama pull llama3.2:3b`)
+* **Python 3.10+**
+* **Node.js 18+** & `npm`
+* **MongoDB 6.0+** (running on `localhost:27017`)
+* **Ollama** with `llama3.2:3b` model installed
 
-### 1. Install Dependencies
 ```bash
-# Python dependencies
+# 1. Pull the authoritative forensic model
+ollama pull llama3.2:3b
+```
+
+### 1. Clone & Configure Environment
+
+```bash
+git clone https://github.com/ASTA91-GIT/scam-detector.git
+cd scam-detector
+
+# Copy environment template
+cp .env.example .env
+```
+
+### 2. Install Dependencies
+
+```bash
+# Install Python backend dependencies
 pip install -r requirements.txt
 
-# Mail microservice dependencies
-cd services/mail
-npm install
-cd ../..
+# Install Node.js mail microservice dependencies
+cd services/mail && npm install && cd ../..
 ```
 
-### 2. Start Services
+### 3. Launch Services (3 Terminals)
 
-**Terminal 1: Ollama Server**
 ```bash
+# Terminal 1: Start Ollama LLM Engine
 ollama serve
-```
 
-**Terminal 2: Node.js Mail Microservice**
-```bash
+# Terminal 2: Start Internal Mail Microservice
 node services/mail/server.js
-```
 
-**Terminal 3: Flask Backend & Web Application**
-```bash
-# Development
+# Terminal 3: Start ScamGuard Flask Application
 python app.py
-
-# Production WSGI
-gunicorn -w 4 -b 0.0.0.0:5000 app:app
 ```
 
-Open your browser at `http://localhost:5000`.
+> 🌐 **Access Platform**: Open [`http://localhost:5000`](http://localhost:5000) in your browser.
 
 ---
 
 ## 🐳 Docker Production Deployment
 
-Run the complete multi-service stack (Flask API + Node Mail Service + MongoDB):
+Deploy the complete multi-service production stack (Flask API + Node.js Mail Microservice + MongoDB) with a single command:
 
 ```bash
 docker compose up -d --build
 ```
 
-The stack exposes:
-- ScamGuard Web & API: `http://localhost:5000`
-- MongoDB: `localhost:27017`
-- Mail Service (Internal): `http://localhost:5001`
+### Stack Endpoints
+* **Web UI & API**: [`http://localhost:5000`](http://localhost:5000)
+* **MongoDB Instance**: `localhost:27017`
+* **Internal Mail Service**: `http://localhost:5001` (Protected by internal secret)
+
+To stop and remove containers:
+```bash
+docker compose down
+```
 
 ---
 
-## 🔍 Preflight Verification Script
+## 🔍 Preflight Verification
 
-Before deploying to production, execute the automated preflight checker:
+Execute the automated system verification utility before deploying to production:
 
 ```bash
 python scripts/preflight_check.py
 ```
 
-Output checks:
+<details>
+<summary><b>View Sample Preflight Output</b></summary>
+
 ```
 =================================================================
   SCAMGUARD AI — PRODUCTION PREFLIGHT CHECK
@@ -224,40 +220,182 @@ Output checks:
   RESULT: READY FOR DEPLOYMENT
 =================================================================
 ```
+</details>
 
 ---
 
-## 🧪 Automated Testing
+## 📡 Developer API v1
 
-Execute the comprehensive production test suites:
+ScamGuard includes a RESTful Developer API secured via `X-API-Key` headers.
+
+### Core Endpoints
+
+| Method | Endpoint | Description | Auth Required |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/v1/analyze` | Submit offer text or file for forensic analysis | `X-API-Key` |
+| `GET` | `/api/v1/analysis/<id>` | Retrieve full analysis dossier and risk score | `X-API-Key` |
+| `GET` | `/api/v1/domain/<domain>` | Inspect domain WHOIS, age, and lookalike risks | `X-API-Key` |
+| `POST` | `/api/v1/keys` | Generate a new developer API key | JWT Session |
+| `GET` | `/api/v1/keys` | List active developer API keys | JWT Session |
+| `DELETE` | `/api/v1/keys/<id>` | Revoke an API key immediately | JWT Session |
+| `POST` | `/api/v1/webhooks` | Register a signed webhook destination | JWT Session |
+| `POST` | `/api/v1/webhooks/<id>/test` | Send a test ping with HMAC-SHA256 signature | JWT Session |
+
+### Programmatic Analysis Example
 
 ```bash
-# Run production upgrade suite (2FA, API keys, Webhooks, Compare, Simulate, Checklist)
+curl -X POST http://localhost:5000/api/v1/analyze \
+  -H "X-API-Key: sg_live_YOUR_API_KEY_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "Congratulations! You have been selected for the Remote Assistant role. Please deposit this $2,000 cashier check to purchase home office hardware from our approved vendor.",
+    "company": "Global Tech Logistics",
+    "recruiter_email": "hr@globaltech-logistics-careers.biz"
+  }'
+```
+
+<details>
+<summary><b>View JSON Response</b></summary>
+
+```json
+{
+  "status": "success",
+  "data": {
+    "analysis_id": "67a3f81e9b1d2e3f4a5b6c7d",
+    "risk_score": 96,
+    "risk_level": "critical",
+    "primary_threat": "advance_fee_fraud",
+    "confidence": 0.98,
+    "flags": [
+      "Overpayment / Fake Cashier Check Scam pattern identified",
+      "Suspicious unverified recruiter domain registered < 14 days ago",
+      "Upfront equipment payment requested prior to onboarding"
+    ],
+    "recommendations": [
+      "Do NOT deposit checks from unknown parties",
+      "Cease all communication with the sender",
+      "Report domain to anti-phishing registrars"
+    ],
+    "verification_token": "sg_ver_9f83ac127e8a4d"
+  }
+}
+```
+</details>
+
+### HMAC-SHA256 Webhook Verification
+
+Every webhook dispatch includes an `X-ScamGuard-Signature` header. Verify payloads using:
+
+```python
+import hmac, hashlib
+
+def verify_scamguard_webhook(payload_bytes: bytes, secret: str, received_signature: str) -> bool:
+    computed = hmac.new(
+        key=secret.encode('utf-8'),
+        msg=payload_bytes,
+        digestmod=hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(computed, received_signature)
+```
+
+---
+
+## 🧪 Automated Testing Suites
+
+Execute comprehensive testing across all backend, security, and microservice components:
+
+```bash
+# 1. Run Production Upgrade Suite (2FA, API Keys, Webhooks, Simulation, Checklist)
 pytest tests/test_production_upgrade_suite.py -v
 
-# Run production readiness suite (SSRF, Upload validation, Lookalike, Rate limits, Headers)
+# 2. Run Production Readiness Suite (SSRF, Magic-Byte Uploads, Lookalikes, Rate Limiting)
 pytest tests/test_production_readiness_suite.py -v
 
-# Run mail microservice tests
+# 3. Run Certificate & Document Quality Suite
+pytest tests/test_certificate_scam_suite.py -v
+
+# 4. Run Mail Microservice Integration Tests
 node services/mail/test.js
 ```
 
 ---
 
-## 📡 API Reference Overview
+## 📋 Environment Configuration Reference
 
-- **Auth**: `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/login/2fa`, `POST /api/auth/2fa/setup`, `POST /api/auth/2fa/verify`, `POST /api/auth/2fa/disable`, `GET /api/auth/verify-email`, `POST /api/auth/resend-verification`, `POST /api/auth/forgot-password`, `POST /api/auth/reset-password`, `GET /api/auth/sessions`, `POST /api/auth/sessions/revoke-others`, `PUT /api/auth/notification-preferences`
-- **Analysis**: `POST /api/analyze`, `POST /api/analyze/job`, `GET /api/analyze/job/<id>`, `GET /api/analysis/result/<id>`, `GET /api/analysis/compare`, `POST /api/analysis/<id>/simulate`, `GET /api/analysis/<id>/checklist`, `PATCH /api/analysis/<id>/checklist`
-- **Developer API v1**:
-  - `POST /api/v1/keys`: Generate scoped API key
-  - `GET /api/v1/keys`: List active API keys
-  - `DELETE /api/v1/keys/<id>`: Revoke API key
-  - `POST /api/v1/analyze`: Programmatic analysis with `X-API-Key`
-  - `GET /api/v1/analysis/<id>`: Programmatic report retrieval
-  - `GET /api/v1/domain/<domain>`: Domain intelligence and DNS records
-  - `POST /api/v1/webhooks`: Register webhook
-  - `GET /api/v1/webhooks`: List webhooks
-  - `POST /api/v1/webhooks/<id>/test`: Test webhook ping
-- **Reports**: `POST /api/saved-reports/<id>/share`, `GET /api/saved-reports/shared/<token>`, `GET /api/saved-reports/verify/<public_id>`
-- **Admin**: `GET /api/admin/metrics`, `GET /api/admin/users`, `GET /api/admin/audit-logs`, `GET /api/admin/system-health`
-- **Health**: `GET /api/health`, `GET /api/ready`, `GET /api/ai/status`
+| Environment Variable | Description | Default / Recommended |
+| :--- | :--- | :--- |
+| `FLASK_ENV` | Application runtime environment (`development` / `production`) | `production` |
+| `SECRET_KEY` | Cryptographic secret for Flask sessions | Secure random string (min 32 chars) |
+| `JWT_SECRET_KEY` | Signing key for authentication tokens | Secure random string (min 32 chars) |
+| `MONGODB_URI` | Connection URI for the MongoDB instance | `mongodb://127.0.0.1:27017/job_scam_detector` |
+| `OLLAMA_BASE_URL` | Local endpoint for the Ollama inference engine | `http://127.0.0.1:11434` |
+| `OLLAMA_MODEL` | Authoritative local LLM model tag | `llama3.2:3b` |
+| `MAIL_SERVICE_URL` | Internal Node.js mailer microservice address | `http://localhost:5001` |
+| `MAIL_SERVICE_SECRET` | Internal shared secret protecting mail endpoints | High-entropy random secret |
+| `SMTP_HOST` | Outbound production SMTP server hostname | `smtp.example.com` |
+| `SMTP_PORT` | Outbound production SMTP port | `587` |
+| `SMTP_USER` | SMTP authentication user | `apikey` |
+| `SMTP_PASSWORD` | SMTP authentication password | Secret |
+| `SMTP_FROM` | Sender address for outgoing forensic notifications | `no-reply@scamguard.local` |
+| `MAX_UPLOAD_SIZE` | Maximum permitted file upload size in bytes | `10485760` (10 MB) |
+| `MAX_DOCUMENT_PAGES` | Upper bound for PDF analysis to prevent DoS | `20` |
+| `FILE_RETENTION_HOURS` | Retention threshold for uploaded temp files | `24` |
+| `RATE_LIMIT_ENABLED` | Global toggle for route rate limiting | `true` |
+| `HIGH_RISK_EMAIL_THRESHOLD` | Risk score threshold triggering email alerts | `75` |
+
+---
+
+## 📂 Project Structure
+
+```
+SCAM-DETECTOR-GDG/
+├── assets/
+│   └── readme/                          # Animated vector assets & diagrams
+│       ├── banner.svg                   # Dynamic cyberpunk hero banner
+│       ├── metrics-bar.svg              # Live metrics & compliance strip
+│       ├── pipeline-flow.svg            # Animated 5-stage data flow diagram
+│       └── scanner-card.svg             # Live radar & threat terminal preview
+├── backend/
+│   ├── api_keys.py                      # Developer API key hashing & validation
+│   ├── audit.py                         # Append-only immutable security audit log
+│   ├── auth.py                          # Session management & token revocation
+│   ├── domain_intel.py                  # Lookalike & typosquatting detection
+│   ├── mail_client.py                   # Client for internal mail microservice
+│   ├── rate_limit.py                    # Sliding-window in-memory limiter
+│   ├── security_upload.py               # Magic-byte deep signature verification
+│   ├── ssrf.py                          # Safe network & private IP quarantine
+│   ├── totp_service.py                  # RFC 6238 2FA & recovery codes
+│   └── webhooks.py                      # Cryptographic HMAC-SHA256 dispatch
+├── frontend/                            # Forensic Investigation Web Console
+│   ├── analyze.html / .js               # Multi-format document analysis
+│   ├── dashboard.html / .js             # Incident dashboard & telemetry
+│   ├── result.html / .js                # Deep forensic dossier & simulator
+│   ├── settings.html / .js              # 2FA setup, sessions, API keys & webhooks
+│   └── styles.css                       # Modern dark-mode cyber design system
+├── services/
+│   └── mail/                            # Dedicated Node.js mail microservice
+│       ├── server.js                    # Express microservice (port 5001)
+│       └── templates/                   # 7 responsive HTML email templates
+├── scripts/
+│   ├── preflight_check.py               # Production readiness verification
+│   └── cleanup_uploads.py               # Automated temp file retention worker
+├── tests/                               # Comprehensive pytest suites
+├── docker-compose.yml                   # Complete multi-service orchestration
+├── Dockerfile                           # Hardened Flask backend container
+├── requirements.txt                     # Pinned Python dependencies
+└── app.py                               # Application entrypoint & route registry
+```
+
+---
+
+<div align="center">
+
+### 🛡️ ScamGuard AI — Built for Privacy, Precision & Performance
+
+<p align="center">
+  <sub>Developed for the GDG Hackathon • Licensed under the MIT License • 100% Offline AI Security</sub>
+</p>
+
+[⬆ Back to Top](#top)
+
+</div>

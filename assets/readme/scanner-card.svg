@@ -1,0 +1,171 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 240" width="100%" height="240" fill="none">
+  <defs>
+    <linearGradient id="scan-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#070c18"/>
+      <stop offset="100%" stop-color="#040711"/>
+    </linearGradient>
+
+    <linearGradient id="meter-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="50%" stop-color="#fbbf24"/>
+      <stop offset="90%" stop-color="#f43f5e"/>
+    </linearGradient>
+
+    <filter id="radar-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <style>
+      @keyframes blinkCursor {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0; }
+      }
+
+      @keyframes radarSweepMini {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+
+      @keyframes threatPulse {
+        0%, 100% { fill-opacity: 0.2; transform: scale(1); }
+        50% { fill-opacity: 0.6; transform: scale(1.03); }
+      }
+
+      @keyframes meterLoad {
+        0% { width: 0px; }
+        100% { width: 330px; }
+      }
+
+      .terminal-cursor {
+        animation: blinkCursor 1s infinite;
+      }
+
+      .radar-sweep-mini {
+        transform-origin: 975px 120px;
+        animation: radarSweepMini 4s infinite linear;
+      }
+
+      .threat-box {
+        transform-origin: center;
+        animation: threatPulse 2.5s infinite ease-in-out;
+      }
+
+      .progress-fill {
+        animation: meterLoad 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+    </style>
+  </defs>
+
+  <!-- Container -->
+  <rect width="1100" height="240" rx="12" fill="url(#scan-bg)" stroke="#1e293b" stroke-width="1.2"/>
+
+  <!-- Window Header Bar -->
+  <rect width="1100" height="34" rx="12" fill="#0c1426"/>
+  <rect y="22" width="1100" height="12" fill="#0c1426"/>
+  <line x1="0" y1="34" x2="1100" y2="34" stroke="#1e293b" stroke-width="1"/>
+
+  <!-- Window Controls -->
+  <circle cx="20" cy="17" r="5" fill="#f43f5e"/>
+  <circle cx="36" cy="17" r="5" fill="#fbbf24"/>
+  <circle cx="52" cy="17" r="5" fill="#10b981"/>
+
+  <text x="75" y="21" font-family="'JetBrains Mono', monospace" font-size="11" fill="#94a3b8">
+    scamguard-forensics --scan "Executive_Assistant_Offer_Letter.pdf" --deep-inspect
+  </text>
+  <text x="960" y="21" font-family="'JetBrains Mono', monospace" font-size="10" fill="#38bdf8">
+    ● LIVE ENGINE FEED
+  </text>
+
+  <!-- Terminal Output Lines (Left Column) -->
+  <g transform="translate(25, 60)" font-family="'JetBrains Mono', monospace" font-size="11">
+    <!-- Line 1 -->
+    <text y="0" fill="#64748b">[00:00:01]</text>
+    <text x="85" y="0" fill="#38bdf8">VALIDATING MAGIC BYTES</text>
+    <text x="280" y="0" fill="#cbd5e1">→ Header '%PDF-1.7' confirmed (842.1 KB)</text>
+
+    <!-- Line 2 -->
+    <text y="24" fill="#64748b">[00:00:02]</text>
+    <text x="85" y="24" fill="#818cf8">DOMAIN INTELLIGENCE</text>
+    <text x="280" y="24" fill="#f59e0b">→ Found '@careers-accenture-global.co' (Registered: 4 days ago)</text>
+
+    <!-- Line 3 -->
+    <text y="48" fill="#64748b">[00:00:03]</text>
+    <text x="85" y="48" fill="#fbbf24">HEURISTIC MATCH</text>
+    <text x="280" y="48" fill="#f43f5e">→ Advance equipment check deposit demand ($1,850.00)</text>
+
+    <!-- Line 4 -->
+    <text y="72" fill="#64748b">[00:00:04]</text>
+    <text x="85" y="72" fill="#10b981">OLLAMA 3.2:3B INFERENCE</text>
+    <text x="280" y="72" fill="#e2e8f0">→ High confidence employment impostor signature detected</text>
+
+    <!-- Line 5 with cursor -->
+    <text y="96" fill="#64748b">[00:00:05]</text>
+    <text x="85" y="96" fill="#f43f5e" font-weight="700">ACTION DISPATCHED</text>
+    <text x="280" y="96" fill="#cbd5e1">→ Incident dossier PDF sealed | Webhook ping delivered | Alert queued</text>
+    <rect x="800" y="85" width="8" height="13" fill="#38bdf8" class="terminal-cursor"/>
+  </g>
+
+  <!-- Risk Score Card (Middle-Right) -->
+  <g transform="translate(680, 52)">
+    <rect width="200" height="165" rx="8" fill="#10192e" stroke="#334155" stroke-width="1.2"/>
+    <text x="16" y="24" font-family="'Inter', sans-serif" font-size="11" font-weight="600" fill="#94a3b8">COMPUTED RISK SCORE</text>
+
+    <!-- Score Big Number -->
+    <text x="16" y="66" font-family="'Outfit', sans-serif" font-size="44" font-weight="900" fill="#f43f5e">
+      94<tspan font-size="20" fill="#64748b">/100</tspan>
+    </text>
+
+    <!-- Badge -->
+    <rect x="16" y="80" width="135" height="22" rx="4" fill="#f43f5e" fill-opacity="0.2" stroke="#f43f5e" stroke-width="0.8"/>
+    <text x="24" y="95" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#f43f5e">
+      CRITICAL FRAUD RISK
+    </text>
+
+    <text x="16" y="125" font-family="'Inter', sans-serif" font-size="10.5" fill="#cbd5e1">
+      Category: <tspan fill="#fbbf24" font-weight="600">Advance Fee Scam</tspan>
+    </text>
+    <text x="16" y="143" font-family="'Inter', sans-serif" font-size="10.5" fill="#cbd5e1">
+      Confidence: <tspan fill="#34d399" font-weight="600">98.4% (Authoritative)</tspan>
+    </text>
+  </g>
+
+  <!-- Mini Radar Animation (Far Right) -->
+  <g transform="translate(900, 52)">
+    <rect width="170" height="165" rx="8" fill="#090f1f" stroke="#1e293b" stroke-width="1.2"/>
+
+    <!-- Concentric Circles -->
+    <circle cx="85" cy="78" r="55" stroke="#1e293b" stroke-width="1" fill="none"/>
+    <circle cx="85" cy="78" r="38" stroke="#38bdf8" stroke-opacity="0.25" stroke-width="1" fill="none"/>
+    <circle cx="85" cy="78" r="20" stroke="#38bdf8" stroke-opacity="0.4" stroke-width="1" stroke-dasharray="2 3" fill="none"/>
+    <circle cx="85" cy="78" r="3" fill="#38bdf8"/>
+
+    <!-- Crosshair -->
+    <line x1="20" y1="78" x2="150" y2="78" stroke="#38bdf8" stroke-opacity="0.2" stroke-width="1"/>
+    <line x1="85" y1="15" x2="85" y2="140" stroke="#38bdf8" stroke-opacity="0.2" stroke-width="1"/>
+
+    <!-- Rotating Needle -->
+    <g class="radar-sweep-mini" style="transform-origin: 85px 78px;">
+      <path d="M 85 78 L 140 78 A 55 55 0 0 0 125 40 Z" fill="#38bdf8" fill-opacity="0.2"/>
+      <line x1="85" y1="78" x2="140" y2="78" stroke="#38bdf8" stroke-width="1.5"/>
+    </g>
+
+    <!-- Detected Threat Blip -->
+    <circle cx="112" cy="55" r="4" fill="#f43f5e" class="threat-box"/>
+
+    <text x="85" y="152" font-family="'JetBrains Mono', monospace" font-size="9" fill="#94a3b8" text-anchor="middle" letter-spacing="1">
+      RADAR: TARGET LOCKED
+    </text>
+  </g>
+
+  <!-- Bottom Meter Bar -->
+  <g transform="translate(25, 202)">
+    <text font-family="'JetBrains Mono', monospace" font-size="10" fill="#64748b">RISK METER:</text>
+    <rect x="85" y="-9" width="350" height="10" rx="5" fill="#111c33"/>
+    <rect x="85" y="-9" width="330" height="10" rx="5" fill="url(#meter-grad)" class="progress-fill"/>
+    <text x="445" y="0" font-family="'JetBrains Mono', monospace" font-size="10" fill="#f43f5e" font-weight="700">94.8% CRITICAL</text>
+  </g>
+</svg>

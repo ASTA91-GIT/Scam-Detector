@@ -1,0 +1,234 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 260" width="100%" height="260" fill="none">
+  <defs>
+    <!-- Pipeline Background -->
+    <linearGradient id="pipe-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#080d1a"/>
+      <stop offset="100%" stop-color="#050811"/>
+    </linearGradient>
+
+    <!-- Node Card Fill -->
+    <linearGradient id="node-fill" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#111c35"/>
+      <stop offset="100%" stop-color="#0a1224"/>
+    </linearGradient>
+
+    <!-- Glowing Lines -->
+    <linearGradient id="wire-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+
+    <!-- Filters -->
+    <filter id="glow-packet" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <style>
+      @keyframes travelPackets {
+        0% { stroke-dashoffset: 240; }
+        100% { stroke-dashoffset: 0; }
+      }
+
+      @keyframes nodePulse {
+        0%, 100% { stroke-opacity: 0.35; filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.2)); }
+        50% { stroke-opacity: 0.9; filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.6)); }
+      }
+
+      @keyframes ping {
+        0% { transform: scale(1); opacity: 0.8; }
+        100% { transform: scale(2.2); opacity: 0; }
+      }
+
+      .conduit-base {
+        stroke: #1e293b;
+        stroke-width: 3;
+        stroke-linecap: round;
+      }
+
+      .conduit-flow {
+        stroke: url(#wire-gradient);
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-dasharray: 8 16;
+        animation: travelPackets 2.5s infinite linear;
+      }
+
+      .node-box {
+        fill: url(#node-fill);
+        stroke-width: 1.5;
+        rx: 10px;
+        transition: all 0.3s ease;
+      }
+
+      .node-pulse-cyan {
+        stroke: #38bdf8;
+        animation: nodePulse 3s infinite ease-in-out;
+      }
+
+      .node-pulse-amber {
+        stroke: #fbbf24;
+        animation: nodePulse 3s infinite ease-in-out;
+      }
+
+      .node-pulse-emerald {
+        stroke: #10b981;
+        animation: nodePulse 3s infinite ease-in-out;
+      }
+
+      .node-pulse-indigo {
+        stroke: #818cf8;
+        animation: nodePulse 3s infinite ease-in-out;
+      }
+
+      .node-pulse-rose {
+        stroke: #f43f5e;
+        animation: nodePulse 3s infinite ease-in-out;
+      }
+
+      .ping-circle {
+        transform-origin: center;
+        animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+      }
+
+      .stage-title {
+        font-family: 'Outfit', 'Inter', sans-serif;
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: 0.5px;
+      }
+
+      .stage-sub {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 500;
+        font-size: 10px;
+        fill: #94a3b8;
+      }
+
+      .stage-number {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 800;
+        font-size: 11px;
+      }
+    </style>
+  </defs>
+
+  <!-- Background Panel -->
+  <rect width="1100" height="260" rx="14" fill="url(#pipe-bg)" stroke="#1e293b" stroke-width="1.2"/>
+
+  <!-- Subtle Header -->
+  <g transform="translate(30, 28)">
+    <text font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700" fill="#38bdf8" letter-spacing="2">
+      PIPELINE ARCHITECTURE // REAL-TIME MULTI-STAGE FORENSIC ANALYSIS
+    </text>
+    <text x="730" font-family="'JetBrains Mono', monospace" font-size="10" fill="#64748b" letter-spacing="1">
+      THROUGHPUT: ZERO CLOUD LEAK • HIGH CONCURRENCY
+    </text>
+  </g>
+
+  <!-- Connecting Conduits -->
+  <!-- Line 1 -> 2 -->
+  <line x1="205" y1="130" x2="245" y2="130" class="conduit-base"/>
+  <line x1="205" y1="130" x2="245" y2="130" class="conduit-flow"/>
+
+  <!-- Line 2 -> 3 -->
+  <line x1="425" y1="130" x2="465" y2="130" class="conduit-base"/>
+  <line x1="425" y1="130" x2="465" y2="130" class="conduit-flow"/>
+
+  <!-- Line 3 -> 4 -->
+  <line x1="645" y1="130" x2="685" y2="130" class="conduit-base"/>
+  <line x1="645" y1="130" x2="685" y2="130" class="conduit-flow"/>
+
+  <!-- Line 4 -> 5 -->
+  <line x1="865" y1="130" x2="905" y2="130" class="conduit-base"/>
+  <line x1="865" y1="130" x2="905" y2="130" class="conduit-flow"/>
+
+  <!-- ==================== STAGE 1 ==================== -->
+  <g transform="translate(30, 60)">
+    <rect width="175" height="140" class="node-box node-pulse-cyan"/>
+    <!-- Top badge -->
+    <rect x="12" y="14" width="28" height="20" rx="4" fill="#0284c7" fill-opacity="0.2"/>
+    <text x="26" y="28" class="stage-number" fill="#38bdf8" text-anchor="middle">01</text>
+    <text x="48" y="28" class="stage-title" fill="#f8fafc">INGESTION</text>
+
+    <text x="14" y="58" class="stage-sub">• Multi-file upload</text>
+    <text x="14" y="76" class="stage-sub">• PDF / DOCX / WEBP</text>
+    <text x="14" y="94" class="stage-sub">• Text &amp; Email body</text>
+    <text x="14" y="112" class="stage-sub">• Recruiter URLs</text>
+
+    <!-- Signal Dot -->
+    <circle cx="155" cy="24" r="4" fill="#38bdf8"/>
+  </g>
+
+  <!-- ==================== STAGE 2 ==================== -->
+  <g transform="translate(250, 60)">
+    <rect width="175" height="140" class="node-box node-pulse-rose"/>
+    <rect x="12" y="14" width="28" height="20" rx="4" fill="#e11d48" fill-opacity="0.2"/>
+    <text x="26" y="28" class="stage-number" fill="#f43f5e" text-anchor="middle">02</text>
+    <text x="48" y="28" class="stage-title" fill="#f8fafc">SECURITY GATE</text>
+
+    <text x="14" y="58" class="stage-sub">• Magic byte verify</text>
+    <text x="14" y="76" class="stage-sub">• SSRF private IP drop</text>
+    <text x="14" y="94" class="stage-sub">• Decompression bomb</text>
+    <text x="14" y="112" class="stage-sub">• Strict page limits</text>
+
+    <circle cx="155" cy="24" r="4" fill="#f43f5e"/>
+  </g>
+
+  <!-- ==================== STAGE 3 ==================== -->
+  <g transform="translate(470, 60)">
+    <rect width="175" height="140" class="node-box node-pulse-amber"/>
+    <rect x="12" y="14" width="28" height="20" rx="4" fill="#d97706" fill-opacity="0.2"/>
+    <text x="26" y="28" class="stage-number" fill="#fbbf24" text-anchor="middle">03</text>
+    <text x="48" y="28" class="stage-title" fill="#f8fafc">LOCAL AI CORE</text>
+
+    <text x="14" y="58" class="stage-sub">• Ollama llama3.2:3b</text>
+    <text x="14" y="76" class="stage-sub">• 100% Offline inference</text>
+    <text x="14" y="94" class="stage-sub">• Zero Cloud leaks</text>
+    <text x="14" y="112" class="stage-sub">• Structured JSON out</text>
+
+    <circle cx="155" cy="24" r="4" fill="#fbbf24"/>
+  </g>
+
+  <!-- ==================== STAGE 4 ==================== -->
+  <g transform="translate(690, 60)">
+    <rect width="175" height="140" class="node-box node-pulse-indigo"/>
+    <rect x="12" y="14" width="28" height="20" rx="4" fill="#4f46e5" fill-opacity="0.2"/>
+    <text x="26" y="28" class="stage-number" fill="#818cf8" text-anchor="middle">04</text>
+    <text x="48" y="28" class="stage-title" fill="#f8fafc">HEURISTICS</text>
+
+    <text x="14" y="58" class="stage-sub">• Domain lookalike scan</text>
+    <text x="14" y="76" class="stage-sub">• Fee fraud classifier</text>
+    <text x="14" y="94" class="stage-sub">• Delta risk scoring</text>
+    <text x="14" y="112" class="stage-sub">• Checklist generator</text>
+
+    <circle cx="155" cy="24" r="4" fill="#818cf8"/>
+  </g>
+
+  <!-- ==================== STAGE 5 ==================== -->
+  <g transform="translate(910, 60)">
+    <rect width="160" height="140" class="node-box node-pulse-emerald"/>
+    <rect x="12" y="14" width="28" height="20" rx="4" fill="#059669" fill-opacity="0.2"/>
+    <text x="26" y="28" class="stage-number" fill="#34d399" text-anchor="middle">05</text>
+    <text x="48" y="28" class="stage-title" fill="#f8fafc">DISPATCH</text>
+
+    <text x="14" y="58" class="stage-sub">• Standalone PDF</text>
+    <text x="14" y="76" class="stage-sub">• Signed Webhooks</text>
+    <text x="14" y="94" class="stage-sub">• Node.js Mailer (7)</text>
+    <text x="14" y="112" class="stage-sub">• Public verification</text>
+
+    <circle cx="140" cy="24" r="4" fill="#10b981"/>
+  </g>
+
+  <!-- Footer Telemetry Strip -->
+  <g transform="translate(30, 230)">
+    <rect width="1040" height="20" rx="4" fill="#090f1d" stroke="#1e293b" stroke-width="0.8"/>
+    <text x="12" y="14" font-family="'JetBrains Mono', monospace" font-size="9.5" fill="#475569">
+      LATENCY: <tspan fill="#38bdf8">&lt; 1.2s</tspan> | PRIVACY LEVEL: <tspan fill="#10b981">MAXIMUM (AIR-GAPPED READY)</tspan> | AUDIT LOGGING: <tspan fill="#fbbf24">APPEND-ONLY MONGODB</tspan> | API COMPAT: <tspan fill="#818cf8">REST v1 JSON</tspan>
+    </text>
+  </g>
+</svg>

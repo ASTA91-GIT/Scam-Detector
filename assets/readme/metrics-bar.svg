@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 100" width="100%" height="100" fill="none">
+  <defs>
+    <linearGradient id="bar-bg" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#080e1e"/>
+      <stop offset="50%" stop-color="#0e172e"/>
+      <stop offset="100%" stop-color="#080e1e"/>
+    </linearGradient>
+
+    <style>
+      @keyframes softPulse {
+        0%, 100% { opacity: 0.85; }
+        50% { opacity: 1; }
+      }
+      .metric-value {
+        font-family: 'Outfit', 'Inter', sans-serif;
+        font-weight: 900;
+        font-size: 26px;
+      }
+      .metric-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 600;
+        font-size: 10px;
+        letter-spacing: 1px;
+        fill: #94a3b8;
+      }
+      .metric-box {
+        animation: softPulse 3s infinite ease-in-out;
+      }
+    </style>
+  </defs>
+
+  <!-- Container -->
+  <rect width="1100" height="100" rx="10" fill="url(#bar-bg)" stroke="#1e293b" stroke-width="1.2"/>
+
+  <!-- Metric 1: 100% Offline AI -->
+  <g transform="translate(40, 26)" class="metric-box">
+    <text y="24" class="metric-value" fill="#38bdf8">100%</text>
+    <text y="44" class="metric-label">OFFLINE LOCAL AI</text>
+  </g>
+  <line x1="230" y1="20" x2="230" y2="80" stroke="#1e293b" stroke-width="1"/>
+
+  <!-- Metric 2: 0 Cloud Leaks -->
+  <g transform="translate(260, 26)" class="metric-box">
+    <text y="24" class="metric-value" fill="#10b981">ZERO</text>
+    <text y="44" class="metric-label">CLOUD DATA LEAKS</text>
+  </g>
+  <line x1="440" y1="20" x2="440" y2="80" stroke="#1e293b" stroke-width="1"/>
+
+  <!-- Metric 3: 14 Defense Layers -->
+  <g transform="translate(470, 26)" class="metric-box">
+    <text y="24" class="metric-value" fill="#fbbf24">14+</text>
+    <text y="44" class="metric-label">SECURITY DEFENSE LAYERS</text>
+  </g>
+  <line x1="680" y1="20" x2="680" y2="80" stroke="#1e293b" stroke-width="1"/>
+
+  <!-- Metric 4: Sub-Second Latency -->
+  <g transform="translate(710, 26)" class="metric-box">
+    <text y="24" class="metric-value" fill="#818cf8">&lt; 1.2s</text>
+    <text y="44" class="metric-label">ENGINE HEURISTICS</text>
+  </g>
+  <line x1="890" y1="20" x2="890" y2="80" stroke="#1e293b" stroke-width="1"/>
+
+  <!-- Metric 5: Audit Log Integrity -->
+  <g transform="translate(920, 26)" class="metric-box">
+    <text y="24" class="metric-value" fill="#f43f5e">100%</text>
+    <text y="44" class="metric-label">CRYPTOGRAPHIC AUDIT</text>
+  </g>
+</svg>
