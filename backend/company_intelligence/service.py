@@ -194,14 +194,64 @@ class CompanyIntelligenceService:
                 })
 
         # 10. Document Claim vs Public Information Comparison
-        name_comparison = "UNVERIFIED"
-        if claimed_company and company_profile.get("verified_presence"):
-            if claimed_company.lower() in (company_profile.get("name") or "").lower():
-                name_comparison = "NAME_MATCH"
+        # Explicit states: MATCH, MISMATCH, POSSIBLE_MATCH, INSUFFICIENT_DATA, UNAVAILABLE
+        comp_comp_state = "UNAVAILABLE"
+        comp_comp_reason = ""
+        if not claimed_company or claimed_company.lower() in ("company not identified", "unknown", "unspecified organization", "none"):
+            comp_comp_state = "INSUFFICIENT_DATA"
+            comp_comp_reason = "No claimed company name identified in document or metadata."
+        elif not company_profile.get("verified_presence"):
+            comp_comp_state = "UNAVAILABLE"
+            comp_comp_reason = f"Independent public corporate records could not be verified for '{claimed_company}'."
+        else:
+            claimed_norm = "".join(c.lower() for c in claimed_company if c.isalnum())
+            found_norm = "".join(c.lower() for c in (company_profile.get("name") or "") if c.isalnum())
+            if claimed_norm == found_norm or (claimed_norm in found_norm and len(claimed_norm) >= 4) or (found_norm in claimed_norm and len(found_norm) >= 4):
+                comp_comp_state = "MATCH"
+                comp_comp_reason = f"Claimed company '{claimed_company}' matches verified public record '{company_profile.get('name')}'."
+            elif any(token in found_norm for token in claimed_norm.split() if len(token) >= 4):
+                comp_comp_state = "POSSIBLE_MATCH"
+                comp_comp_reason = f"Claimed company '{claimed_company}' partially aligns with public record '{company_profile.get('name')}'."
             else:
-                name_comparison = "NAME_MISMATCH"
+                comp_comp_state = "MISMATCH"
+                comp_comp_reason = f"Claimed company '{claimed_company}' differs from discovered public profile '{company_profile.get('name')}'."
 
-        domain_comparison = email_analysis.get("match_type", "UNKNOWN")
+        # Domain comparison state
+        dom_comp_state = email_analysis.get("comparison_result") or email_analysis.get("match_type", "INSUFFICIENT_DATA")
+        if dom_comp_state not in ("MATCH", "MISMATCH", "POSSIBLE_MATCH", "INSUFFICIENT_DATA", "UNAVAILABLE"):
+            if email_analysis.get("match"):
+                dom_comp_state = "MATCH"
+            elif email_analysis.get("is_free_provider"):
+                dom_comp_state = "MISMATCH"
+            elif not recruiter_email or not domain:
+                dom_comp_state = "INSUFFICIENT_DATA"
+            else:
+                dom_comp_state = "MISMATCH"
+
+        # Overall synthesis state
+        if comp_comp_state == "MATCH" and dom_comp_state == "MATCH":
+            overall_state = "MATCH"
+        elif dom_comp_state == "MISMATCH" or comp_comp_state == "MISMATCH" or lookalike.get("detected"):
+            overall_state = "MISMATCH"
+        elif dom_comp_state == "POSSIBLE_MATCH" or comp_comp_state == "POSSIBLE_MATCH":
+            overall_state = "POSSIBLE_MATCH"
+        elif comp_comp_state == "INSUFFICIENT_DATA" or dom_comp_state == "INSUFFICIENT_DATA":
+            overall_state = "INSUFFICIENT_DATA"
+        else:
+            overall_state = "UNAVAILABLE"
+
+        # DNS / MX Status Synthesis
+        if dns_data.get("has_mx"):
+            mx_count = len(dns_data.get("mx_records", []))
+            dns_mx_status = f"Active MX ({mx_count} {'host' if mx_count == 1 else 'hosts'})"
+        elif dns_data.get("has_a"):
+            dns_mx_status = "Active A (No MX records configured)"
+        elif domain and rdap_data.get("rdap_status") == "SUCCESS":
+            dns_mx_status = "DNS Unresolved"
+        elif domain:
+            dns_mx_status = "DNS Unavailable"
+        else:
+            dns_mx_status = "Information unavailable"
 
         # 11. 4-Tier Trust Model Construction
         observed = []
@@ -228,6 +278,9 @@ class CompanyIntelligenceService:
         if website_data.get("reachable"):
             https_note = "HTTPS enabled" if website_data.get("https") else "HTTP only (no TLS)"
             verified.append(f"Website at '{website_data.get('final_url')}' is reachable (HTTP {website_data.get('status_code')}, {https_note}).")
+
+        if dns_data.get("has_mx"):
+            verified.append(f"Domain '{domain}' has active mail exchangers configured in DNS.")
 
         # Inferred
         if email_analysis.get("match"):
@@ -272,8 +325,10 @@ class CompanyIntelligenceService:
                 "description": company_profile.get("description", "Information unavailable"),
                 "founded_year": company_profile.get("founded_year"),
                 "website": explicit_website or (f"https://{domain}" if domain else None),
+                "public_profiles": company_profile.get("public_profiles", []),
                 "logo_url": company_profile.get("logo_url"),
                 "verified_presence": company_profile.get("verified_presence", False),
+                "retrieval_status": company_profile.get("retrieval_status", "UNAVAILABLE"),
                 "possible_matches": possible_matches
             },
             "domain": {
@@ -288,6 +343,8 @@ class CompanyIntelligenceService:
                 "age_formatted": rdap_data.get("domain_age_formatted", "Information unavailable"),
                 "registrar": rdap_data.get("registrar", "Information unavailable"),
                 "status": rdap_data.get("domain_status", "UNAVAILABLE"),
+                "lookup_status": rdap_data.get("rdap_status", "UNAVAILABLE"),
+                "dns_mx_status": dns_mx_status,
                 "nameservers": rdap_data.get("nameservers", []),
                 "is_recently_registered": rdap_data.get("is_recently_registered", False),
                 "is_established": rdap_data.get("is_established", False)
@@ -299,15 +356,18 @@ class CompanyIntelligenceService:
                 "final_url": website_data.get("final_url", ""),
                 "tls_certificate": website_data.get("tls_certificate", website_data.get("tls_certificate_valid", False)),
                 "tls_certificate_valid": website_data.get("tls_certificate_valid", False),
+                "redirect_target": website_data.get("redirect_target"),
                 "title": website_data.get("title")
             },
             "dns": dns_data,
             "email": {
+                "recruiter_name": rec_name or "Not Specified",
                 "email": recruiter_email or "Not disclosed",
                 "domain": email_analysis.get("email_domain", ""),
                 "match": email_analysis.get("match", False),
-                "status": email_analysis.get("status", email_analysis.get("match_type", "UNKNOWN")),
-                "match_type": email_analysis.get("match_type", "UNKNOWN"),
+                "status": email_analysis.get("status", dom_comp_state),
+                "match_type": dom_comp_state,
+                "comparison_result": dom_comp_state,
                 "is_free_provider": email_analysis.get("is_free_provider", False),
                 "is_personal_provider": email_analysis.get("is_personal_provider", email_analysis.get("is_free_provider", False)),
                 "explanation": email_analysis.get("explanation", "")
@@ -317,12 +377,32 @@ class CompanyIntelligenceService:
                 "similarity": lookalike.get("similarity", 0),
                 "matched_brand": lookalike.get("matched_brand"),
                 "target_domain": lookalike.get("target_domain"),
+                "domain_mismatch": lookalike.get("domain_mismatch", False),
+                "similarity_evidence": lookalike.get("similarity_evidence", lookalike.get("explanation", "")),
+                "source_links": lookalike.get("source_links", []),
                 "explanation": lookalike.get("explanation", ""),
                 "reasons": lookalike.get("reasons", [lookalike.get("explanation", "")]) if lookalike.get("detected") else []
             },
+            "impersonation": {
+                "detected": lookalike.get("detected", False),
+                "similarity": lookalike.get("similarity", 0),
+                "matched_brand": lookalike.get("matched_brand"),
+                "target_domain": lookalike.get("target_domain"),
+                "domain_mismatch": lookalike.get("domain_mismatch", False),
+                "similarity_evidence": lookalike.get("similarity_evidence", lookalike.get("explanation", "")),
+                "source_links": lookalike.get("source_links", []),
+                "explanation": lookalike.get("explanation", "")
+            },
             "comparison": {
-                "name_match": name_comparison,
-                "domain_match": domain_comparison
+                "name_match": comp_comp_state,
+                "company_match": comp_comp_state,
+                "domain_match": dom_comp_state,
+                "overall_state": overall_state,
+                "explanation": (
+                    f"Company identity comparison evaluated as {overall_state}. "
+                    "Note: A Gmail address is not proof of fraud. A matching domain is not proof of authenticity. "
+                    "A company being publicly discoverable does not establish that a particular recruiter or job offer is genuine."
+                )
             },
             "trust_model": {
                 "observed": observed,
@@ -348,29 +428,39 @@ class CompanyIntelligenceService:
         Constructs an evidence-grounded AI Company Assessment summary paragraph.
         Strictly observes the boundary between company presence and offer legitimacy.
         """
-        if not claimed_company:
+        if not claimed_company or claimed_company.lower() in ("company not identified", "unknown", "none"):
             return (
                 "The analyzed document does not clearly identify an employing organization or registered corporate entity. "
                 "Without a verifiable company identity or official domain, claims and terms within the document cannot be corroborated against public registries."
             )
 
-        parts = [f"The document identifies '{claimed_company}' as the employer."]
+        parts = []
+
+        if company_profile.get("verified_presence"):
+            parts.append(
+                f"The claimed company '{claimed_company}' has publicly discoverable information."
+            )
+        else:
+            parts.append(
+                f"The document identifies '{claimed_company}' as the employer, but independent public company information could not be verified from public registries."
+            )
 
         if domain:
             if rdap_data.get("rdap_status") == "SUCCESS":
                 parts.append(
-                    f"Public domain intelligence for '{domain}' confirms registration through {rdap_data.get('registrar')} "
+                    f"Official domain intelligence for '{domain}' confirms registration through {rdap_data.get('registrar')} "
                     f"(Domain Age: {rdap_data.get('domain_age_formatted')})."
                 )
             elif website_data.get("reachable"):
                 parts.append(f"The domain '{domain}' is active and responds over HTTP ({website_data.get('final_url')}).")
-            else:
-                parts.append(f"Domain telemetry for '{domain}' could not be independently retrieved from RDAP.")
 
         if email_analysis.get("match"):
-            parts.append("The recruiter email domain matches the official organizational domain.")
+            parts.append(f"The recruiter email domain matches the discovered website domain ({domain}).")
         elif email_analysis.get("is_free_provider"):
-            parts.append(f"The recruiter contact utilizes a public webmail service (@{email_analysis.get('email_domain')}), which lacks organizational affiliation.")
+            parts.append(
+                f"The recruiter contact utilizes a free public email service (@{email_analysis.get('email_domain')}) rather than an organizational domain. "
+                "A personal email address is common in informal communication and is not standalone proof of fraud, but it lacks corporate domain authentication."
+            )
         elif email_analysis.get("match_type") == "MISMATCH":
             parts.append(f"The recruiter's email domain (@{email_analysis.get('email_domain')}) differs from the discovered corporate domain ({domain}).")
 
@@ -378,7 +468,8 @@ class CompanyIntelligenceService:
             parts.append(f"Notice: Lookalike analysis identified potential similarity anomalies ({lookalike.get('explanation')}).")
 
         parts.append(
-            "These signals describe the external digital footprint of the claimed entity; they do not independently prove or disprove the authenticity of the specific job offer or recruiter."
+            "These signals describe the external digital footprint of the claimed entity; "
+            "they do not independently verify or authenticate this recruiter or offer letter, nor does a company's public discoverability establish that the offer is genuine."
         )
 
         return " ".join(parts)

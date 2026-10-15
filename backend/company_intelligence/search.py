@@ -170,6 +170,7 @@ def fetch_company_profile(company_name: Optional[str],
 
     # 1. Try Wikipedia
     wiki_info = fetch_wikipedia_company_profile(company_name)
+    public_profiles: List[Dict[str, str]] = []
     if wiki_info:
         profile.update({
             "name": wiki_info.get("name") or company_name,
@@ -180,6 +181,11 @@ def fetch_company_profile(company_name: Optional[str],
             "verified_presence": True,
             "retrieval_status": "VERIFIED_PUBLIC_RECORD"
         })
+        if wiki_info.get("source_url"):
+            public_profiles.append({
+                "title": "Wikipedia",
+                "url": wiki_info["source_url"]
+            })
         sources.append({
             "source_name": wiki_info.get("source_name", "Wikipedia"),
             "source_url": wiki_info.get("source_url", ""),
@@ -196,6 +202,11 @@ def fetch_company_profile(company_name: Optional[str],
                 "verified_presence": True,
                 "retrieval_status": "VERIFIED_PUBLIC_RECORD"
             })
+            if ddg_info.get("source_url"):
+                public_profiles.append({
+                    "title": "DuckDuckGo Knowledge",
+                    "url": ddg_info["source_url"]
+                })
             sources.append({
                 "source_name": ddg_info.get("source_name", "DuckDuckGo Knowledge"),
                 "source_url": ddg_info.get("source_url", ""),
@@ -207,6 +218,10 @@ def fetch_company_profile(company_name: Optional[str],
         clean_dom = domain.lower().strip()
         if not profile.get("website"):
             profile["website"] = f"https://{clean_dom}"
+        public_profiles.append({
+            "title": "Official Website",
+            "url": profile["website"]
+        })
 
     if website_data and website_data.get("reachable"):
         if website_data.get("title") and profile.get("description") == "Information unavailable":
@@ -219,5 +234,14 @@ def fetch_company_profile(company_name: Optional[str],
                 "data_obtained": "Live HTTP server response and HTML title"
             })
 
+    # Deduplicate public profiles by URL
+    seen_urls = set()
+    unique_profiles = []
+    for p in public_profiles:
+        if p["url"] and p["url"] not in seen_urls:
+            seen_urls.add(p["url"])
+            unique_profiles.append(p)
+
+    profile["public_profiles"] = unique_profiles
     profile["sources"] = sources
     return profile

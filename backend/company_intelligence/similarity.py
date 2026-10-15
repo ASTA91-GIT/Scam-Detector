@@ -95,7 +95,11 @@ def detect_lookalike_domain(domain: Optional[str],
             "similarity": 0,
             "matched_brand": None,
             "target_domain": None,
-            "explanation": "No domain provided for lookalike evaluation."
+            "domain_mismatch": False,
+            "similarity_evidence": "No domain provided for lookalike evaluation.",
+            "source_links": [],
+            "explanation": "No domain provided for lookalike evaluation.",
+            "reasons": []
         }
 
     clean_dom = domain.lower().strip()
@@ -105,12 +109,17 @@ def detect_lookalike_domain(domain: Optional[str],
 
     # 1. Punycode check
     if clean_dom.startswith("xn--") or ".xn--" in clean_dom:
+        exp = "Punycode (xn--) domain detected. This format can be used for visual spoofing using non-ASCII lookalike characters."
         return {
             "detected": True,
             "similarity": 85,
             "matched_brand": "Internationalized / Punycode Domain",
             "target_domain": clean_dom,
-            "explanation": "Punycode (xn--) domain detected. This format can be used for visual spoofing using non-ASCII lookalike characters."
+            "domain_mismatch": True,
+            "similarity_evidence": "Punycode encoding detected in domain string.",
+            "source_links": [],
+            "explanation": exp,
+            "reasons": [exp]
         }
 
     parts = clean_dom.split(".")
@@ -141,12 +150,16 @@ def detect_lookalike_domain(domain: Optional[str],
 
         # Check A: Character substitution match (e.g. micros0ft.com or paypa1.com)
         if substitutions_found and normalized_label == brand_key:
+            target_dom = f"{brand_key}.com"
             exp = f"Potential lookalike domain: Uses character substitution ({', '.join(substitutions_found)}) imitating {brand_title}."
             return {
                 "detected": True,
                 "similarity": 92,
                 "matched_brand": brand_title,
-                "target_domain": f"{brand_key}.com",
+                "target_domain": target_dom,
+                "domain_mismatch": clean_dom != target_dom,
+                "similarity_evidence": f"Character substitution: {', '.join(substitutions_found)} imitating brand '{brand_title}' ({target_dom})",
+                "source_links": [f"https://{target_dom}"],
                 "explanation": exp,
                 "reasons": [exp]
             }
@@ -157,12 +170,16 @@ def detect_lookalike_domain(domain: Optional[str],
 
         if brand_key in main_label and main_label != brand_key:
             if has_hyphen or has_kw:
+                target_dom = f"{brand_key}.com"
                 exp = f"Potential lookalike domain: Contains brand name '{brand_title}' combined with supplementary keywords/hyphens ({main_label})."
                 return {
                     "detected": True,
                     "similarity": 80,
                     "matched_brand": brand_title,
-                    "target_domain": f"{brand_key}.com",
+                    "target_domain": target_dom,
+                    "domain_mismatch": clean_dom != target_dom,
+                    "similarity_evidence": f"Brand name '{brand_title}' combined with recruitment/authentication keywords ({main_label})",
+                    "source_links": [f"https://{target_dom}"],
                     "explanation": exp,
                     "reasons": [exp]
                 }
@@ -171,12 +188,16 @@ def detect_lookalike_domain(domain: Optional[str],
         if len(brand_key) >= 5 and len(main_label) >= 4:
             dist = _levenshtein_distance(main_label, brand_key)
             if dist == 1 and main_label != brand_key:
+                target_dom = f"{brand_key}.com"
                 exp = f"Potential lookalike domain: Single-character misspelling of known brand '{brand_title}' (edit distance 1)."
                 return {
                     "detected": True,
                     "similarity": 88,
                     "matched_brand": brand_title,
-                    "target_domain": f"{brand_key}.com",
+                    "target_domain": target_dom,
+                    "domain_mismatch": clean_dom != target_dom,
+                    "similarity_evidence": f"Single-character edit distance 1 variation of authentic brand '{brand_title}' ({target_dom})",
+                    "source_links": [f"https://{target_dom}"],
                     "explanation": exp,
                     "reasons": [exp]
                 }
@@ -186,6 +207,9 @@ def detect_lookalike_domain(domain: Optional[str],
         "similarity": 0,
         "matched_brand": None,
         "target_domain": None,
+        "domain_mismatch": False,
+        "similarity_evidence": "No lookalike or typosquatting indicators detected for this domain.",
+        "source_links": [],
         "explanation": "No lookalike or typosquatting indicators detected for this domain.",
         "reasons": []
     }

@@ -535,3 +535,92 @@ def test_api_company_intelligence_endpoint(client):
         assert data['company']['name'] == 'Test Labs Inc'
         assert data['domain']['domain'] == 'testlabs.com'
         assert data['email']['match'] is True
+
+
+# --------------------------------------------------------------------------
+# Test 25: Five explicit comparison states for email & domain matching
+# --------------------------------------------------------------------------
+def test_25_five_explicit_comparison_states():
+    # 1. MATCH: recruiter domain matches official domain
+    res_match = analyze_email_domain('recruiter@acme.com', 'acme.com')
+    assert res_match['comparison_result'] == 'MATCH'
+    assert res_match['match'] is True
+
+    # 2. MISMATCH: recruiter domain differs from corporate domain
+    res_mismatch = analyze_email_domain('recruiter@acme-fake-careers.org', 'acme.com')
+    assert res_mismatch['comparison_result'] == 'MISMATCH'
+    assert res_mismatch['match'] is False
+
+    # 3. MISMATCH (Free webmail): personal provider domain
+    res_gmail = analyze_email_domain('recruiter.acme@gmail.com', 'acme.com')
+    assert res_gmail['comparison_result'] == 'MISMATCH'
+    assert res_gmail['is_personal_provider'] is True
+    assert "not standalone proof of fraud" in res_gmail['explanation']
+
+    # 4. POSSIBLE_MATCH: exact brand name across different TLD
+    res_cross_tld = analyze_email_domain('recruiter@acme.org', 'acme.com')
+    assert res_cross_tld['comparison_result'] == 'POSSIBLE_MATCH'
+    assert res_cross_tld['match'] is True
+
+    # 5. INSUFFICIENT_DATA: missing official domain or email
+    res_nodomain = analyze_email_domain('recruiter@acme.com', None)
+    assert res_nodomain['comparison_result'] == 'INSUFFICIENT_DATA'
+    res_noemail = analyze_email_domain(None, 'acme.com')
+    assert res_noemail['comparison_result'] == 'INSUFFICIENT_DATA'
+
+    # 6. UNAVAILABLE: invalid email string
+    res_unavail = analyze_email_domain('notanemailstring', 'acme.com')
+    assert res_unavail['comparison_result'] == 'UNAVAILABLE'
+
+
+# --------------------------------------------------------------------------
+# Test 26: Impersonation & Typosquatting clean vs anomaly states
+# --------------------------------------------------------------------------
+def test_26_impersonation_evidence_structure():
+    # Clean domain - no risk warning, clean structured fields
+    clean_res = detect_lookalike_domain('google.com', 'Google LLC')
+    assert clean_res['detected'] is False
+    assert clean_res['domain_mismatch'] is False
+    assert clean_res['similarity_evidence'] == 'No lookalike or typosquatting indicators detected for this domain.'
+    assert isinstance(clean_res['source_links'], list)
+
+    # Impersonation detected
+    spoof_res = detect_lookalike_domain('g00gle.com', 'Google LLC')
+    assert spoof_res['detected'] is True
+    assert spoof_res['domain_mismatch'] is True
+    assert len(spoof_res['similarity_evidence']) > 0
+    assert any('substitution' in r.lower() for r in spoof_res['reasons'])
+
+
+# --------------------------------------------------------------------------
+# Test 27: DNS and MX status synthesis in company intelligence service
+# --------------------------------------------------------------------------
+def test_27_dns_mx_status_synthesis():
+    ci = CompanyIntelligenceService.build_company_intelligence(
+        text="Acme Corp hiring engineers. Contact hr@acme.com. Visit https://acme.com",
+        metadata={'company_name': 'Acme Corp', 'company_email': 'hr@acme.com'}
+    )
+    # Check domain intelligence structure includes lookup_status and dns_mx_status
+    assert 'lookup_status' in ci['domain']
+    assert 'dns_mx_status' in ci['domain']
+    assert 'dns' in ci
+    assert 'dns_mx_status' in ci['dns']
+    # Check comparison schema contains 5 explicit states
+    assert 'comparison' in ci
+    assert ci['comparison']['overall_state'] in ['MATCH', 'MISMATCH', 'POSSIBLE_MATCH', 'INSUFFICIENT_DATA', 'UNAVAILABLE']
+    assert 'impersonation' in ci
+    assert 'similarity_evidence' in ci['impersonation']
+
+
+# --------------------------------------------------------------------------
+# Test 28: Company Profile includes public profile links and description
+# --------------------------------------------------------------------------
+def test_28_company_profile_fields():
+    ci = CompanyIntelligenceService.build_company_intelligence(
+        text="Microsoft Corporation recruitment notice",
+        metadata={'company_name': 'Microsoft Corporation'}
+    )
+    assert 'public_profiles' in ci['company']
+    assert isinstance(ci['company']['public_profiles'], list)
+    assert ci['company']['name'] == 'Microsoft Corporation'
+

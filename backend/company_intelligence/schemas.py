@@ -60,7 +60,9 @@ def empty_domain_intelligence(domain: str = "") -> Dict[str, Any]:
         "is_recently_registered": False,
         "is_established": False,
         "lookup_timestamp": datetime.now(timezone.utc).isoformat(),
-        "rdap_status": "UNAVAILABLE"
+        "rdap_status": "UNAVAILABLE",
+        "lookup_status": "UNAVAILABLE",
+        "dns_mx_status": "Information unavailable"
     }
 
 
@@ -86,8 +88,9 @@ def empty_email_analysis(email: str = "", official_domain: str = "") -> Dict[str
         "email_domain": "",
         "official_domain": official_domain or "",
         "match": False,
-        "status": "UNKNOWN",
-        "match_type": "UNKNOWN",  # MATCH, MISMATCH, PERSONAL_EMAIL_PROVIDER, UNKNOWN
+        "status": "INSUFFICIENT_DATA",
+        "match_type": "INSUFFICIENT_DATA",  # MATCH, MISMATCH, POSSIBLE_MATCH, INSUFFICIENT_DATA, UNAVAILABLE
+        "comparison_result": "INSUFFICIENT_DATA",
         "is_free_provider": False,
         "is_personal_provider": False,
         "explanation": "No recruiter email provided for verification."
@@ -100,6 +103,9 @@ def empty_lookalike_analysis(domain: str = "") -> Dict[str, Any]:
         "similarity": 0,
         "matched_brand": None,
         "target_domain": None,
+        "domain_mismatch": False,
+        "similarity_evidence": "No lookalike anomalies or typosquatting patterns detected.",
+        "source_links": [],
         "explanation": "No lookalike anomalies detected.",
         "reasons": []
     }
@@ -115,5 +121,6 @@ def empty_dns_intelligence() -> Dict[str, Any]:
         "mx_records": [],
         "ns_records": [],
         "txt_records": [],
-        "dns_status": "UNAVAILABLE"
+        "dns_status": "UNAVAILABLE",
+        "dns_mx_status": "Information unavailable"
     }

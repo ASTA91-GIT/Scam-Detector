@@ -557,13 +557,19 @@ function renderCompanyIntelligence(a) {
     // Overall Status Pill
     const statusPill = document.getElementById('companyVerifiedBadge');
     const statusText = document.getElementById('companyVerifiedStatusText');
+    const compComparison = ci.comparison || {};
+    const overallState = compComparison.overall_state || email.comparison_result || email.status || 'UNAVAILABLE';
+
     if (statusPill && statusText) {
-        if (email.status === 'MISMATCH' || lookalike.detected) {
+        if (overallState === 'MISMATCH' || lookalike.detected) {
             statusPill.className = 'company-intel-status-pill badge-forensic-danger';
             statusText.textContent = lookalike.detected ? 'LOOKALIKE DETECTED' : 'DOMAIN MISMATCH';
-        } else if (web.reachable && (dom.status === 'active' || dom.status === 'ACTIVE') && email.status === 'MATCH') {
+        } else if (overallState === 'MATCH' && web.reachable) {
             statusPill.className = 'company-intel-status-pill badge-forensic-safe';
             statusText.textContent = 'IDENTITY CORROBORATED';
+        } else if (overallState === 'POSSIBLE_MATCH') {
+            statusPill.className = 'company-intel-status-pill badge-forensic-warning';
+            statusText.textContent = 'POSSIBLE MATCH';
         } else if (comp.name && comp.name !== 'Company not identified') {
             statusPill.className = 'company-intel-status-pill badge-forensic-cyan';
             statusText.textContent = 'SIGNALS RECORDED';
@@ -578,11 +584,7 @@ function renderCompanyIntelligence(a) {
     const nameEl = document.getElementById('ciCompanyName');
     if (nameEl) {
         nameEl.textContent = compName ? compName : 'Company not identified';
-        if (!compName) {
-            nameEl.style.color = 'var(--console-text-muted)';
-        } else {
-            nameEl.style.color = 'var(--console-text-primary)';
-        }
+        nameEl.style.color = compName ? 'var(--console-text-primary)' : 'var(--console-text-muted)';
     }
 
     const indEl = document.getElementById('ciCompanyIndustry');
@@ -592,7 +594,10 @@ function renderCompanyIntelligence(a) {
     if (locEl) locEl.textContent = comp.location || a.job_location || 'Information unavailable';
 
     const fndEl = document.getElementById('ciCompanyFounded');
-    if (fndEl) fndEl.textContent = comp.founded || 'Information unavailable';
+    if (fndEl) {
+        const yr = comp.founded_year || comp.founded;
+        fndEl.textContent = yr ? `${yr}` : 'Information unavailable';
+    }
 
     const webEl = document.getElementById('ciCompanyWebsite');
     if (webEl) {
@@ -602,6 +607,21 @@ function renderCompanyIntelligence(a) {
             webEl.innerHTML = `<a href="${href}" target="_blank" rel="noopener noreferrer" class="mono-text" style="color:var(--console-cyan); text-decoration:underline;">${site}</a>`;
         } else {
             webEl.textContent = 'Information unavailable';
+        }
+    }
+
+    // Public Profile Links
+    const profilesEl = document.getElementById('ciPublicProfiles');
+    if (profilesEl) {
+        const profiles = comp.public_profiles || [];
+        if (profiles.length > 0) {
+            profilesEl.innerHTML = profiles.map(p => `
+                <a href="${p.url}" target="_blank" rel="noopener noreferrer" class="mono-text" style="color:var(--console-cyan); text-decoration:underline; margin-right:8px; display:inline-block;">
+                    ${p.title || 'Profile'} ↗
+                </a>
+            `).join('');
+        } else {
+            profilesEl.textContent = 'Information unavailable';
         }
     }
 
@@ -623,11 +643,6 @@ function renderCompanyIntelligence(a) {
     const domNameEl = document.getElementById('ciDomainName');
     if (domNameEl) domNameEl.textContent = dom.domain || a.company_domain || '--';
 
-    const ageEl = document.getElementById('ciDomainAge');
-    if (ageEl) {
-        ageEl.textContent = dom.age_formatted || (dom.age_years ? `${dom.age_years} years` : 'Information unavailable');
-    }
-
     const crtEl = document.getElementById('ciDomainCreated');
     if (crtEl) {
         if (dom.creation_date) {
@@ -638,19 +653,24 @@ function renderCompanyIntelligence(a) {
         }
     }
 
+    const ageEl = document.getElementById('ciDomainAge');
+    if (ageEl) {
+        ageEl.textContent = dom.age_formatted || (dom.age_years ? `${dom.age_years} years` : 'Information unavailable');
+    }
+
     const regEl = document.getElementById('ciDomainRegistrar');
     if (regEl) regEl.textContent = dom.registrar || 'Information unavailable';
 
-    const stEl = document.getElementById('ciDomainStatus');
-    if (stEl) {
-        stEl.textContent = dom.status || 'UNAVAILABLE';
-        stEl.style.color = (dom.status === 'active' || dom.status === 'ACTIVE') ? 'var(--console-risk-safe)' : 'var(--console-text-muted)';
+    const dnsMxEl = document.getElementById('ciDomainDnsMx');
+    if (dnsMxEl) {
+        dnsMxEl.textContent = dom.dns_mx_status || (ci.dns?.has_mx ? `Active MX (${(ci.dns.mx_records || []).length} hosts)` : 'Information unavailable');
     }
 
-    const nsEl = document.getElementById('ciDomainNameservers');
-    if (nsEl) {
-        const ns = dom.nameservers || [];
-        nsEl.textContent = ns.length > 0 ? ns.slice(0, 3).join(', ') : 'Information unavailable';
+    const lookupStEl = document.getElementById('ciDomainLookupStatus');
+    if (lookupStEl) {
+        const st = dom.lookup_status || dom.rdap_status || dom.status || 'UNAVAILABLE';
+        lookupStEl.textContent = st;
+        lookupStEl.style.color = (st === 'SUCCESS' || st === 'active' || st === 'ACTIVE') ? 'var(--console-risk-safe)' : 'var(--console-text-muted)';
     }
 
     // CARD 3: Website Status
@@ -710,7 +730,7 @@ function renderCompanyIntelligence(a) {
         }
     }
 
-    // CARD 4: Recruiter Verification
+    // CARD 4: Recruiter Verification (Explicit 5 States)
     const recNameEl = document.getElementById('ciRecruiterName');
     if (recNameEl) recNameEl.textContent = email.recruiter_name || a.entities?.recruiter || 'Not Specified';
 
@@ -722,29 +742,37 @@ function renderCompanyIntelligence(a) {
 
     const matchEl = document.getElementById('ciDomainMatchStatus');
     const emailBadge = document.getElementById('ciEmailMatchBadge');
+    const domComparisonResult = email.comparison_result || email.match_type || email.status || 'INSUFFICIENT_DATA';
+
     if (matchEl) {
-        if (email.status === 'MATCH') {
+        if (domComparisonResult === 'MATCH') {
             matchEl.innerHTML = '<span style="color:var(--console-risk-safe); font-weight:700;">✓ MATCH</span>';
             if (emailBadge) {
                 emailBadge.textContent = 'MATCH';
                 emailBadge.className = 'badge-forensic badge-forensic-safe';
             }
-        } else if (email.status === 'MISMATCH') {
+        } else if (domComparisonResult === 'MISMATCH' || email.status === 'PERSONAL_EMAIL_PROVIDER') {
             matchEl.innerHTML = '<span style="color:var(--console-risk-critical); font-weight:700;">⚠ MISMATCH</span>';
             if (emailBadge) {
                 emailBadge.textContent = 'MISMATCH';
                 emailBadge.className = 'badge-forensic badge-forensic-danger';
             }
-        } else if (email.status === 'PERSONAL_EMAIL_PROVIDER') {
-            matchEl.innerHTML = '<span style="color:var(--console-risk-warning); font-weight:700;">⚠ PERSONAL_EMAIL_PROVIDER</span>';
+        } else if (domComparisonResult === 'POSSIBLE_MATCH') {
+            matchEl.innerHTML = '<span style="color:var(--console-risk-warning); font-weight:700;">⚡ POSSIBLE_MATCH</span>';
             if (emailBadge) {
-                emailBadge.textContent = 'WEBMAIL';
+                emailBadge.textContent = 'POSSIBLE MATCH';
                 emailBadge.className = 'badge-forensic badge-forensic-warning';
             }
-        } else {
-            matchEl.innerHTML = `<span style="color:var(--console-text-muted);">${email.status || 'INCONCLUSIVE'}</span>`;
+        } else if (domComparisonResult === 'INSUFFICIENT_DATA') {
+            matchEl.innerHTML = '<span style="color:var(--console-text-muted);">INSUFFICIENT_DATA</span>';
             if (emailBadge) {
-                emailBadge.textContent = 'INCONCLUSIVE';
+                emailBadge.textContent = 'INSUFFICIENT DATA';
+                emailBadge.className = 'badge-forensic badge-forensic-muted';
+            }
+        } else {
+            matchEl.innerHTML = `<span style="color:var(--console-text-muted);">${domComparisonResult}</span>`;
+            if (emailBadge) {
+                emailBadge.textContent = domComparisonResult;
                 emailBadge.className = 'badge-forensic badge-forensic-muted';
             }
         }
@@ -755,16 +783,69 @@ function renderCompanyIntelligence(a) {
         emExp.textContent = email.explanation || 'Comparing recruiter communication channels against discovered corporate domains.';
     }
 
-    // CARD 5: Domain Risk Signals (Factual Indicators)
-    renderDomainRiskSignalsList(ci);
+    // CARD 5: Potential Impersonation Card
+    const impBadge = document.getElementById('ciImpersonationBadge');
+    const impDetected = document.getElementById('ciImpersonationDetected');
+    const impEvidence = document.getElementById('ciImpersonationEvidence');
+    const impMismatch = document.getElementById('ciImpersonationMismatch');
+    const impSources = document.getElementById('ciImpersonationSources');
 
-    // AI COMPANY ASSESSMENT (Section 23)
-    const aiAssessEl = document.getElementById('aiCompanyAssessmentText');
-    if (aiAssessEl) {
-        aiAssessEl.textContent = ci.ai_assessment || 'Forensic system performed automated factual corroboration against registered domain telemetry and corporate public directories.';
+    if (lookalike.detected) {
+        if (impBadge) {
+            impBadge.textContent = 'ANOMALY DETECTED';
+            impBadge.className = 'badge-forensic badge-forensic-danger';
+        }
+        if (impDetected) {
+            impDetected.innerHTML = `<span style="color:var(--console-risk-critical); font-weight:700;">⚠ Potential Lookalike (${lookalike.similarity || 85}% similarity)</span>`;
+        }
+        if (impEvidence) {
+            impEvidence.textContent = lookalike.similarity_evidence || lookalike.explanation || 'Suspicious typosquatting or brand embedding detected.';
+            impEvidence.style.color = 'var(--console-risk-critical)';
+        }
+        if (impMismatch) {
+            impMismatch.innerHTML = `<span style="color:var(--console-risk-critical);">Target brand mismatch: ${lookalike.matched_brand || 'Authentic Brand'}</span>`;
+        }
+        if (impSources) {
+            if (lookalike.source_links && lookalike.source_links.length > 0) {
+                impSources.innerHTML = lookalike.source_links.map(url => `
+                    <a href="${url}" target="_blank" rel="noopener noreferrer" class="mono-text" style="color:var(--console-cyan); text-decoration:underline;">
+                        ${lookalike.target_domain || url} ↗
+                    </a>
+                `).join(', ');
+            } else if (lookalike.target_domain) {
+                impSources.innerHTML = `<span class="mono-text">${lookalike.target_domain}</span>`;
+            } else {
+                impSources.textContent = 'Information unavailable';
+            }
+        }
+    } else {
+        // Clean state — DO NOT display a risk warning when no supporting evidence exists
+        if (impBadge) {
+            impBadge.textContent = 'NO ANOMALIES';
+            impBadge.className = 'badge-forensic badge-forensic-safe';
+        }
+        if (impDetected) {
+            impDetected.innerHTML = '<span style="color:var(--console-risk-safe); font-weight:600;">✓ Clean (No lookalike detected)</span>';
+        }
+        if (impEvidence) {
+            impEvidence.textContent = 'Domain naming conforms to standard corporate nomenclature without homoglyphs or brand spoofing.';
+            impEvidence.style.color = 'var(--console-text-secondary)';
+        }
+        if (impMismatch) {
+            impMismatch.textContent = 'None detected';
+        }
+        if (impSources) {
+            impSources.textContent = '--';
+        }
     }
 
-    // SOURCES TABLE (Section 24)
+    // AI COMPANY ASSESSMENT
+    const aiAssessEl = document.getElementById('aiCompanyAssessmentText');
+    if (aiAssessEl) {
+        aiAssessEl.textContent = ci.ai_assessment || 'Evaluating company signals and corroborating external domain intelligence...';
+    }
+
+    // SOURCES TABLE
     renderCompanySourcesTable(sources);
 }
 
